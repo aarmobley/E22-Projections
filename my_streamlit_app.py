@@ -59,7 +59,7 @@ coefficients = {
 
 title = st.title("Fleming Island Attendance Projection")
 
-dates = pd.read_excel(r"C:\Users\aaron\OneDrive\Desktop\Campus_Projections\RegressionDates.xlsx")
+dates = pd.read_excel(r"C:\Users\aaron\OneDrive\Desktop\python\RegressionDates.xlsx")
 dates.info()
 #dates.head()
 sunday_dates = dates['date'].tolist()
