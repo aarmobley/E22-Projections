@@ -19,7 +19,7 @@ coefficients = {
         'Executive Pastor' : -.07055,
         'Pastor Joby' : .3431,
         'Easter' : 5.711,
-        'BacktoSchool' : .6696,
+        'Promotion Week' : .6696,
         'Saturated Sunday' : 6.773,
         'kids_projection' : .15,
         'kids_easter' : .13
@@ -35,7 +35,7 @@ coefficients = {
         'Executive Pastor' :  -.591838,
         'Pastor Joby' : .576633,
         'Easter' : 7.645752,
-        'BacktoSchool' : 1.031662,
+        'Promotion Week' : 1.031662,
         'Saturated Sunday' : 1.163100,
         'kids_projection' : 0.27,
         'kids_easter' : .20
@@ -50,7 +50,7 @@ coefficients = {
         'Executive Pastor' : -.5607,
         'Pastor Joby' : .01990,
         'Easter' : 6.137,
-        'BacktoSchool' : 1.884,
+        'Promotion Week' : 1.884,
         'Saturated Sunday' : 2.988,
         'kids_projection' : 0.27,
         'kids_easter' : .21
@@ -63,7 +63,7 @@ coefficients = {
 with st.sidebar:
     st.markdown("""
                 Important Dates: 
-                - 08-11-2024 (Back to School)  
+                - 08-11-2024 (Promotion Week)  
                 - 09-15-2024 (Saturated)
                 - 01-05-2025 (Back to School)
                 - 04-20-2025 (Easter) """)
@@ -110,7 +110,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday']
 
 
 ####creating selectbox options
