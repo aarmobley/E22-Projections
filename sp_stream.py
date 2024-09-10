@@ -59,7 +59,7 @@ coefficients = {
     
 }
 
-
+st.image("https://github.com/aarmobley/CoE22/blob/main/E22%20Logo.png")
 
 ##### sidebar
 
