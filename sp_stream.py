@@ -59,7 +59,7 @@ coefficients = {
     
 }
 
-logo_file = "https://github.com/aarmobley/CoE22/blob/main/E22%20Logo.png"
+logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 st.image(logo_file, width=150)
 
 
