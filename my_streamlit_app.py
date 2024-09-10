@@ -70,6 +70,10 @@ with st.sidebar:
 
 
 
+logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
+st.image(logo_file, width=150)
+
+
 
 title = st.title("Fleming Island Attendance Projection")
 
