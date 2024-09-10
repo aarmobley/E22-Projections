@@ -59,7 +59,9 @@ coefficients = {
     
 }
 
-st.image("C:\Users\aaron\OneDrive\Desktop\E22 Logo", width=150)
+logo_file = "https://github.com/aarmobley/CoE22/blob/main/E22%20Logo.png"
+st.image(logo_file, width=150)
+
 
 ##### sidebar
 
