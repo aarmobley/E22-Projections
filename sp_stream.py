@@ -59,7 +59,7 @@ coefficients = {
     
 }
 
-st.image("C:\Users\aaron\OneDrive\Desktop\E22 Logo")
+#st.image("C:\Users\aaron\OneDrive\Desktop\E22 Logo")
 
 ##### sidebar
 
