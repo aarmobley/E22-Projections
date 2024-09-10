@@ -12,15 +12,15 @@ from datetime import datetime, timedelta
 coefficients = {
 
  '7:22': {
-        'intercept' : -122.0,
-        'sunday_date' : .008280,
-        'week_number' : -.04381,
-        'Guest Pastor' : -1.467,
-        'Executive Pastor' : -.07055,
-        'Pastor Joby' : -.5863,
-        'Easter' : 6.387,
-        'BacktoSchool' : 1.134,
-        'Saturated Sunday' : 10.66,
+        'intercept' : -129.2,
+        'sunday_date' : 0.008655,
+        'week_number' : -0.041661,
+        'Guest Pastor' : -1.519024,
+        'Executive Pastor' : -1.906223,
+        'Pastor Joby' : -0.569571,
+        'Easter' : 6.356392,
+        'Promotion Week' : 1.061515,
+        'Saturated Sunday' : 10.567864,
         'kids_projection' : .08,
         'kids_easter' : .08
     },
@@ -28,33 +28,35 @@ coefficients = {
     
     
   '09:00:00': {
-        'intercept' : -214.9,
-        'sunday_date' : .01332, 
-        'week_number' : -.002192,
-        'Guest Pastor' : -1.699,
-        'Executive Pastor' :  -1.307,
-        'Pastor Joby' : 1.058,
-        'Easter' : 16.03,
-       	'BacktoSchool' : .2396,
-        'Saturated Sunday' : 6.562,
-        'kids_projection' : 0.21,
+        'intercept' : -211.279175,
+        'sunday_date' : 0.013135, 
+        'week_number' : -0.003892,
+        'Guest Pastor' : -1.708413,
+        'Executive Pastor' :  -1.202008,
+        'Pastor Joby' : 0.983648,
+        'Easter' : 16.092007,
+       	'Promotion Week' : 0.332188,
+        'Saturated Sunday' : 6.668219,
+        'kids_projection' : 0.22,
         'kids_easter' : .12
 
     },
     
   '11:22:00': {
 
-       	'intercept' : -155.5,
-       	'sunday_date' : .01015,
-        'week_number' : -.04676,
-       	'Guest Pastor' : -1.526,
-      	'Executive Pastor' : -1.526,
-       	'Pastor Joby' : .4522,
-        'Easter' : 14.72,
-        'BacktoSchool' : 3.505,
-        'Saturated Sunday' : 4.462,
-        'kids_projection' : 0.16,
-        'kids_easter' : .12
+       	'intercept' : -157.2,
+       	'sunday_date' : 0.010233,
+        'week_number' : -0.045706,
+       	'Guest Pastor' : -1.860580,
+      	'Executive Pastor' : -1.475903,
+       	'Pastor Joby' : 0.484748,
+        'Easter' : 14.699064,
+        'Promotion Week' : 3.165389,
+        'Saturated Sunday' : 4.411776,
+        'kids_projection' : 15.4,
+        'kids_easter' : .12,
+        'kids_labor' : 17.64
+        #'Labor Day' : 0.919454
     },
     
 }
