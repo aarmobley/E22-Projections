@@ -150,11 +150,14 @@ sundaydate_effect = service_options['sunday_date'] * (numerical_date)
 pastor = service_options[select_pastor]
 
 
-### No Event coefficient needs to be 0
+### No Event coefficient needs to be 0 and pastor should be 0 so if an event is selected it takes out the pastor coefficient
 no_event = 0
-
+pastor = 0
 if select_event != 'None':
     no_event = service_options[select_event]
+else:
+    pastor = service_options[select_pastor ]
+
 
 #event = service_options[select_event]
 
