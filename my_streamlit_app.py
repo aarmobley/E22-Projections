@@ -148,9 +148,11 @@ pastor = service_options[select_pastor]
 
 ### No Event coefficient needs to be 0
 no_event = 0
-
+pastor = 0
 if select_event != 'None':
     no_event = service_options[select_event]
+else:
+    pastor = service_options[select_pastor ]
 
 #event = service_options[select_event]
 
