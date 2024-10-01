@@ -2,6 +2,7 @@
 
 
 
+
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -41,6 +42,11 @@ coefficients = {
     },
     
 }
+
+### logo
+logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
+st.image(logo_file, width=150)
+
 
 ##### sidebar
 
@@ -181,6 +187,8 @@ if st.button("Make Projection"):
          ## HTML and markdown for kids capacity
         color = "red" if kids_cap > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_cap:.0f}%</p>", unsafe_allow_html=True)
+    
+    
     
     
     
