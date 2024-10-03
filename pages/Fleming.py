@@ -58,6 +58,11 @@ coefficients = {
     
 }
 
+
+### logo
+logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
+st.image(logo_file, width=150)
+
 ##### sidebar
 
 with st.sidebar:
