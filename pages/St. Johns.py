@@ -21,7 +21,7 @@ coefficients = {
     'Easter' : 384.7519,
     'BacktoSchool' : 353.1261,
     'Saturated Sunday' : 37.8473,
-    'Chrsitmas' : '335.8718',
+    'Chrsitmas' : 335.8718,
     'Kids Projection' : .37,
     'Kids Easter' : .24
 
