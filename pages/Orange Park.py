@@ -143,9 +143,9 @@ if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
     prediction1 =  (prediction) ** (2)
     
-    kids_1122 = prediction1 * service_options['kids_projection']
+    kids_1122 = prediction1 * service_options['Kids Projection']
     
-    kids_easter = prediction1 * service_options['kids_easter']
+    kids_easter = prediction1 * service_options['Kids Easter']
     
     #kids_labor = prediction1 * service_options['kids_labor']
     
