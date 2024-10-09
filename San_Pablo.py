@@ -22,7 +22,8 @@ coefficients = {
         'Promotion Week' : 1.079769,
         'Saturated Sunday' : 13.584190,
         'kids_projection' : .08,
-        'kids_easter' : .08
+        'kids_easter' : .08,
+        'Christmas' : 4.476818
     },
     
     
@@ -38,7 +39,9 @@ coefficients = {
        	'Promotion Week' : 0.332188,
         'Saturated Sunday' : 6.668219,
         'kids_projection' : 0.22,
-        'kids_easter' : .12
+        'kids_easter' : .12,
+        'Christmas' : 3.349966
+        
 
     },
     
@@ -55,8 +58,8 @@ coefficients = {
         'Saturated Sunday' : 4.300169,
         'kids_projection' : .15,
         'kids_easter' : .12,
-        'kids_labor' : 17.64
-        #'Labor Day' : 0.919454
+        'kids_labor' : 17.64,
+        'Chistmas' : 10.415072
     },
     
 }
