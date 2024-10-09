@@ -122,7 +122,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Labor Day']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
 
 
 ####creating selectbox options
