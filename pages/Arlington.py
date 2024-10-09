@@ -22,7 +22,9 @@ coefficients = {
        	 	'BacktoSchool' : .08546,
         	'Saturated Sunday' : .9908,
         	'kids_projection' : 0.29,
-			'kids_easter' : .25
+			'kids_easter' : .25,
+		'Christmas' : 0.632635
+		
     },
     
     '11:22:00': {
@@ -37,7 +39,8 @@ coefficients = {
         	'BacktoSchool' : -.9172174,
         	'Saturated Sunday' : 1.6824265,
         	'kids_projection' : .30,
-			'kids_easter' : .25
+			'kids_easter' : .25,
+	    'Christmas' : 3.285601
     },
     
 }
@@ -99,7 +102,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday']
+event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday', 'Christmas']
 
 
 select_service = st.selectbox("Select a Service", service_times)
