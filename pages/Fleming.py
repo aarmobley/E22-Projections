@@ -12,17 +12,18 @@ from datetime import datetime, timedelta
 coefficients = {
     
     '7:22': {
-        'intercept' : -50.03,
-        'sunday_date' : .003145,
-        'week_number' : .009080,
-        'Guest Pastor' : .002012,
-        'Executive Pastor' : -.07055,
-        'Pastor Joby' : .3431,
-        'Easter' : 5.711,
-        'Promotion Week' : .6696,
-        'Saturated Sunday' : 6.773,
+        'intercept' : -59.338117,
+        'sunday_date' : 0.003676,
+        'week_number' : -0.014060,
+        'Guest Pastor' : -0.137217,
+        'Executive Pastor' : -0.811208,
+        'Pastor Joby' : -0.213204,
+        'Easter' : 5.698693,
+        'Promotion Week' : 1.077589,
+        'Saturated Sunday' : 8.523835,
         'kids_projection' : .15,
-        'kids_easter' : .13
+        'kids_easter' : .13,
+        'Christmas' : 6.631921
     },
     
     
@@ -38,22 +39,24 @@ coefficients = {
         'Promotion Week' : 1.031662,
         'Saturated Sunday' : 1.163100,
         'kids_projection' : 0.27,
-        'kids_easter' : .20
+        'kids_easter' : .20,
+        'Christmas' : 2.142649
     },
     
     '11:22:00': {
 
-        'intercept' : -49.72,
-        'sunday_date' : .003626,
-        'week_number' : -.02766,
-        'Guest Pastor' : -.6772,
-        'Executive Pastor' : -.5607,
-        'Pastor Joby' : .01990,
-        'Easter' : 6.137,
-        'Promotion Week' : 1.884,
-        'Saturated Sunday' : 2.988,
+        'intercept' : -54.05335 ,
+        'sunday_date' : 0.00386,
+        'week_number' : -0.03097,
+        'Guest Pastor' : -0.53197,
+        'Executive Pastor' : -0.47847,
+        'Pastor Joby' : -0.03255,
+        'Easter' : 6.14954,
+        'Promotion Week' : 1.95648,
+        'Saturated Sunday' : 3.64810,
         'kids_projection' : 0.27,
-        'kids_easter' : .21
+        'kids_easter' : .21,
+        'Christmas' : 5.90542
     },
     
 }
