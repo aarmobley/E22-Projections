@@ -57,6 +57,7 @@ with st.sidebar:
                 Important Dates: 
                 - 08-11-2024 (Promotion Week)  
                 - 09-15-2024 (Saturated)
+                - 12-22-2024 (Christmas)
                 - 01-05-2025 (Back to School)
                 - 04-20-2025 (Easter) """)
 
