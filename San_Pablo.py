@@ -55,6 +55,7 @@ coefficients = {
        	'Pastor Joby' : 0.551685,
         'Easter' : 14.658688,
         'Promotion Week' : 3.061576,
+        'Back to School' : 3.061576,
         'Saturated Sunday' : 4.300169,
         'kids_projection' : .15,
         'kids_easter' : .12,
@@ -123,7 +124,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas', 'Back to School']
 
 
 ####creating selectbox options
