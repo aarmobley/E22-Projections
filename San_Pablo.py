@@ -20,6 +20,7 @@ coefficients = {
         'Pastor Joby' : -0.634991,
         'Easter' : 6.374122,
         'Promotion Week' : 1.079769,
+        'Back to School' : 1.079769,
         'Saturated Sunday' : 13.584190,
         'kids_projection' : .08,
         'kids_easter' : .08,
@@ -37,6 +38,7 @@ coefficients = {
         'Pastor Joby' : 0.983648,
         'Easter' : 16.092007,
        	'Promotion Week' : 0.332188,
+        'Back to School' : 0.332188,
         'Saturated Sunday' : 6.668219,
         'kids_projection' : 0.22,
         'kids_easter' : .12,
@@ -64,7 +66,6 @@ coefficients = {
     },
     
 }
-
 
 ### logo
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
