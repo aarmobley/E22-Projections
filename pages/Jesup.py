@@ -36,7 +36,7 @@ coefficients = {
         'Saturated Sunday' : 2.74741,
         'kids_projection' : .33,    #need kids projection from sql query
         'kids_easter' : .33,
-        'Chistmas' : 1.44838
+        'Christmas' : 1.44838
     },
     
 }
