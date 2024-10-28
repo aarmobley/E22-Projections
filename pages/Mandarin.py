@@ -145,12 +145,12 @@ if select_event != 'None':
 
 if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    #prediction1 =  (prediction) ** (2)  St. Johns formula is not squared
-    kids = prediction * service_options['Kids Projection']
+    prediction1 =  (prediction) ** (2)  
+    kids = prediction1 * service_options['Kids Projection']
     
-    kids_easter = prediction * service_options['Kids Easter']
+    kids_easter = prediction1  * service_options['Kids Easter']
     #kids_1122 = prediction1 * service_options['kids_projection']
-    capacity = prediction / 840 * (100)
+    capacity = prediction1 / 840 * (100)
     kids_capacity = kids / 330 * (100)
     
     
@@ -158,7 +158,7 @@ if st.button("Make Projection"):
     ## projection displayed with capacity percentage
     st.divider()
     
-    st.write(f"Projected Adult Attendance: {prediction:.0f}")
+    st.write(f"Projected Adult Attendance: {prediction1:.0f}")
     st.write(f"Adult Capacity: {capacity: .0f}%")
     
     st.divider()
