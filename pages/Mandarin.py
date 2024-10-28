@@ -7,21 +7,18 @@ from datetime import datetime, timedelta
 
 
 ##coefficients for Mandarin
-coefficients = {
-    
- 
 '09:00:00'  :   {
 
-    'intercept' : -3210.724008895,
-    'sunday_date' : 0.18421,
-    'week_number' : -0.85245,
-    'Guest Pastor' : -13.37558,
-    'Executive Pastor' : 14.76093,
-    'Pastor Joby' : 3.7721,
-    'Easter' : 219.91286,
-    'BacktoSchool' : 10.20252,
-    'Saturated Sunday' : 35.05317,
-    'Christmas' : 157.51147,
+    'intercept' : -79.966795,
+    'sunday_date' : 0.005097,
+    'week_number' : -0.024471,
+    'Guest Pastor' : -0.348820,
+    'Executive Pastor' : -0.356801,
+    'Pastor Joby' : 0.422302,
+    'Easter' : 5.331749,
+    'BacktoSchool' : 0.244458,
+    'Saturated Sunday' : 0.844851,
+    'Christmas' : 3.768583,
     'Kids Projection' : .33,
     'Kids Easter' : .27
 
@@ -145,20 +142,39 @@ if select_event != 'None':
 
 if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    prediction1 =  (prediction) ** (2)  
+    prediction1 =  (prediction) ** (2) 
+     
     kids = prediction1 * service_options['Kids Projection']
     
+  
+    
     kids_easter = prediction1  * service_options['Kids Easter']
-    #kids_1122 = prediction1 * service_options['kids_projection']
+    
+   
+
     capacity = prediction1 / 840 * (100)
+
+  
+    
     kids_capacity = kids / 330 * (100)
     
+
+    
+    kids_easter_capacity = kids_easter / 330 * (100)
+    
+   
+    
+    
+   
+        
     
     
     ## projection displayed with capacity percentage
     st.divider()
     
+    ### projecting for 9am with no squared formula
     st.write(f"Projected Adult Attendance: {prediction1:.0f}")
+        
     st.write(f"Adult Capacity: {capacity: .0f}%")
     
     st.divider()
@@ -167,7 +183,8 @@ if st.button("Make Projection"):
     #kids projections with Easter
     if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
+        st.write(f"Kids Capacity: {kids_easter_capacity}")
     else:
         st.write(f"Projected Kids Attendance: {kids: .0f}")
         
-    st.write(f"Kids Capacity: {kids_capacity: .0f}%")
+        st.write(f"Kids Capacity: {kids_capacity: .0f}%")
