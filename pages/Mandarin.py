@@ -6,7 +6,11 @@ from datetime import datetime, timedelta
 
 
 
+
 ##coefficients for Mandarin
+coefficients = {
+    
+ 
 '09:00:00'  :   {
 
     'intercept' : -79.966795,
