@@ -12,19 +12,19 @@ from datetime import datetime, timedelta
 coefficients = {
 
  '7:22': {
-        'intercept' : -134.650970,
-        'sunday_date' : 0.008941,
-        'week_number' : -0.041799,
-        'Guest Pastor' : -1.449875,
-        'Executive Pastor' : -2.115242,
-        'Pastor Joby' : -0.634991,
-        'Easter' : 6.374122,
-        'Promotion Week' : 1.079769,
-        'Back to School' : 1.079769,
-        'Saturated Sunday' : 13.584190,
+        'intercept' : -138.304490,
+        'sunday_date' : 0.009162,
+        'week_number' : -0.057588,
+        'Guest Pastor' : -1.584479,
+        'Executive Pastor' : -2.398823,
+        'Pastor Joby' : -1.012890,
+        'Easter' : 6.385999,
+        'Promotion Week' : 1.379557,
+        'Back to School' : 1.379557,
+        'Saturated Sunday' : 13.705466,
         'kids_projection' : .08,
         'kids_easter' : .08,
-        'Christmas' : 4.476818
+        'Christmas' : 4.413307
     },
     
     
