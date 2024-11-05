@@ -12,55 +12,54 @@ from datetime import datetime, timedelta
 coefficients = {
     
     '7:22': {
-        'intercept' : -59.338117,
-        'sunday_date' : 0.003676,
-        'week_number' : -0.014060,
-        'Guest Pastor' : -0.137217,
-        'Executive Pastor' : -0.811208,
-        'Pastor Joby' : -0.213204,
-        'Easter' : 5.698693,
-        'Promotion Week' : 1.077589,
-        'Saturated Sunday' : 8.523835,
+        'intercept' : -56.532818,
+        'sunday_date' : 0.003535,
+        'week_number' : -0.017519,
+        'Guest Pastor' : -0.132035,
+        'Executive Pastor' : -0.818452,
+        'Pastor Joby' : -0.266790,
+        'Easter' : 5.701672,
+        'Promotion Week' : 1.144970,
+        'Saturated Sunday' : 8.582320,
         'kids_projection' : .15,
         'kids_easter' : .13,
-        'Christmas' : 6.631921
+        'Christmas' : 6.746094
     },
     
     
     
     '09:00:00': {
-        'intercept' : -62.398,
-        'sunday_date' : .004255, 
-        'week_number' : -.0001747,
-        'Guest Pastor' : -.010888,
-        'Executive Pastor' :  -.591838,
-        'Pastor Joby' : .576633,
-        'Easter' : 7.645752,
-        'Promotion Week' : 1.031662,
-        'Saturated Sunday' : 1.163100,
+        'intercept' : -61.867189,
+        'sunday_date' : 0.004228, 
+        'week_number' : -0.002307,
+        'Guest Pastor' : 0.016346,
+        'Executive Pastor' :  -0.541431,
+        'Pastor Joby' : 0.549219,
+        'Easter' : 7.667557,
+        'Promotion Week' : 1.064107,
+        'Saturated Sunday' : 1.199038,
         'kids_projection' : 0.27,
         'kids_easter' : .20,
-        'Christmas' : 2.142649
+        'Christmas' : 2.175473
     },
     
     '11:22:00': {
 
-        'intercept' : -54.05335 ,
-        'sunday_date' : 0.00386,
-        'week_number' : -0.03097,
-        'Guest Pastor' : -0.53197,
-        'Executive Pastor' : -0.47847,
-        'Pastor Joby' : -0.03255,
-        'Easter' : 6.14954,
-        'Promotion Week' : 1.95648,
-        'Saturated Sunday' : 3.64810,
+        'intercept' : -52.766940 ,
+        'sunday_date' : 0.003791,
+        'week_number' : -0.032153,
+        'Guest Pastor' : -0.522480,
+        'Executive Pastor' : -0.526579,
+        'Pastor Joby' : -0.039928,
+        'Easter' : 6.145245,
+        'Promotion Week' : 1.974671,
+        'Saturated Sunday' : 3.685697,
         'kids_projection' : 0.27,
         'kids_easter' : .21,
-        'Christmas' : 5.90542
+        'Christmas' : 5.978565
     },
     
 }
-
 
 ### logo
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
