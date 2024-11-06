@@ -169,9 +169,9 @@ if st.button("Make Projection"):
     st.divider()
     
     ###needs 9:00 and 11:22
-    st.write(f"Projected Adult Attendance 9:00 - {prediction900:.0f}")
+    st.markdown(f"9:00 Projected Adult Attendance  - {prediction900:.0f}")
     
-    st.write(f"Projected Adult Attendance 11:22 - {prediction1122:.0f}")
+    st.markdown(f"11:22 Projected Adult Attendance - {prediction1122:.0f}")
     
     ### HTML and MArkdown for adult capacity
     color = "red" if capacity > 80 else "blue"
@@ -190,8 +190,8 @@ if st.button("Make Projection"):
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
     
     else: 
-        st.write(f"Projected Kids Attendance 9:00 -  {kids_900: .0f}")
-        st.write(f"Projected Kids Attendance 11:22 -  {kids_1122: .0f}")
+        st.write(f"9:00 Projected Kids Attendance  -  {kids_900: .0f}")
+        st.write(f"11:22 Projected Kids Attendnace -  {kids_1122: .0f}")
          ## HTML and markdown for kids capacity
         #color = "red" if kids_capacity > 80 else "blue"
         #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
