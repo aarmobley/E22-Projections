@@ -62,7 +62,7 @@ coefficients = {
         'kids_projection' : .15,
         'kids_easter' : .12,
         'kids_labor' : 17.64,
-        'Chistmas' : 10.415072
+        'Christmas' : 10.415072
     },
     
 }
