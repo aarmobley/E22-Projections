@@ -163,7 +163,10 @@ if st.button("Make Projection"):
     st.divider()
     
     st.write(f"Projected Adult Attendance: {prediction:.0f}")
-    st.write(f"Adult Capacity: {capacity: .0f}%")
+    
+       color = "red" if capacity > 80 else "blue"
+    
+    st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
     
     st.divider()
     
