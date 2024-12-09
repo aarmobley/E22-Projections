@@ -149,7 +149,7 @@ if select_event != 'None':
 if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
     #prediction1 =  (prediction) ** (2)  St. Johns formula is not squared
-    kids = prediction * service_options['Kids Projection']
+    kids_1122 = prediction * service_options['Kids Projection']
     
     kids_easter = prediction * service_options['Kids Easter']
     #kids_1122 = prediction1 * service_options['kids_projection']
@@ -178,7 +178,7 @@ if select_event == 'Easter':
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
         
 else:
-        st.write(f"Projected Kids Attendance: {kids: .0f}")
+        st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
         
         color = "red" if capacity > 80 else "blue"
     
