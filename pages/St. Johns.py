@@ -177,7 +177,7 @@ if select_event == 'Easter':
         color = "red" if capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
         
-    else:
+else:
         st.write(f"Projected Kids Attendance: {kids: .0f}")
         
         color = "red" if capacity > 80 else "blue"
