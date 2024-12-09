@@ -12,16 +12,16 @@ coefficients = {
 
 '09:00:00'  :   {
 
-    'intercept' : -7498.8895,
-    'sunday_date' : 0.4137,
-    'week_number' : -0.1930,
-    'Guest Pastor' : -35.6403,
-    'Executive Pastor' : -20.1064,
-    'Pastor Joby' : 3.7721,
-    'Easter' : 384.7519,
-    'BacktoSchool' : 353.1261,
-    'Saturated Sunday' : 37.8473,
-    'Christmas' : 335.8718,
+    'intercept' : -7313.2975,
+    'sunday_date' : 0.4043,
+    'week_number' : -0.4042,
+    'Guest Pastor' : -34.2460,
+    'Executive Pastor' : -17.9290,
+    'Pastor Joby' : 1.4485,
+    'Easter' : 384.6168,
+    'BacktoSchool' : 56.9989,
+    'Saturated Sunday' : 132.4245,
+    'Christmas' : 348.4167,
     'Kids Projection' : .37,
     'Kids Easter' : .24
 
@@ -29,16 +29,16 @@ coefficients = {
 
 '11:22' : {
 
-    'intercept' : -5791.7329,
-    'sunday_date' : 0.3211,
-    'week_number' : -1.0820,
-    'Guest Pastor' : -25.6087,
-    'Executive Pastor' : -9.2980,
-    'Pastor Joby' : 15.2829,
-    'Easter' : 282.5956,
-    'BacktoSchool' : 110.5459,
-    'Saturated Sunday' : 105.4410,
-    'Christmas' : 288.2088,
+    'intercept' : -5703.6845,
+    'sunday_date' : 0.3167,
+    'week_number' : -1.2435,
+    'Guest Pastor' : -24.6933,
+    'Executive Pastor' : -5.7504,
+    'Pastor Joby' : 11.9743,
+    'Easter' : 284.0331,
+    'BacktoSchool' : 112.3950,
+    'Saturated Sunday' : 144.1244,
+    'Christmas' : 297.9292,
     'Kids Projection' : .31,
     'Kids Easter' : .15
 
