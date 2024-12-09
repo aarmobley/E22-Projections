@@ -174,15 +174,14 @@ if st.button("Make Projection"):
     #kids projections with Easter
 if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        color = "red" if capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
-        
-else:
-        st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
-        
-        color = "red" if capacity > 80 else "blue"
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
     
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Kids Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+    else: 
+        st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
+         ## HTML and markdown for kids capacity
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
 
 
 
