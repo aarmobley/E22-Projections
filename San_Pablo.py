@@ -24,7 +24,7 @@ coefficients = {
         'Saturated Sunday' : 13.838356,
         'kids_projection' : .08,
         'kids_easter' : .08,
-        'Christmas' : 4.572837
+        'Christmas' : 6.52290
     },
     
     
