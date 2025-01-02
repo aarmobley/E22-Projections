@@ -12,19 +12,19 @@ from datetime import datetime, timedelta
 coefficients = {
 
  '7:22': {
-        'intercept' : -138.304490,
-        'sunday_date' : 0.009162,
-        'week_number' : -0.057588,
-        'Guest Pastor' : -1.584479,
-        'Executive Pastor' : -2.398823,
-        'Pastor Joby' : -1.012890,
-        'Easter' : 6.385999,
-        'Promotion Week' : 1.379557,
-        'Back to School' : 1.379557,
-        'Saturated Sunday' : 13.705466,
+        'intercept' : -136.244477,
+        'sunday_date' : 0.009057,
+        'week_number' : -0.059140,
+        'Guest Pastor' : -1.585513,
+        'Executive Pastor' : -2.754899,
+        'Pastor Joby' : -0.971639,
+        'Easter' : 6.328602,
+        'Promotion Week' : 1.351362,
+        'Back to School' : 1.351362,
+        'Saturated Sunday' : 13.838356,
         'kids_projection' : .08,
         'kids_easter' : .08,
-        'Christmas' : 4.413307
+        'Christmas' : 4.572837
     },
     
     
@@ -49,23 +49,24 @@ coefficients = {
     
   '11:22:00': {
 
-       	'intercept' : -160.786624,
-       	'sunday_date' : 0.010416,
-        'week_number' : -0.042965,
-       	'Guest Pastor' :  -1.880282,
-      	'Executive Pastor' : -1.530548,
-       	'Pastor Joby' : 0.551685,
-        'Easter' : 14.658688,
-        'Promotion Week' : 3.061576,
-        'Back to School' : 3.061576,
-        'Saturated Sunday' : 4.300169,
+       	'intercept' : -146.758957,
+       	'sunday_date' : 0.009716,
+        'week_number' : -0.066632,
+       	'Guest Pastor' :  -1.751985,
+      	'Executive Pastor' : -1.373052,
+       	'Pastor Joby' : 0.204181,
+        'Easter' : 14.761357,
+        'Promotion Week' : 3.613418,
+        'Back to School' : 3.613418,
+        'Saturated Sunday' : 6.333115,
         'kids_projection' : .15,
         'kids_easter' : .12,
         'kids_labor' : 17.64,
-        'Christmas' : 10.415072
+        'Christmas' : 9.612191
     },
     
 }
+
 
 ### logo
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
