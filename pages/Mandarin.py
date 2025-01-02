@@ -13,16 +13,17 @@ coefficients = {
  
 '09:00:00'  :   {
 
-    'intercept' : -79.966795,
-    'sunday_date' : 0.005097,
-    'week_number' : -0.024471,
-    'Guest Pastor' : -0.348820,
-    'Executive Pastor' : -0.356801,
-    'Pastor Joby' : 0.422302,
-    'Easter' : 5.331749,
-    'BacktoSchool' : 0.244458,
-    'Saturated Sunday' : 0.844851,
-    'Christmas' : 3.768583,
+    'intercept' : -78.0882,
+    'sunday_date' : 0.005,
+    'week_number' : -0.0268,
+    'Guest Pastor' : -0.3544,
+    'Executive Pastor' : -0.2808,
+    'Pastor Joby' : 0.383,
+    'Easter' : 5.3472,
+    'BacktoSchool' : 0.5319,
+    'Promotion Weekend' : 0.5319,
+    'Saturated Sunday' : 0.9357,
+    'Christmas' : 2.0513,
     'Kids Projection' : .33,
     'Kids Easter' : .27
 
@@ -30,16 +31,17 @@ coefficients = {
 
 '11:22' : {
 
-    'intercept' : -37.075073,
-    'sunday_date' : 0.002780,
-    'week_number' : -0.036835,
-    'Guest Pastor' : -0.567117,
-    'Executive Pastor' : -0.571425,
-    'Pastor Joby' : -0.007808,
-    'Easter' : 5.762946,
-    'BacktoSchool' : 0.875338,
-    'Saturated Sunday' : 2.414189,
-    'Christmas' : 4.265356,
+    'intercept' : -36.7261,
+    'sunday_date' : 0.0028,
+    'week_number' : -0.0366,
+    'Guest Pastor' : -0.617,
+    'Executive Pastor' : -0.5055,
+    'Pastor Joby' : -0.0211,
+    'Easter' : 5.7791,
+    'BacktoSchool' : 1.2009,
+    'Promotion Weekend' : 1.2009,
+    'Saturated Sunday' : 2.4291,
+    'Christmas' : 3.078,
     'Kids Projection' : .23,
     'Kids Easter' : .20
 
@@ -103,7 +105,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'BacktoSchool', 'Promotion Weekend', 'Saturated Sunday', 'Christmas']
 
 
 ####creating selectbox options
