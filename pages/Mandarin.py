@@ -191,7 +191,7 @@ if st.button("Make Projection"):
     #kids projections with Easter
     if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        st.write(f"Kids Capacity: {kids_easter_capacity}")
+        st.write(f"Kids Capacity: {kids_easter_capacity: .0f}")
     else:
         st.write(f"Projected Kids Attendance: {kids: .0f}")
         
