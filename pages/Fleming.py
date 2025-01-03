@@ -20,6 +20,7 @@ coefficients = {
         'Pastor Joby' : -0.266790,
         'Easter' : 5.701672,
         'Promotion Week' : 1.144970,
+        'Back To School' : 1.144970,
         'Saturated Sunday' : 8.582320,
         'kids_projection' : .15,
         'kids_easter' : .13,
@@ -29,18 +30,19 @@ coefficients = {
     
     
     '09:00:00': {
-        'intercept' : -61.867189,
-        'sunday_date' : 0.004228, 
-        'week_number' : -0.002307,
-        'Guest Pastor' : 0.016346,
-        'Executive Pastor' :  -0.541431,
-        'Pastor Joby' : 0.549219,
-        'Easter' : 7.667557,
-        'Promotion Week' : 1.064107,
-        'Saturated Sunday' : 1.199038,
+        'intercept' : -59.344,
+        'sunday_date' : 0.0041, 
+        'week_number' : -0.0079,
+        'Guest Pastor' : -0.0018,
+        'Executive Pastor' :  -0.4856,
+        'Pastor Joby' : 0.4656,
+        'Easter' : 7.6926,
+        'Promotion Week' : 1.2294,
+        'Back To School' : 1.2294,
+        'Saturated Sunday' : 2.1657,
         'kids_projection' : 0.27,
         'kids_easter' : .20,
-        'Christmas' : 2.175473
+        'Christmas' : 2.5449
     },
     
     '11:22:00': {
@@ -53,6 +55,7 @@ coefficients = {
         'Pastor Joby' : -0.039928,
         'Easter' : 6.145245,
         'Promotion Week' : 1.974671,
+        'Back To School' : 1.974671
         'Saturated Sunday' : 3.685697,
         'kids_projection' : 0.27,
         'kids_easter' : .21,
@@ -121,7 +124,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'Promotion Week', 'Back To School', 'Saturated Sunday', 'Christmas']
 
 
 ####creating selectbox options
