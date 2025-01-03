@@ -55,7 +55,7 @@ coefficients = {
         'Pastor Joby' : -0.039928,
         'Easter' : 6.145245,
         'Promotion Week' : 1.974671,
-        'Back To School' : 1.974671
+        'Back To School' : 1.974671,
         'Saturated Sunday' : 3.685697,
         'kids_projection' : 0.27,
         'kids_easter' : .21,
