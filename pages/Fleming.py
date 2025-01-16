@@ -101,7 +101,7 @@ service_times = list(coefficients.keys())
 
 
 ##create dates for 2 year projection
-start_date = datetime(2024, 1, 7)  # Start date
+start_date = datetime(2025, 1, 5)  # Start date
 date_range = [start_date + timedelta(weeks=i) for i in range(104)]  # 104 weeks range
 
 # Create date mapping with numerical values as days since Unix epoch (1970-01-01)
