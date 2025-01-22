@@ -72,7 +72,7 @@ coefficients = {
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 st.image(logo_file, width=150)
 
-
+st.link_button("Go to Campus Dashboard", "https://app.powerbi.com/reportEmbed?reportId=fa1a49cb-9b22-4086-a694-39b61e180281&autoAuth=true&ctid=c441cd00-b4c3-41ab-9fc5-d891c8b7fc28")
 
 ##### sidebar
 
