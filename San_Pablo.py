@@ -51,7 +51,7 @@ coefficients = {
 
        	'intercept' : -151.7846,
        	'sunday_date' : 0.01,
-        'week_number' : -0.0726
+        'week_number' : -0.0726,
        	'Guest Pastor' :  -1.6713,
       	'Executive Pastor' : -1.4246,
        	'Pastor Joby' : 0.2733,
