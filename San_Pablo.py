@@ -176,9 +176,9 @@ if st.button("Make Projection"):
 
         
             if select_event != 'None':
-            no_event = service_options[select_event]
+                no_event = service_options[select_event]
             else:
-            pastor = service_options[select_pastor ]
+                pastor = service_options[select_pastor ]
 
 
 
