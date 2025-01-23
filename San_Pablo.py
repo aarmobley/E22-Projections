@@ -99,7 +99,7 @@ if len(num_week) < 104:
 
 
 ##listing service times based on coefficients
-service_times = list(coefficients.keys())
+service_times = list(coefficients.keys()) + ["All Services"]   #### LEFT OFF HERE
 
 
 ##create dates for 2 year projection
@@ -149,22 +149,6 @@ select_event = st.selectbox("Select Event", event_options)
 #### predict button formula
 numerical_date = date_mapping[selected_date_str]                                                         #numerical_date = date_mapping[select_date]
 
-service_options = coefficients[select_service]
-
-weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-pastor = service_options[select_pastor]
-
-
-
-### No Event coefficient needs to be 0 and pastor needs to be zero if any event is selected so it's not calcualted
-no_event = 0
-pastor = 0
-if select_event != 'None':
-    no_event = service_options[select_event]
-else:
-    pastor = service_options[select_pastor ]
 
 
 
@@ -181,53 +165,94 @@ else:
 ####predict button
 
 if st.button("Make Projection"):
-    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    prediction1 =  (prediction) ** (2)
+    if select_service == "All Services":
+        total_prediction = 0  # Initialize total prediction
+        for service in coefficients:
+            service_options = coefficients[service]
+            weeknum_effect = service_options['week_number'] * (select_week)
+            sundaydate_effect = service_options['sunday_date'] * (numerical_date)
+            no_event = 0
+            pastor = 0
+
+        
+            if select_event != 'None':
+            no_event = service_options[select_event]
+            else:
+            pastor = service_options[select_pastor ]
+
+
+
+            prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
+            total_prediction += prediction ** 2
+
+
+        # Display the total for all services
+        st.divider()
+        st.write(f"Projected Total Attendance (All Services): {total_prediction:.0f}")
+    else:
+        # Regular calculation for a single service
+        service_options = coefficients[select_service]
+        weeknum_effect = service_options['week_number'] * select_week
+        sundaydate_effect = service_options['sunday_date'] * numerical_date
+        no_event = 0
+        pastor = 0
+        
+        if select_event != 'None':
+            no_event = service_options.get(select_event, 0)
+        else:
+            pastor = service_options.get(select_pastor, 0)
+
+        # Calculate prediction for the selected service
+        prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
+        prediction1 = prediction ** 2
+
     
-    kids_1122 = prediction1 * service_options['kids_projection']
+
     
-    kids_easter = prediction1 * service_options['kids_easter']
+        kids_1122 = prediction1 * service_options['kids_projection']
+    
+        kids_easter = prediction1 * service_options['kids_easter']
     
     #kids_labor = prediction1 * service_options['kids_labor']
     
     
-    capacity = prediction1 / 3001 * (100)
+        capacity = prediction1 / 3001 * (100)
     
-    kids_capacity = kids_1122 / 750 * (100)
+        kids_capacity = kids_1122 / 750 * (100)
     
-    kids_easter_capacity = kids_easter / 750 *(100)
+        kids_easter_capacity = kids_easter / 750 *(100)
     
         
     
 
     
     #divider before projected attendance
-    st.divider()
+        st.divider()
     
-    st.write(f"Projected Adult Attendance: {prediction1:.0f}")
+        st.write(f"Projected Adult Attendance: {prediction1:.0f}")
     
     
     ### HTML and MArkdown for adult capacity
-    color = "red" if capacity > 80 else "blue"
+        color = "red" if capacity > 80 else "blue"
     
-    st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
     
     
     ###st.write(f"Weekly Total: {select_service: .0f} ")
     #####
-    st.divider()
+        st.divider()
     
     
-    if select_event == 'Easter':
-        st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        color = "red" if kids_capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
+        if select_event == 'Easter':
+            st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
+            color = "red" if kids_capacity > 80 else "blue"
+            st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
     
-    else: 
-        st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
-         ## HTML and markdown for kids capacity
-        color = "red" if kids_capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+        else: 
+            st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
+             ## HTML and markdown for kids capacity
+            color = "red" if kids_capacity > 80 else "blue"
+            st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
         
         
         
