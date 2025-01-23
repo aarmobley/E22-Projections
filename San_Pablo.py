@@ -162,11 +162,11 @@ numerical_date = date_mapping[selected_date_str]                                
     
 
 
-####predict button
+####predict button for all services selected
 
 if st.button("Make Projection"):
     if select_service == "All Services":
-        total_prediction = 0  # Initialize total prediction
+        total_prediction = 0  #
         for service in coefficients:
             service_options = coefficients[service]
             weeknum_effect = service_options['week_number'] * (select_week)
@@ -188,7 +188,7 @@ if st.button("Make Projection"):
 
         # Display the total for all services
         st.divider()
-        st.write(f"Projected Total Attendance (All Services): {total_prediction:.0f}")
+        st.write(f"Projected Total Attendance - Adults (All Services): {total_prediction:.0f}")
     else:
         # Regular calculation for a single service
         service_options = coefficients[select_service]
