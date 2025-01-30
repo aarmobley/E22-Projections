@@ -212,7 +212,9 @@ if st.button("Make Projection"):
         kids_1122 = prediction1 * service_options['kids_projection']
     
         kids_easter = prediction1 * service_options['kids_easter']
-    
+
+        inclement_weather1 = prediciton1 * .15
+        inclement_weather = prediction1 - inclement_weather
     #kids_labor = prediction1 * service_options['kids_labor']
     
     
@@ -228,8 +230,10 @@ if st.button("Make Projection"):
     
     #divider before projected attendance
         st.divider()
-    
+    if select_event != 'Inclement Weather':
         st.write(f"Projected Adult Attendance: {prediction1:.0f}")
+    esle:    
+        st.write(f"Projected Adult Attendance: {inclement_weather:.0f}")
     
     
     ### HTML and MArkdown for adult capacity
