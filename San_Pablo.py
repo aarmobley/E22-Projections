@@ -232,7 +232,7 @@ if st.button("Make Projection"):
         st.divider()
     if select_event != 'Inclement Weather':
         st.write(f"Projected Adult Attendance: {prediction1:.0f}")
-    esle:    
+    else:    
         st.write(f"Projected Adult Attendance: {inclement_weather:.0f}")
     
     
