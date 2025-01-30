@@ -214,7 +214,7 @@ if st.button("Make Projection"):
         kids_easter = prediction1 * service_options['kids_easter']
 
         inclement_weather1 = prediction1 * .15
-        inclement_weather = prediction1 - inclement_weather
+        inclement_weather = prediction1 - inclement_weather1
     #kids_labor = prediction1 * service_options['kids_labor']
     
     
