@@ -232,14 +232,17 @@ if st.button("Make Projection"):
         st.divider()
     if select_event != 'Inclement Weather':
         st.write(f"Projected Adult Attendance: {prediction1:.0f}")
+        color = "red" if capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True) 
     else:    
         st.write(f"Projected Adult Attendance: {inclement_weather:.0f}")
-    
+        color = "red" if capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
     
     ### HTML and MArkdown for adult capacity
-        color = "red" if capacity > 80 else "blue"
+        #color = "red" if capacity > 80 else "blue"
     
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
+        #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
     
     
     ###st.write(f"Weekly Total: {select_service: .0f} ")
