@@ -148,7 +148,7 @@ if st.button("Make Projection"):
     #prediction1122 = prediction900 * 1.25
     
     kids_900 = prediction * service_options['kids_projection']
-    #kids_1122 = prediction1122 * service_options['kids_projection']
+    kids_1122 = prediction * service_options['kids_projection']
     
     #kids easter percentage
     kids_easter = prediction * service_options['kids_easter']
@@ -158,7 +158,7 @@ if st.button("Make Projection"):
     
     capacity = prediction / 700 * (100)
     
-    kids_capacity = kids_1122 / 350 * (100)
+    #kids_capacity = kids_1122 / 350 * (100)
     
     kids_easter_capacity = kids_easter / 350 *(100)
     
