@@ -11,15 +11,16 @@ from datetime import datetime, timedelta
 
 coefficients = {
 
- 'All Services': {
-        'intercept' : -11242.769,
-        'sunday_date' : 0.604,
-        'Saturated Sunday' : 162.086,
-        'Easter' : 409.163,
-        'Promotion Week' : 40.820,
+ '9:00': {
+        'intercept' : -1432.1719,
+        'sunday_date' : 0.0913,
+        'Saturated Sunday' : 111.6333,
+        'Easter' : 106.0362,
+        'Promotion Week' : 116.0079,
         'kids_projection' : .28,
         'kids_easter' : .08,
-        'Christmas' : -158.638
+        'Christmas' : 52.3704
+
     },
     
     
