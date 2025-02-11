@@ -140,15 +140,15 @@ st.write("***This Campus Projection is Still In Development")
 
 if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect)  + no_event)
-    prediction1 =  (prediction) ** (2)
+    #prediction1 =  (prediction) ** (2)
     
     # breaking down total into separate 9:00 and 11:22 services
     #prediction900 = prediction / 2.25
     
     #prediction1122 = prediction900 * 1.25
     
-    kids_900 = prediction900 * service_options['kids_projection']
-    kids_1122 = prediction1122 * service_options['kids_projection']
+    kids_900 = prediction * service_options['kids_projection']
+    #kids_1122 = prediction1122 * service_options['kids_projection']
     
     #kids easter percentage
     kids_easter = prediction * service_options['kids_easter']
@@ -170,7 +170,7 @@ if st.button("Make Projection"):
     st.divider()
     
     ###needs 9:00 and 11:22
-    st.markdown(f"9:00 Projected Adult Attendance  - {prediction1:.0f}")
+    st.markdown(f"9:00 Projected Adult Attendance  - {prediction:.0f}")
     
     #st.markdown(f"11:22 Projected Adult Attendance - {prediction1122:.0f}")
     
