@@ -229,7 +229,7 @@ if st.button("Make Projection"):
 
     
     #divider before projected attendance
-            st.divider()
+        st.divider()
         if select_event != 'Inclement Weather':
             st.write(f"Projected Adult Attendance: {prediction1:.0f}")
             color = "red" if capacity > 80 else "blue"
