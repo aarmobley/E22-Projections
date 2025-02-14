@@ -237,8 +237,8 @@ if st.button("Make Projection"):
         else:    
             st.write(f"Projected Adult Attendance: {inclement_weather:.0f}")
             
-        color = "red" if capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
+            color = "red" if capacity > 80 else "blue"
+            st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
     
     ### HTML and MArkdown for adult capacity
         #color = "red" if capacity > 80 else "blue"
