@@ -47,7 +47,7 @@ coefficients = {
 
     },
     
-  '11:22:00': {
+   '11:22:00': {                     ##### updated 02/24/25
 
        	'intercept' : -151.7846,
        	'sunday_date' : 0.01,
@@ -62,7 +62,8 @@ coefficients = {
         'kids_projection' : .15,
         'kids_easter' : .12,
         'kids_labor' : 17.64,
-        'Christmas' : 9.5353
+        'Christmas' : 9.5353,
+        'Inclement Weather' : .15
     },
     
 }
