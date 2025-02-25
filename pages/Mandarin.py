@@ -31,17 +31,17 @@ coefficients = {
 
 '11:22' : {
 
-    'intercept' : -36.7261,
+    'intercept' : -37.0324,
     'sunday_date' : 0.0028,
-    'week_number' : -0.0366,
-    'Guest Pastor' : -0.617,
-    'Executive Pastor' : -0.5055,
-    'Pastor Joby' : -0.0211,
-    'Easter' : 5.7791,
-    'BacktoSchool' : 1.2009,
-    'Promotion Weekend' : 1.2009,
+    'week_number' : -0.0342,
+    'Guest Pastor' : -0.7625,
+    'Executive Pastor' : -0.628,
+    'Pastor Joby' : -0.0359,
+    'Easter' : 5.7258,
+    'BacktoSchool' : 1.0997,
+    'Promotion Weekend' : 1.0997,
     'Saturated Sunday' : 2.4291,
-    'Christmas' : 3.078,
+    'Christmas' : 2.9245,
     'Kids Projection' : .23,
     'Kids Easter' : .20
 
