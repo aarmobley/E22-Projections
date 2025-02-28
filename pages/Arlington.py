@@ -71,7 +71,9 @@ title = st.title("Arlington Attendance Projection")
 #dates.head()
 #sunday_dates = dates['date'].tolist()
 #num_date = dates['num_date'].tolist()
-num_week = list(range(1, 53))
+num_week = [week for _ in range(2) for week in range(1, 53)]
+if len(num_week) < 104:
+    num_week.apend(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
