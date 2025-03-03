@@ -153,7 +153,7 @@ st.write("***This Campus Projection is Still In Development")
 ####predict button
 
 if st.button("Make Projection"):
-    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_event)  + no_event)
+    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect)  + no_event)
     #prediction1 =  (prediction) ** (2)
     
     # breaking down total into separate 9:00 and 11:22 services
