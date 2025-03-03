@@ -40,7 +40,7 @@ coefficients = {
        	'Promotion Week' : 0.332188,
         'Back to School' : 0.332188,
         'Saturated Sunday' : 6.668219,
-        'kids_projection' : 0.22,
+        'kids_projection' : 0.20,
         'kids_easter' : .12,
         'Christmas' : 3.349966
         
