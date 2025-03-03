@@ -12,20 +12,21 @@ from datetime import datetime, timedelta
 coefficients = {
 
  '9:00:00': {
-        'intercept' : -1432.1719,
-        'sunday_date' : 0.0913,
-        'Saturated Sunday' : 111.6333,
-        'Easter' : 106.0362,
-        'Promotion Week' : 116.0079,
+        'intercept' : -1489.2378,
+        'sunday_date' : 0.0961,
+        'week_number' : -1.3899,
+        'Saturated Sunday' : 125.3024,
+        'Easter' : 86.2632,
+        'Promotion Week' : 61.8972,
         'kids_projection' : .30,
         'kids_easter' : .08,
-        'Christmas' : 52.3704
+        'Christmas' : 85.7072
 
     },
  '11:22:00': {
         'intercept' : -74.6171,
         'sunday_date' : 0.0048,
-        'week_number' : -0.0207
+        'week_number' : -0.0207,
         'Saturated Sunday' : 0.9016,
         'Easter' : 5.4126,
         'Promotion Week' : 0.4991,
