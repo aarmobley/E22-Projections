@@ -20,7 +20,7 @@ coefficients = {
        	'Promotion Week' : 1.4468,
         'Back to School' : 1.4468,
         'Saturated Sunday' : 1.9425,
-        'kids_projection' : 0.22,
+        'kids_projection' : 0.30,
         'kids_easter' : .12,
         'Christmas' : 3.021,
         'Inclement Weather' : .15
@@ -40,7 +40,7 @@ coefficients = {
         'Promotion Week' : 1.952,
         'Back to School' : 1.952,
         'Saturated Sunday' : 3.5193,
-        'kids_projection' : .15,
+        'kids_projection' : .30,
         'kids_easter' : .12,
         'kids_labor' : 17.64,
         'Christmas' : 4.3488,
