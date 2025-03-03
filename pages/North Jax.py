@@ -24,15 +24,16 @@ coefficients = {
 
     },
  '11:22:00': {
-        'intercept' : -74.6171,
-        'sunday_date' : 0.0048,
-        'week_number' : -0.0207,
-        'Saturated Sunday' : 0.9016,
-        'Easter' : 5.4126,
-        'Promotion Week' : 0.4991,
+        'intercept' : 1066.1896,
+        'sunday_date' : -0.0362,
+        'week_number' : -1.0235,
+        'Saturated Sunday' : 280.5179,
+        'Easter' : 80.8687,
+        'Promotion Week' : 92.1327,
+        'Back to School' : 92.1327
         'kids_projection' : .28,
         'kids_easter' : .08,
-        'Christmas' : 52.3704
+        'Christmas' : 38.8151
 
     }
     
@@ -184,7 +185,7 @@ if st.button("Make Projection"):
     st.divider()
     
     ###needs 9:00 and 11:22
-    st.markdown(f"Projected Adult Attendance  - {prediction:.0f}")
+    st.markdown(f"Projected Adult Attendance: {prediction:.0f}")
     
     #st.markdown(f"11:22 Projected Adult Attendance - {prediction1122:.0f}")
     
