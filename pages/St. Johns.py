@@ -39,7 +39,7 @@ coefficients = {
     'BacktoSchool' : 112.3950,
     'Saturated Sunday' : 144.1244,
     'Christmas' : 297.9292,
-    'Kids Projection' : .31,
+    'Kids Projection' : .29,
     'Kids Easter' : .15
 
 },
