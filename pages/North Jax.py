@@ -30,7 +30,7 @@ coefficients = {
         'Saturated Sunday' : 280.5179,
         'Easter' : 80.8687,
         'Promotion Week' : 92.1327,
-        'Back to School' : 92.1327
+        'Back to School' : 92.1327,
         'kids_projection' : .28,
         'kids_easter' : .08,
         'Christmas' : 38.8151
