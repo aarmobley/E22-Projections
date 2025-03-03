@@ -18,7 +18,7 @@ coefficients = {
         'Saturated Sunday' : 125.3024,
         'Easter' : 86.2632,
         'Promotion Week' : 61.8972,
-        'kids_projection' : .30,
+        'kids_projection' : .32,
         'kids_easter' : .08,
         'Christmas' : 85.7072
 
@@ -31,7 +31,7 @@ coefficients = {
         'Easter' : 80.8687,
         'Promotion Week' : 92.1327,
         'Back to School' : 92.1327,
-        'kids_projection' : .28,
+        'kids_projection' : .23,
         'kids_easter' : .08,
         'Christmas' : 38.8151
 
