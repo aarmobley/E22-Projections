@@ -19,7 +19,7 @@ coefficients = {
         'Easter' : 86.2632,
         'Promotion Week' : 61.8972,
         'kids_projection' : .32,
-        'kids_easter' : .08,
+        'kids_easter' : .27,
         'Christmas' : 85.7072
 
     },
@@ -32,7 +32,7 @@ coefficients = {
         'Promotion Week' : 92.1327,
         'Back to School' : 92.1327,
         'kids_projection' : .23,
-        'kids_easter' : .08,
+        'kids_easter' : .29,
         'Christmas' : 38.8151
 
     }
