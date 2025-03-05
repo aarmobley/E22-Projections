@@ -190,7 +190,7 @@ if st.button("Make Projection"):
     
     ### HTML and MArkdown for adult capacity
     color = "red" if kids_capacity > 80 else "blue"
-    st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
     
     #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
     
@@ -205,6 +205,8 @@ if st.button("Make Projection"):
     
     else: 
         st.write(f"Projected Kids Attendance: {kids_nj: .0f}")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
         
          ## HTML and markdown for kids capacity
         #color = "red" if kids_capacity > 80 else "blue"
