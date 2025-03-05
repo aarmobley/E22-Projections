@@ -162,18 +162,18 @@ if st.button("Make Projection"):
     
     #prediction1122 = prediction900 * 1.25
     
-    kids_900 = prediction * service_options['kids_projection']
-    kids_1122 = prediction * service_options['kids_projection']
+    kids_nj = prediction * service_options['kids_projection']
+ 
     
     #kids easter percentage
     kids_easter = prediction * service_options['kids_easter']
     
     
-    
-    
+    #capacity for worship center
     capacity = prediction / 700 * (100)
     
-    
+    #formula for capacity for kids
+    kids_capacity = kids_nj / 350 * 100
     kids_easter_capacity = kids_easter / 350 *(100)
     
         
@@ -204,7 +204,7 @@ if st.button("Make Projection"):
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
     
     else: 
-        st.write(f"Projected Kids Attendance: {kids_900: .0f}")
+        st.write(f"Projected Kids Attendance: {kids_nj: .0f}")
         
          ## HTML and markdown for kids capacity
         #color = "red" if kids_capacity > 80 else "blue"
