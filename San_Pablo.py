@@ -84,7 +84,9 @@ with st.sidebar:
                 - 09-15-2024 (Saturated)
                 - 12-22-2024 (Christmas)
                 - 01-05-2025 (Back to School)
-                - 04-20-2025 (Easter) """)
+                - 04-20-2025 (Easter) 
+                
+                *Choose Inclement Weather if the weather will effect attendance""")
 
 title = st.title("San Pablo Attendance Projection")
 
