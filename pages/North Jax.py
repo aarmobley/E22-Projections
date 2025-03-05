@@ -195,7 +195,7 @@ if st.button("Make Projection"):
     #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
     
     #####
-     st.divider()
+    st.divider()
     
     
     if select_event == 'Easter':
