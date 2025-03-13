@@ -183,7 +183,8 @@ if st.button("Make Projection"):
     ### projecting for 9am with no squared formula
     st.write(f"Projected Adult Attendance: {prediction1:.0f}")
         
-    st.write(f"Adult Capacity: {capacity: .0f}%")
+    color = "red" if capacity > 70 else "blue"
+    st.markdown(f"<p style='color:{color}; font-size:18px;'>Worship Center Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
     
     st.divider()
     
@@ -191,8 +192,10 @@ if st.button("Make Projection"):
     #kids projections with Easter
     if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        st.write(f"Kids Capacity: {kids_easter_capacity: .0f}")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
     else:
         st.write(f"Projected Kids Attendance: {kids: .0f}")
         
-        st.write(f"Kids Capacity: {kids_capacity: .0f}%")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
