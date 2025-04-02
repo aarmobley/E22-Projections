@@ -102,7 +102,7 @@ if len(num_week) < 104:
 
 
 ##listing service times based on coefficients
-service_times = list(coefficients.keys()) + ["All Services"]   #### LEFT OFF HERE
+service_times = list(coefficients.keys()) + ["Elder Led Prayer", "All Services"]   #### LEFT OFF HERE
 
 
 ##create dates for 2 year projection
@@ -192,6 +192,43 @@ if st.button("Make Projection"):
         # Display the total for all services
         st.divider()
         st.write(f"Projected Total Attendance - Adults (All Services): {total_prediction:.0f}")
+    elif select_service == "Elder Led Prayer":
+        # Using 9:00 service calculation and reducing by 80%
+        service_options = coefficients['09:00:00']
+        weeknum_effect = service_options['week_number'] * select_week
+        sundaydate_effect = service_options['sunday_date'] * numerical_date
+        no_event = 0
+        pastor = 0
+        
+        if select_event != 'None':
+            no_event = service_options.get(select_event, 0)
+        else:
+            pastor = service_options.get(select_pastor, 0)
+
+        # Calculate prediction for the selected service
+        prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
+        prediction1 = prediction ** 2
+
+
+        ####start of edited code
+        elder_prayer_prediction = prediction1 * 0.2  # 20% of the 9:00 service (80% reduction)
+        
+        st.divider()
+        st.write(f"Projected Adult Attendance: {elder_prayer_prediction:.0f}")
+        
+        # Calculate capacity (using same capacity as 9:00)
+        capacity = elder_prayer_prediction / 3001 * (100)
+        color = "red" if capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Worship Center Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
+        
+        # Kid's calculation for Elder Prayer service
+        kids_attendance = elder_prayer_prediction * service_options['kids_projection']
+        kids_capacity = kids_attendance / 750 * (100)
+        
+        st.divider()
+        st.write(f"Projected Kids Attendance: {kids_attendance:.0f}")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
     else:
         # Regular calculation for a single service
         service_options = coefficients[select_service]
@@ -208,9 +245,7 @@ if st.button("Make Projection"):
         # Calculate prediction for the selected service
         prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
         prediction1 = prediction ** 2
-
-    
-
+        ###end of edited code
     
         kids_1122 = prediction1 * service_options['kids_projection']
     
