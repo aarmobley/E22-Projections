@@ -95,9 +95,9 @@ title = st.title("San Pablo Attendance Projection")
 #dates.head()
 #sunday_dates = dates['date'].tolist()
 #num_date = dates['num_date'].tolist()
-num_week = [week for _ in range(2) for week in range(1, 53)]
-if len(num_week) < 104:
-    num_week.apend(53)
+num_week = [week for _ in range(3) for week in range(1, 53)]
+if len(num_week) < 156:
+    num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
@@ -107,7 +107,7 @@ service_times = list(coefficients.keys()) + ["Elder Led Prayer", "All Services"]
 
 ##create dates for 2 year projection
 start_date = datetime(2025, 1, 5)  # Start date
-date_range = [start_date + timedelta(weeks=i) for i in range(104)]  # 104 weeks range
+date_range = [start_date + timedelta(weeks=i) for i in range(156)]  # 104 weeks range
 
 # Create date mapping with numerical values as days since Unix epoch (1970-01-01)
 epoch = datetime(1970, 1, 1)
@@ -149,8 +149,102 @@ select_event = st.selectbox("Select Event", event_options)
 
 #### ATTENDANCE PREDICTION
 
-#### predict button formula
-numerical_date = date_mapping[selected_date_str]                                                         #numerical_date = date_mapping[select_date]
+#### predict button formula - moved here so both buttons can access it
+numerical_date = date_mapping[selected_date_str]
+
+# Add button for generating all services CSV without running projections
+st.divider()
+if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
+    all_services_data = []
+    
+    # Loop through the three main services
+    for service_time in ['7:22', '09:00:00', '11:22:00']:
+        service_options = coefficients[service_time]
+        weeknum_effect = service_options['week_number'] * select_week
+        sundaydate_effect = service_options['sunday_date'] * numerical_date
+        no_event = 0
+        pastor = 0
+        
+        if select_event != 'None':
+            no_event = service_options.get(select_event, 0)
+        else:
+            pastor = service_options.get(select_pastor, 0)
+
+        # Calculate prediction for the service
+        prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
+        prediction1 = prediction ** 2
+        
+        # Handle inclement weather adjustment
+        if select_event == 'Inclement Weather':
+            final_adult_attendance = prediction1 - (prediction1 * 0.15)
+        else:
+            final_adult_attendance = prediction1
+            
+        # Calculate kids attendance (Easter vs regular)
+        if select_event == 'Easter':
+            kids_attendance = prediction1 * service_options['kids_easter']
+        else:
+            kids_attendance = prediction1 * service_options['kids_projection']
+        
+        # Calculate capacities
+        adult_capacity = (final_adult_attendance / 3001) * 100
+        kids_capacity = (kids_attendance / 750) * 100
+        
+        # Store the data
+        all_services_data.append({
+            'Service': service_time,
+            'Date': selected_date_str,
+            'Week': select_week,
+            'Pastor': select_pastor,
+            'Event': select_event,
+            'Adult_Attendance': round(final_adult_attendance, 0),
+            'Kids_Attendance': round(kids_attendance, 0),
+            'Adult_Capacity_Percent': round(adult_capacity, 1),
+            'Kids_Capacity_Percent': round(kids_capacity, 1)
+        })
+    
+    # Create DataFrame and CSV
+    df_all_three = pd.DataFrame(all_services_data)
+    
+    # Add totals row
+    total_adults = sum(row['Adult_Attendance'] for row in all_services_data)
+    total_kids = sum(row['Kids_Attendance'] for row in all_services_data)
+    
+    totals_row = pd.DataFrame({
+        'Service': ['TOTAL'],
+        'Date': [selected_date_str],
+        'Week': [select_week],
+        'Pastor': [select_pastor],
+        'Event': [select_event],
+        'Adult_Attendance': [total_adults],
+        'Kids_Attendance': [total_kids],
+        'Adult_Capacity_Percent': ['N/A'],
+        'Kids_Capacity_Percent': ['N/A']
+    })
+    
+    df_final = pd.concat([df_all_three, totals_row], ignore_index=True)
+    
+    # Create CSV with header
+    csv_data = f"# San Pablo Attendance Projections - All Three Services\n"
+    csv_data += f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+    csv_data += f"# Parameters: Date={selected_date_str}, Week={select_week}, Pastor={select_pastor}, Event={select_event}\n\n"
+    csv_data += df_final.to_csv(index=False)
+    
+    st.success(f"CSV generated for all three services! Total projected attendance: {total_adults} adults, {total_kids} kids")
+    
+    st.download_button(
+        label="📥 Download All Three Services CSV",
+        data=csv_data,
+        file_name=f"San_Pablo_All_Three_Services_{selected_date_str.replace('-', '_')}.csv",
+        mime="text/csv"
+    )
+
+
+
+#### ATTENDANCE PREDICTION
+
+#### predict button formula - moved here so both buttons can access it
+numerical_date = date_mapping[selected_date_str]
 
 
 
@@ -170,6 +264,8 @@ numerical_date = date_mapping[selected_date_str]                                
 if st.button("Make Projection"):
     if select_service == "All Services":
         total_prediction = 0  #
+        service_details = []  # Store individual service data for CSV
+        
         for service in coefficients:
             service_options = coefficients[service]
             weeknum_effect = service_options['week_number'] * (select_week)
@@ -183,15 +279,55 @@ if st.button("Make Projection"):
             else:
                 pastor = service_options[select_pastor ]
 
-
-
             prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
-            total_prediction += prediction ** 2
-
+            service_prediction = prediction ** 2
+            total_prediction += service_prediction
+            
+            # Store service details for CSV
+            service_details.append({
+                'Service': service,
+                'Adult_Attendance': round(service_prediction, 0),
+                'Kids_Attendance': round(service_prediction * service_options['kids_projection'], 0),
+                'Adult_Capacity_Percent': round((service_prediction / 3001) * 100, 0),
+                'Kids_Capacity_Percent': round((service_prediction * service_options['kids_projection'] / 750) * 100, 0)
+            })
 
         # Display the total for all services
         st.divider()
         st.write(f"Projected Total Attendance - Adults (All Services): {total_prediction:.0f}")
+        
+        # Add CSV export for All Services
+        st.divider()
+        df_all_services = pd.DataFrame(service_details)
+        # Add summary row
+        summary_row = pd.DataFrame({
+            'Service': ['TOTAL'],
+            'Adult_Attendance': [round(total_prediction, 0)],
+            'Kids_Attendance': [round(sum(row['Kids_Attendance'] for row in service_details), 0)],
+            'Adult_Capacity_Percent': ['N/A'],
+            'Kids_Capacity_Percent': ['N/A']
+        })
+        df_all_services = pd.concat([df_all_services, summary_row], ignore_index=True)
+        
+        # Add metadata
+        metadata_df = pd.DataFrame({
+            'Parameter': ['Date', 'Week', 'Pastor', 'Event'],
+            'Value': [selected_date_str, select_week, select_pastor, select_event]
+        })
+        
+        csv_data = f"# San Pablo Attendance Projections - All Services\n# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        csv_data += "## Projection Parameters\n"
+        csv_data += metadata_df.to_csv(index=False)
+        csv_data += "\n## Service Projections\n"
+        csv_data += df_all_services.to_csv(index=False)
+        
+        st.download_button(
+            label="📥 Download All Services Projections (CSV)",
+            data=csv_data,
+            file_name=f"San_Pablo_All_Services_{selected_date_str.replace('-', '_')}.csv",
+            mime="text/csv"
+        )
+        
     elif select_service == "Elder Led Prayer":
         # Using 9:00 service calculation and reducing by 80%
         service_options = coefficients['09:00:00']
@@ -208,7 +344,6 @@ if st.button("Make Projection"):
         # Calculate prediction for the selected service
         prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
         prediction1 = prediction ** 2
-
 
         ####start of edited code
         elder_prayer_prediction = prediction1 * 0.2  # 20% of the 9:00 service (80% reduction)
@@ -229,6 +364,27 @@ if st.button("Make Projection"):
         st.write(f"Projected Kids Attendance: {kids_attendance:.0f}")
         color = "red" if kids_capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+        
+        # Add CSV export for Elder Prayer
+        st.divider()
+        elder_data = {
+            'Parameter': ['Date', 'Week', 'Pastor', 'Event', 'Service', 'Adult_Attendance', 'Kids_Attendance', 'Adult_Capacity_Percent', 'Kids_Capacity_Percent'],
+            'Value': [selected_date_str, select_week, select_pastor, select_event, 'Elder Led Prayer', 
+                     round(elder_prayer_prediction, 0), round(kids_attendance, 0), 
+                     round(capacity, 0), round(kids_capacity, 0)]
+        }
+        df_elder = pd.DataFrame(elder_data)
+        
+        csv_data = f"# San Pablo Attendance Projections - Elder Led Prayer\n# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        csv_data += df_elder.to_csv(index=False)
+        
+        st.download_button(
+            label="📥 Download Elder Prayer Projection (CSV)",
+            data=csv_data,
+            file_name=f"San_Pablo_Elder_Prayer_{selected_date_str.replace('-', '_')}.csv",
+            mime="text/csv"
+        )
+        
     else:
         # Regular calculation for a single service
         service_options = coefficients[select_service]
@@ -299,6 +455,32 @@ if st.button("Make Projection"):
              ## HTML and markdown for kids capacity
                 color = "red" if kids_capacity > 80 else "blue"
                 st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+        
+        # Add CSV export for individual service
+        st.divider()
+        
+        # Determine which attendance values to use based on event and weather
+        final_adult_attendance = inclement_weather if select_event == 'Inclement Weather' else prediction1
+        final_kids_attendance = kids_easter if select_event == 'Easter' else kids_1122
+        final_kids_capacity = kids_easter_capacity if select_event == 'Easter' else kids_capacity
+        
+        service_data = {
+            'Parameter': ['Date', 'Week', 'Pastor', 'Event', 'Service', 'Adult_Attendance', 'Kids_Attendance', 'Adult_Capacity_Percent', 'Kids_Capacity_Percent'],
+            'Value': [selected_date_str, select_week, select_pastor, select_event, select_service,
+                     round(final_adult_attendance, 0), round(final_kids_attendance, 0),
+                     round(capacity, 0), round(final_kids_capacity, 0)]
+        }
+        df_service = pd.DataFrame(service_data)
+        
+        csv_data = f"# San Pablo Attendance Projections - {select_service}\n# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        csv_data += df_service.to_csv(index=False)
+        
+        st.download_button(
+            label=f"📥 Download {select_service} Projection (CSV)",
+            data=csv_data,
+            file_name=f"San_Pablo_{select_service.replace(':', '_')}_{selected_date_str.replace('-', '_')}.csv",
+            mime="text/csv"
+        )
         
         
         
