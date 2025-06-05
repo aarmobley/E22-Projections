@@ -12,37 +12,37 @@ from datetime import datetime, timedelta
 coefficients = {
 
  '7:22': {
-        'intercept' : -135.82447,
-        'sunday_date' : 0.00905,
-        'week_number' : -0.06895,
-        'Guest Pastor' : -1.64363,
-        'Executive Pastor' : -2.90210,
-        'Pastor Joby' : -1.17237,
-        'Easter' :  6.32402,
+        'intercept' : -128.6394,
+        'sunday_date' : 0.0087,
+        'week_number' : -0.067,
+        'Guest Pastor' : -1.856,
+        'Executive Pastor' : -1.1375,
+        'Pastor Joby' : -1.1643,
+        'Easter' :  8.5637,
         'Promotion Week' : 1.52663,
-        'Back to School' : 1.52663,
-        'Saturated Sunday' :  13.94077,
+        'Back to School' : 1.8641,
+        'Saturated Sunday' :  13.8692,
         'kids_projection' : .08,
         'kids_easter' : .08,
-        'Christmas' : 6.52290
+        'Christmas' : 6.2412
     },
     
     
     
   '09:00:00': {
-        'intercept' : -211.279175,
-        'sunday_date' : 0.013135, 
-        'week_number' : -0.003892,
-        'Guest Pastor' : -1.708413,
-        'Executive Pastor' :  -1.202008,
-        'Pastor Joby' : 0.983648,
-        'Easter' : 16.092007,
+        'intercept' : -179.262118,
+        'sunday_date' : 0.011448, 
+        'week_number' : -0.006540,
+        'Guest Pastor' : -1.275874,
+        'Executive Pastor' :  -0.510051,
+        'Pastor Joby' : 1.122999,
+        'Easter' : 14.028790,
        	'Promotion Week' : 0.332188,
-        'Back to School' : 0.332188,
-        'Saturated Sunday' : 6.668219,
+        'Back to School' : 1.276608,
+        'Saturated Sunday' : 7.142149,
         'kids_projection' : 0.20,
         'kids_easter' : .12,
-        'Christmas' : 3.349966
+        'Christmas' : 4.326568
         
 
     },
