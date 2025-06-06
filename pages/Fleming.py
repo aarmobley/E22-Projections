@@ -90,9 +90,9 @@ title = st.title("Fleming Island Attendance Projection")
 #sunday_dates = dates['date'].tolist()
 #num_date = dates['num_date'].tolist()
 #num_week = list(range(1, 53))
-num_week = [week for _ in range(2) for week in range(1, 53)]
+num_week = [week for _ in range(3) for week in range(1, 53)]
 if len(num_week) < 104:
-    num_week.append(53)
+    num_week.append(156)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
@@ -102,7 +102,7 @@ service_times = list(coefficients.keys())
 
 ##create dates for 2 year projection
 start_date = datetime(2025, 1, 5)  # Start date
-date_range = [start_date + timedelta(weeks=i) for i in range(104)]  # 104 weeks range
+date_range = [start_date + timedelta(weeks=i) for i in range(156)]  # 104 weeks range
 
 # Create date mapping with numerical values as days since Unix epoch (1970-01-01)
 epoch = datetime(1970, 1, 1)
