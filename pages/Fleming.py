@@ -91,8 +91,8 @@ title = st.title("Fleming Island Attendance Projection")
 #num_date = dates['num_date'].tolist()
 #num_week = list(range(1, 53))
 num_week = [week for _ in range(3) for week in range(1, 53)]
-if len(num_week) < 104:
-    num_week.append(156)
+if len(num_week) < 156:
+    num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
