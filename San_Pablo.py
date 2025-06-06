@@ -322,7 +322,7 @@ if st.button("Make Projection"):
         csv_data += df_all_services.to_csv(index=False)
         
         st.download_button(
-            label="📥 Download All Services Projections (CSV)",
+            label="Generate CSV Report for All Services",
             data=csv_data,
             file_name=f"San_Pablo_All_Services_{selected_date_str.replace('-', '_')}.csv",
             mime="text/csv"
