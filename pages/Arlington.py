@@ -2,11 +2,17 @@
 
 
 
+
+
+
+
+
 import pandas as pd
 import numpy as np
 import streamlit as st
 import openpyxl
 from datetime import datetime, timedelta
+import io
 
 coefficients = {
 
@@ -192,6 +198,80 @@ if st.button("Make Projection"):
          ## HTML and markdown for kids capacity
         color = "red" if kids_cap > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_cap:.0f}%</p>", unsafe_allow_html=True)
+
+
+### Function to generate CSV for all services
+def generate_all_services_csv():
+    # Calculate projections for all services
+    data = []
     
+    for service_time in service_times:
+        service_coeff = coefficients[service_time]
+        
+        # Calculate effects
+        weeknum_effect = service_coeff['week_number'] * select_week
+        sundaydate_effect = service_coeff['sunday_date'] * numerical_date
+        
+        # Determine pastor and event effects
+        pastor_effect = 0
+        event_effect = 0
+        
+        if select_event != 'None':
+            event_effect = service_coeff[select_event]
+        else:
+            pastor_effect = service_coeff[select_pastor]
+        
+        # Calculate prediction
+        prediction = service_coeff['intercept'] + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
+        adult_attendance = prediction ** 2
+        
+        # Calculate kids attendance
+        if select_event == 'Easter':
+            kids_attendance = adult_attendance * service_coeff['kids_easter']
+        else:
+            kids_attendance = adult_attendance * service_coeff['kids_projection']
+        
+        # Calculate capacities
+        adult_capacity = (adult_attendance / 850) * 100
+        kids_capacity = (kids_attendance / 225) * 100
+        
+        # Add to data
+        data.append({
+            'Date': selected_date_str,
+            'Week_Number': select_week,
+            'Service_Time': service_time,
+            'Pastor': select_pastor,
+            'Event': select_event,
+            'Adult_Attendance': round(adult_attendance, 0),
+            'Kids_Attendance': round(kids_attendance, 0),
+            'Adult_Capacity_Percent': round(adult_capacity, 1),
+            'Kids_Capacity_Percent': round(kids_capacity, 1)
+        })
+    
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    return df
+
+### CSV Export Button
+st.divider()
+if st.button("Generate CSV Report for All Services"):
+    csv_data = generate_all_services_csv()
+    
+    # Convert DataFrame to CSV
+    csv_buffer = io.StringIO()
+    csv_data.to_csv(csv_buffer, index=False)
+    csv_string = csv_buffer.getvalue()
+    
+    # Create download button
+    st.download_button(
+        label="Download CSV Report",
+        data=csv_string,
+        file_name=f"Arlington_Attendance_Projection_{selected_date_str.replace('-', '_')}.csv",
+        mime="text/csv"
+    )
+    
+    # Display preview of the data
+    st.write("Preview of CSV data:")
+    st.dataframe(csv_data)
     
     
