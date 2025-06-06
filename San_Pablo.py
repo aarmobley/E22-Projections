@@ -154,7 +154,7 @@ numerical_date = date_mapping[selected_date_str]
 
 # Add button for generating all services CSV without running projections
 st.divider()
-if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
+if st.button("Generate CSV Report for All Services"):
     all_services_data = []
     
     # Loop through the three main services
