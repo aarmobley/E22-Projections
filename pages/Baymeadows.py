@@ -45,6 +45,10 @@ coefficients = {
         'Christmas' : -1.018843
     },
     
+
+ '7:22:00': {
+        'Total Attendance' : .16
+ }
 }
 
 
@@ -68,7 +72,7 @@ title = st.title("Baymeadows Attendance Projection")
 
 
 num_week = [week for _ in range(2) for week in range(1, 53)]
-if len(num_week) < 104:
+if len(num_week) < 156:
     num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
@@ -79,7 +83,7 @@ service_times = list(coefficients.keys())
 
 ##create dates for 2 year projection
 start_date = datetime(2025, 1, 5)  # Start date
-date_range = [start_date + timedelta(weeks=i) for i in range(104)]  # 104 weeks range
+date_range = [start_date + timedelta(weeks=i) for i in range(156)]  # 156 weeks range
 
 # Create date mapping with numerical values as days since Unix epoch (1970-01-01)
 epoch = datetime(1970, 1, 1)
@@ -122,6 +126,38 @@ select_event = st.selectbox("Select Event", event_options)
 def calculate_projection(service_time, pastor, event, numerical_date, week_number):
     service_options = coefficients[service_time]
     
+    # Special handling for 7:22:00 service
+    if service_time == '7:22:00':
+        # Calculate total attendance from other services first
+        total_attendance = 0
+        for other_service in ['09:00:00', '11:22:00']:
+            other_projection = calculate_projection_base(other_service, pastor, event, numerical_date, week_number)
+            total_attendance += other_projection['adult_attendance'] + other_projection['kids_attendance']
+        
+        # 7:22:00 attendance is 16% of total weekly attendance
+        attendance_722 = total_attendance * service_options['Total Attendance']
+        
+        # Assume 80% adults, 20% kids for 7:22 service (you can adjust these ratios)
+        adult_attendance = attendance_722 * 0.8
+        kids_attendance = attendance_722 * 0.2
+        
+        # Calculate capacities (assuming same capacity limits)
+        adult_capacity = adult_attendance / 525 * 100
+        kids_capacity = kids_attendance / 247 * 100
+        
+        return {
+            'adult_attendance': adult_attendance,
+            'kids_attendance': kids_attendance,
+            'adult_capacity': adult_capacity,
+            'kids_capacity': kids_capacity
+        }
+    else:
+        return calculate_projection_base(service_time, pastor, event, numerical_date, week_number)
+
+# Base calculation function for 9:00 and 11:22 services
+def calculate_projection_base(service_time, pastor, event, numerical_date, week_number):
+    service_options = coefficients[service_time]
+    
     weeknum_effect = service_options['week_number'] * week_number
     sundaydate_effect = service_options['sunday_date'] * numerical_date
     
@@ -161,20 +197,23 @@ numerical_date = date_mapping[selected_date_str]                                
 
 service_options = coefficients[select_service]
 
-weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-pastor = service_options[select_pastor]
-
-
-
-### No Event coefficient needs to be 0 and pastor needs to be zero if any event is selected so it's not calcualted
-no_event = 0
-pastor = 0
-if select_event != 'None':
-    no_event = service_options[select_event]
+# Handle different logic for 7:22:00 service
+if select_service == '7:22:00':
+    # For 7:22 service, we don't need individual coefficients
+    pass
 else:
-    pastor = service_options[select_pastor ]
+    weeknum_effect = service_options['week_number'] * (select_week)
+    sundaydate_effect = service_options['sunday_date'] * (numerical_date)
+    
+    pastor = service_options[select_pastor]
+    
+    ### No Event coefficient needs to be 0 and pastor needs to be zero if any event is selected so it's not calcualted
+    no_event = 0
+    pastor = 0
+    if select_event != 'None':
+        no_event = service_options[select_event]
+    else:
+        pastor = service_options[select_pastor ]
 
 
 
@@ -182,25 +221,41 @@ else:
 ####predict button
 
 if st.button("Make Projection"):
-    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    prediction1 =  (prediction) ** (2)
-    
-    kids_1122 = prediction1 * service_options['kids_projection']
-    
-    kids_easter = prediction1 * service_options['kids_easter']
-    
-    #kids_labor = prediction1 * service_options['kids_labor']
-    
-    
-    capacity = prediction1 / 525 * (100)
-    
-    kids_capacity = kids_1122 / 247 * (100)
-    
-    kids_easter_capacity = kids_easter / 247 *(100)
-    
+    if select_service == '7:22:00':
+        # Special calculation for 7:22:00 service
+        # Calculate total attendance from other services
+        total_weekly_attendance = 0
+        for other_service in ['09:00:00', '11:22:00']:
+            other_projection = calculate_projection_base(other_service, select_pastor, select_event, numerical_date, select_week)
+            total_weekly_attendance += other_projection['adult_attendance'] + other_projection['kids_attendance']
         
-    
-
+        # 7:22:00 attendance is 16% of total weekly attendance
+        attendance_722 = total_weekly_attendance * coefficients['7:22:00']['Total Attendance']
+        
+        # Assume 80% adults, 20% kids for 7:22 service
+        prediction1 = attendance_722 * 0.8
+        kids_1122 = attendance_722 * 0.2
+        
+        capacity = prediction1 / 525 * 100
+        kids_capacity = kids_1122 / 247 * 100
+        
+    else:
+        # Original calculation for 9:00 and 11:22 services
+        prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
+        prediction1 =  (prediction) ** (2)
+        
+        kids_1122 = prediction1 * service_options['kids_projection']
+        
+        kids_easter = prediction1 * service_options['kids_easter']
+        
+        #kids_labor = prediction1 * service_options['kids_labor']
+        
+        
+        capacity = prediction1 / 525 * (100)
+        
+        kids_capacity = kids_1122 / 247 * (100)
+        
+        kids_easter_capacity = kids_easter / 247 *(100)
     
     #divider before projected attendance
     st.divider()
@@ -219,11 +274,15 @@ if st.button("Make Projection"):
     st.divider()
     
     
-    if select_event == 'Easter':
+    if select_service == '7:22:00':
+        # For 7:22:00 service, just show kids attendance
+        st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+    elif select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
         color = "red" if kids_capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
-    
     else: 
         st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
          ## HTML and markdown for kids capacity
