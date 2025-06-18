@@ -352,6 +352,10 @@ with st.sidebar:
                 
                 *Choose Inclement Weather if the weather will affect attendance""")
 
+st.set_page_config(page_title="Main Page")
+st.title("Main Page")
+
+
 title = st.title("All Campus Attendance Projections")
 
 # Create week numbers
