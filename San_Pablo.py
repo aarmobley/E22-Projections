@@ -359,8 +359,8 @@ with st.sidebar:
 st.set_page_config(
     page_title="Your App Title",
     layout="wide",  # Optional: use 'wide' or 'centered'
-    initial_sidebar_state="expanded"  # 👈 THIS forces sidebar to stay open
-)
+    initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
+
 
 # Create week numbers
 num_week = [week for _ in range(3) for week in range(1, 53)]
