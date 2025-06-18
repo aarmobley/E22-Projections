@@ -354,9 +354,14 @@ with st.sidebar:
 
 
 
-st.title = "All Campus Projections"
+st.title("All Campus Projections")
 
 
+st.set_page_config(
+    page_title="Your App Title",
+    layout="wide",  # Optional: use 'wide' or 'centered'
+    initial_sidebar_state="expanded"  # 👈 THIS forces sidebar to stay open
+)
 
 
 # Create week numbers
