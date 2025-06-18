@@ -357,7 +357,7 @@ with st.sidebar:
 
 
 st.set_page_config(
-    page_title="Your App Title",
+    page_title="CoE22 Projections",
     layout="wide",  # Optional: use 'wide' or 'centered'
     initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
 
