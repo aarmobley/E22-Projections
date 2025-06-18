@@ -423,7 +423,7 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
     if campus in ['St Johns', 'North Jax']:
         adult_attendance = prediction
     else:
-        adult_attendance = prediction * 2
+        adult_attendance = prediction ** 2
     
     # Handle inclement weather
     if event == 'Inclement Weather':
