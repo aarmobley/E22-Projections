@@ -352,11 +352,14 @@ with st.sidebar:
                 
                 *Choose Inclement Weather if the weather will affect attendance""")
 
-st.set_page_config(page_title="Main Page")
-st.title("Main Page")
+
 
 
 title = st.title("All Campus Attendance Projections")
+
+
+st.markdown("""- Use Dropdown below to generate a csv file for all campuses
+               - Select Campus from right side bar to get projections for individual campus"""
 
 # Create week numbers
 num_week = [week for _ in range(3) for week in range(1, 53)]
