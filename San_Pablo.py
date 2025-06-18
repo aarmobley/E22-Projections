@@ -415,10 +415,15 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
     else:
         pastor_effect = service_options.get(pastor, 0)
     
-    # Calculate base prediction
+       # Calculate base prediction
     intercept = service_options.get('intercept', 0)
     prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
-    adult_attendance = prediction ** 2
+    
+    #Make correct transformation based on Campus --- St. Johns and North Jax do not need to be squared
+    if campus in ['St Johns', 'North Jax']:
+        adult_attendance = prediction
+    else:
+        adult_attendance = prediciton * 2
     
     # Handle inclement weather
     if event == 'Inclement Weather':
