@@ -338,7 +338,7 @@ campus_capacities = {
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 st.image(logo_file, width=150)
 
-st.link_button("Go to Campus Dashboard", "https://app.powerbi.com/reportEmbed?reportId=fa1a49cb-9b22-4086-a694-39b61e180281&autoAuth=true&ctid=c441cd00-b4c3-41ab-9fc5-d891c8b7fc28")
+
 
 ##### Sidebar
 with st.sidebar:
@@ -354,12 +354,13 @@ with st.sidebar:
 
 
 
+st.set_page_config(
+    page_title="All Campus Projections",
+    initial_sidebar_state="expanded"  # 👈 THIS forces sidebar to stay open
+)
 
-title = st.title("All Campus Attendance Projections")
 
 
-st.markdown("""- Use Dropdown below to generate a csv file for all campuses
-               - Select Campus from right side bar to get projections for individual campus""")
 
 # Create week numbers
 num_week = [week for _ in range(3) for week in range(1, 53)]
