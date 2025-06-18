@@ -354,10 +354,7 @@ with st.sidebar:
 
 
 
-st.set_page_config(
-    page_title="All Campus Projections",
-    initial_sidebar_state="expanded"  # 👈 THIS forces sidebar to stay open
-)
+st.title = "All Campus Projections"
 
 
 
