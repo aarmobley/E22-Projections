@@ -354,7 +354,6 @@ with st.sidebar:
 
 
 
-st.title("All Campus Projections")
 
 
 st.set_page_config(
@@ -363,7 +362,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"  # 👈 THIS forces sidebar to stay open
 )
 
-
+st.title("Eleven22 - All Campus Projections")
 # Create week numbers
 num_week = [week for _ in range(3) for week in range(1, 53)]
 if len(num_week) < 156:
