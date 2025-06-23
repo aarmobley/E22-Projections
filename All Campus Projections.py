@@ -323,15 +323,15 @@ campus_coefficients = {
 # Define campus capacities (you may need to adjust these based on your actual capacities)
 campus_capacities = {
     'San Pablo': {'adult': 3001, 'kids': 750},
-    'Arlington': {'adult': 800, 'kids': 200},
-    'Baymeadows': {'adult': 600, 'kids': 150},
-    'Fleming Island': {'adult': 1200, 'kids': 300},
-    'Jesup': {'adult': 500, 'kids': 125},
-    'Mandarin': {'adult': 700, 'kids': 175},
-    'North Jax': {'adult': 2000, 'kids': 500},
-    'Orange Park': {'adult': 900, 'kids': 225},
-    'Ponte Vedra': {'adult': 400, 'kids': 100},
-    'St. Johns': {'adult': 2500, 'kids': 625}
+    'Arlington': {'adult': 850, 'kids': 225},
+    'Baymeadows': {'adult': 525, 'kids': 247},
+    'Fleming Island': {'adult': 766, 'kids': 250},
+    'Jesup': {'adult': 290, 'kids': 105},
+    'Mandarin': {'adult': 840, 'kids': 330},
+    'North Jax': {'adult': 700, 'kids': 350},
+    'Orange Park': {'adult': 700, 'kids': 262},
+    'Ponte Vedra': {'adult': 545, 'kids': 210},
+    'St. Johns': {'adult': 1948, 'kids': 559}
 }
 
 ### Logo and title
@@ -344,11 +344,11 @@ st.image(logo_file, width=150)
 with st.sidebar:
     st.markdown("""
                 Important Dates: 
-                - 08-11-2024 (Promotion Week)  
-                - 09-15-2024 (Saturated)
-                - 12-22-2024 (Christmas)
-                - 01-05-2025 (Back to School)
-                - 04-20-2025 (Easter) 
+                - 08-10-2025 (Promotion Week)  
+                - 09-14-2025 (Saturated Sunday)
+                - 12-24-2025 (Christmas)
+                - 01-04-2026 (Back to School)
+                - 04-05-2026 (Easter) 
                 
                 *Choose Inclement Weather if the weather will affect attendance""")
 
