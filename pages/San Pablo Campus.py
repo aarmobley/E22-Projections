@@ -29,7 +29,7 @@ coefficients = {
     
     
     
-  '09:00:00': {
+  '09:00': {
         'intercept' : -179.262118,
         'sunday_date' : 0.011448, 
         'week_number' : -0.006540,
@@ -47,7 +47,7 @@ coefficients = {
 
     },
     
-   '11:22:00': {                     ##### updated 02/24/25
+   '11:22': {                     ##### updated 02/24/25
 
        	'intercept' : -151.7846,
        	'sunday_date' : 0.01,
@@ -66,8 +66,8 @@ coefficients = {
         'Inclement Weather' : .15
     },
     
- '7:22:00': {
-        'Total Attendance' : .16
+ '4:22': {
+        'Total Attendance' : .06
 }
 }
 
