@@ -420,7 +420,7 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
     prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
     
     #Make correct transformation based on Campus --- St. Johns and North Jax do not need to be squared
-    if campus in ['St Johns', 'North Jax']:
+    if campus in ['St. Johns', 'North Jax']:
         adult_attendance = prediction
     else:
         adult_attendance = prediction ** 2
