@@ -69,7 +69,7 @@ coefficients = {
  '7:22:00': {
         'Total Attendance' : .16
 }
-
+}
 
 ### logo
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
