@@ -66,6 +66,8 @@ coefficients = {
         'Inclement Weather' : .15
     },
     
+ '7:22:00': {
+        'Total Attendance' : .16
 }
 
 
