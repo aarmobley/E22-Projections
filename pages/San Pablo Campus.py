@@ -158,11 +158,12 @@ numerical_date = date_mapping[selected_date_str]
 
 # Add button for generating all services CSV without running projections
 st.divider()
-if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
+if st.button("Generate All Services CSV (7:22, 9:00, 11:22, 4:22)"):
     all_services_data = []
+    total_main_services = 0
     
     # Loop through the three main services
-    for service_time in ['7:22', '09:00:00', '11:22:00']:
+    for service_time in ['7:22', '09:00', '11:22']:
         service_options = coefficients[service_time]
         weeknum_effect = service_options['week_number'] * select_week
         sundaydate_effect = service_options['sunday_date'] * numerical_date
@@ -183,6 +184,9 @@ if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
             final_adult_attendance = prediction1 - (prediction1 * 0.15)
         else:
             final_adult_attendance = prediction1
+            
+        # Add to total for 4:22 calculation
+        total_main_services += final_adult_attendance
             
         # Calculate kids attendance (Easter vs regular)
         if select_event == 'Easter':
@@ -207,8 +211,27 @@ if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
             'Kids_Capacity_Percent': round(kids_capacity, 1)
         })
     
+    # Calculate 4:22 service attendance (6% of total main services)
+    service_422_attendance = total_main_services * coefficients['4:22']['Total Attendance']
+    service_422_kids = service_422_attendance * 0.15  # Using similar ratio as 11:22
+    service_422_adult_capacity = (service_422_attendance / 3001) * 100
+    service_422_kids_capacity = (service_422_kids / 750) * 100
+    
+    # Add 4:22 service data
+    all_services_data.append({
+        'Service': '4:22',
+        'Date': selected_date_str,
+        'Week': select_week,
+        'Pastor': select_pastor,
+        'Event': select_event,
+        'Adult_Attendance': round(service_422_attendance, 0),
+        'Kids_Attendance': round(service_422_kids, 0),
+        'Adult_Capacity_Percent': round(service_422_adult_capacity, 1),
+        'Kids_Capacity_Percent': round(service_422_kids_capacity, 1)
+    })
+    
     # Create DataFrame and CSV
-    df_all_three = pd.DataFrame(all_services_data)
+    df_all_four = pd.DataFrame(all_services_data)
     
     # Add totals row
     total_adults = sum(row['Adult_Attendance'] for row in all_services_data)
@@ -226,20 +249,21 @@ if st.button("Generate All Services CSV (7:22, 9:00, 11:22)"):
         'Kids_Capacity_Percent': ['N/A']
     })
     
-    df_final = pd.concat([df_all_three, totals_row], ignore_index=True)
+    df_final = pd.concat([df_all_four, totals_row], ignore_index=True)
     
     # Create CSV with header
-    csv_data = f"# San Pablo Attendance Projections - All Three Services\n"
+    csv_data = f"# San Pablo Attendance Projections - All Four Services\n"
     csv_data += f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    csv_data += f"# Parameters: Date={selected_date_str}, Week={select_week}, Pastor={select_pastor}, Event={select_event}\n\n"
+    csv_data += f"# Parameters: Date={selected_date_str}, Week={select_week}, Pastor={select_pastor}, Event={select_event}\n"
+    csv_data += f"# Note: 4:22 service calculated as 6% of total main services attendance\n\n"
     csv_data += df_final.to_csv(index=False)
     
-    st.success(f"CSV generated for all three services! Total projected attendance: {total_adults} adults, {total_kids} kids")
+    st.success(f"CSV generated for all four services! Total projected attendance: {total_adults} adults, {total_kids} kids")
     
     st.download_button(
-        label="📥 Download All Three Services CSV",
+        label="📥 Download All Four Services CSV",
         data=csv_data,
-        file_name=f"San_Pablo_All_Three_Services_{selected_date_str.replace('-', '_')}.csv",
+        file_name=f"San_Pablo_All_Four_Services_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
 
@@ -270,7 +294,7 @@ if st.button("Make Projection"):
         total_prediction = 0  #
         service_details = []  # Store individual service data for CSV
         
-        for service in coefficients:
+        for service in ['7:22', '09:00', '11:22']:  # Only loop through services with full coefficients
             service_options = coefficients[service]
             weeknum_effect = service_options['week_number'] * (select_week)
             sundaydate_effect = service_options['sunday_date'] * (numerical_date)
@@ -334,7 +358,7 @@ if st.button("Make Projection"):
         
     elif select_service == "Elder Led Prayer":
         # Using 9:00 service calculation and reducing by 80%
-        service_options = coefficients['09:00:00']
+        service_options = coefficients['09:00']
         weeknum_effect = service_options['week_number'] * select_week
         sundaydate_effect = service_options['sunday_date'] * numerical_date
         no_event = 0
@@ -386,6 +410,73 @@ if st.button("Make Projection"):
             label="📥 Download Elder Prayer Projection (CSV)",
             data=csv_data,
             file_name=f"San_Pablo_Elder_Prayer_{selected_date_str.replace('-', '_')}.csv",
+            mime="text/csv"
+        )
+        
+    elif select_service == "4:22":
+        # Calculate total attendance from all three main services first
+        total_attendance = 0
+        
+        for service in ['7:22', '09:00', '11:22']:
+            service_options = coefficients[service]
+            weeknum_effect = service_options['week_number'] * select_week
+            sundaydate_effect = service_options['sunday_date'] * numerical_date
+            no_event = 0
+            pastor = 0
+            
+            if select_event != 'None':
+                no_event = service_options.get(select_event, 0)
+            else:
+                pastor = service_options.get(select_pastor, 0)
+
+            # Calculate prediction for each service
+            prediction = ((service_options['intercept']) + sundaydate_effect + weeknum_effect + pastor + no_event)
+            prediction1 = prediction ** 2
+            
+            # Handle inclement weather adjustment
+            if select_event == 'Inclement Weather':
+                prediction1 = prediction1 - (prediction1 * 0.15)
+                
+            total_attendance += prediction1
+        
+        # Calculate 4:22 attendance as 6% of total attendance
+        service_422_attendance = total_attendance * coefficients['4:22']['Total Attendance']
+        
+        st.divider()
+        #st.write(f"Total Attendance from Main Services: {total_attendance:.0f}")
+        st.write(f"Projected Adult Attendance: {service_422_attendance:.0f}")
+        
+        # Calculate capacity (assuming same capacity metrics as other services)
+        capacity = service_422_attendance / 3001 * 100
+        color = "red" if capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Worship Center Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
+        
+        # Kid's calculation for 4:22 (using similar ratio as other services)
+        kids_attendance = service_422_attendance * 0.15  # Using similar ratio as 11:22
+        kids_capacity = kids_attendance / 750 * 100
+        
+        st.divider()
+        st.write(f"Projected Kids Attendance: {kids_attendance:.0f}")
+        color = "red" if kids_capacity > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Kids Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+        
+        # Add CSV export for 4:22
+        st.divider()
+        service_422_data = {
+            'Parameter': ['Date', 'Week', 'Pastor', 'Event', 'Service', 'Total_Main_Services', 'Adult_Attendance', 'Kids_Attendance', 'Adult_Capacity_Percent', 'Kids_Capacity_Percent'],
+            'Value': [selected_date_str, select_week, select_pastor, select_event, '4:22',
+                     round(total_attendance, 0), round(service_422_attendance, 0), round(kids_attendance, 0),
+                     round(capacity, 0), round(kids_capacity, 0)]
+        }
+        df_422 = pd.DataFrame(service_422_data)
+        
+        csv_data = f"# San Pablo Attendance Projections - 4:22 Service\n# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        csv_data += df_422.to_csv(index=False)
+        
+        st.download_button(
+            label="📥 Download 4:22 Service Projection (CSV)",
+            data=csv_data,
+            file_name=f"San_Pablo_4_22_{selected_date_str.replace('-', '_')}.csv",
             mime="text/csv"
         )
         
