@@ -80,11 +80,13 @@ st.link_button("Go to Campus Dashboard", "https://app.powerbi.com/reportEmbed?re
 with st.sidebar:
     st.markdown("""
                 Important Dates: 
-                - 08-11-2024 (Promotion Week)  
-                - 09-15-2024 (Saturated)
-                - 12-22-2024 (Christmas)
-                - 01-05-2025 (Back to School)
-                - 04-20-2025 (Easter) 
+                - 08-10-2025 (Promotion Week)  
+                - 09-14-2025 (Saturated Sunday)
+                - 12-24-2025 (Christmas)
+                - 01-04-2026 (Back to School)
+                - 04-05-2026 (Easter) 
+                
+               
                 
                 *Choose Inclement Weather if the weather will effect attendance""")
 
