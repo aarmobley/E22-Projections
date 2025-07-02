@@ -186,6 +186,12 @@ if st.button("Make Projection"):
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
 
 
+   st.divider
+
+
+
+    title = st.title("St. Johns Students Attendance Projection")
+
 
 
 
