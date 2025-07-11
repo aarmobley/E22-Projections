@@ -281,5 +281,104 @@ if st.button("Make Projection", key="students_projection"):
         st.write(f"Projected {select_students} Sunday Attendance: {sunday:.0f}")
 
 
+st.divider()
+
+# CSV Generation Section
+st.header("Generate CSV Report")
+
+# Multi-select date range
+csv_dates = st.multiselect("Select Dates for CSV Export", date_week_options, default=[])
+
+# Service parameters for CSV
+csv_service = st.selectbox("Service Time for CSV", service_times, key="csv_service")
+csv_pastor = st.selectbox("Pastor for CSV", pastor_options, key="csv_pastor")
+csv_event = st.selectbox("Event for CSV", event_options, key="csv_event")
+
+# Student parameters for CSV
+csv_students = st.selectbox("Student Group for CSV", student_options_list, key="csv_students")
+csv_in_out = st.selectbox("Time of Year for CSV", school_year, key="csv_in_out")
+
+if st.button("Generate CSV Report") and csv_dates:
+    csv_data = []
+    
+    for date_option in csv_dates:
+        # Parse date and week
+        date_str = date_option.split(' ')[0]
+        week_num = int(date_option.split('Week ')[-1].strip(')'))
+        numerical_date_csv = date_mapping[date_str]
+        
+        # Calculate adult attendance
+        if csv_service == '7:22':
+            pred_9 = calculate_prediction('09:00', numerical_date_csv, week_num, csv_pastor, csv_event)
+            pred_11 = calculate_prediction('11:22', numerical_date_csv, week_num, csv_pastor, csv_event)
+            combined = pred_9 + pred_11
+            adult_attendance = combined * coefficients['7:22']['PercentofTotal']
+            kids_attendance = adult_attendance * coefficients['09:00']['Kids Projection']
+            kids_easter_attendance = adult_attendance * coefficients['09:00']['Kids Easter']
+        else:
+            adult_attendance = calculate_prediction(csv_service, numerical_date_csv, week_num, csv_pastor, csv_event)
+            service_opts = coefficients[csv_service]
+            kids_attendance = adult_attendance * service_opts['Kids Projection']
+            kids_easter_attendance = adult_attendance * service_opts['Kids Easter']
+        
+        # Use Easter kids projection if event is Easter
+        final_kids_attendance = kids_easter_attendance if csv_event == 'Easter' else kids_attendance
+        
+        # Calculate capacities
+        adult_capacity = adult_attendance / 1948 * 100
+        kids_capacity = final_kids_attendance / 470 * 100
+        
+        # Calculate student attendance
+        student_opts = students[csv_students]
+        sunday_effect = student_opts['sunday_date'] * numerical_date_csv
+        week_effect = student_opts['week_number'] * week_num
+        in_out_effect = student_opts['In_Out'] if csv_in_out == "In-School" else 0
+        new_building_effect = student_opts['New Building'] if csv_students == "Middle School" and 'New Building' in student_opts else 0
+        
+        student_prediction = (student_opts['intercept'] + sunday_effect + week_effect + in_out_effect + new_building_effect)
+        student_final = student_prediction ** 2
+        
+        # Middle School breakdown
+        if csv_students == "Middle School":
+            student_wednesday = student_final * 0.45
+            student_sunday = student_final * 0.55
+        else:
+            student_wednesday = None
+            student_sunday = None
+        
+        # Add to CSV data
+        csv_data.append({
+            'Date': date_str,
+            'Week': week_num,
+            'Service_Time': csv_service,
+            'Pastor': csv_pastor,
+            'Event': csv_event,
+            'Adult_Attendance': round(adult_attendance),
+            'Adult_Capacity_Percent': round(adult_capacity, 1),
+            'Kids_Attendance': round(final_kids_attendance),
+            'Kids_Capacity_Percent': round(kids_capacity, 1),
+            'Student_Group': csv_students,
+            'Time_of_Year': csv_in_out,
+            'Student_Total': round(student_final),
+            'Student_Wednesday': round(student_wednesday) if student_wednesday else None,
+            'Student_Sunday': round(student_sunday) if student_sunday else None
+        })
+    
+    # Create DataFrame and CSV
+    df = pd.DataFrame(csv_data)
+    csv_string = df.to_csv(index=False)
+    
+    # Display preview
+    st.subheader("CSV Preview")
+    st.dataframe(df)
+    
+    # Download button
+    st.download_button(
+        label="Download CSV",
+        data=csv_string,
+        file_name=f"stjohns_projections_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv"
+    )
+
 
 
