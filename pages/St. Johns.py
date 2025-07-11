@@ -12,18 +12,19 @@ coefficients = {
 
 '09:00'  :   {
 
-    'intercept' : -7313.2975,
-    'sunday_date' : 0.4043,
-    'week_number' : -0.4042,
-    'Guest Pastor' : -34.2460,
-    'Executive Pastor' : -17.9290,
-    'Pastor Joby' : 1.4485,
-    'Easter' : 384.6168,
-    'BacktoSchool' : 56.9989,
-    'Saturated Sunday' : 132.4245,
-    'Christmas' : 348.4167,
+    'intercept' : -7319.7344,
+    'sunday_date' : 0.4052,
+    'week_number' : -0.8006,
+    'Guest Pastor' : -24.5846,
+    'Executive Pastor' : -11.2854,
+    'Pastor Joby' : -9.9740,
+    'Easter' : 366.5613,
+    'BacktoSchool' : 98.5655,
+    'Saturated Sunday' : 142.8192,
+    'Christmas' : 267.1385 ,
     'Kids Projection' : .37,
-    'Kids Easter' : .24
+    'Kids Easter' : .24,
+    'New Building' : 706.0721
 
 },
 
@@ -40,9 +41,30 @@ coefficients = {
     'Saturated Sunday' : 147.10815,
     'Christmas' : 285.94632,
     'Kids Projection' : .29,
-    'Kids Easter' : .15
+    'Kids Easter' : .15,
+    'New Building' : 516.5903
 
 },
+
+'7:22' : {
+    'PercentofTotal' : .20
+}
+}
+
+students = {
+    'Middle School' : {
+        'intercept' : -134.127525,   #-150.3
+        'sunday_date' : 0.007249,
+        'week_number' : 0.018061,
+        'In_Out' : 1.966009,
+        'New Building': 4.383636
+    },
+    'High School': {
+        'intercept' : -114.203912,
+        'sunday_date' : 0.006256,
+        'week_number' : 0.038843,
+        'In_Out' : 1.730
+    }
 }
 
 ### logo
@@ -64,20 +86,23 @@ with st.sidebar:
                 """)
 
 
-title = st.title("St. Johns Attendance Projection")
+title = st.header("St. Johns Adults and Kids Projection")
 
-#dates = pd.read_csv(r"C:\Users\aaron\OneDrive\Desktop\python\RegressionDates1.csv")
-#dates.info()
-#dates.head()
 
 num_week = [week for _ in range(2) for week in range(1, 53)]
 if len(num_week) < 104:
-    num_week.apend(53)
+    num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
 ##listing service times based on coefficients
 service_times = list(coefficients.keys())
+
+##listing students option - Fixed this part
+student_options_list = list(students.keys())
+
+school_year = ("In-School", "Summer")
+
 
 
 ##create dates for 2 year projection
@@ -127,39 +152,55 @@ select_event = st.selectbox("Select Event", event_options)
 #### predict button formula
 numerical_date = date_mapping[selected_date_str]                                                         #numerical_date = date_mapping[select_date]
 
-service_options = coefficients[select_service]
+# Function to calculate prediction for a given service
+def calculate_prediction(service_name, numerical_date, select_week, select_pastor, select_event):
+    service_options = coefficients[service_name]
+    weeknum_effect = service_options['week_number'] * (select_week)
+    sundaydate_effect = service_options['sunday_date'] * (numerical_date)
+    pastor = service_options[select_pastor]
+    new_building = service_options['New Building']
 
-weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-pastor = service_options[select_pastor]
-
-### No Event coefficient needs to be 0
-no_event = 0
-
-if select_event != 'None':
-    no_event = service_options[select_event]
-
-#event = service_options[select_event]
-
-
+    ### No Event coefficient needs to be 0
+    no_event = 0
+    if select_event != 'None':
+        no_event = service_options[select_event]
     
-
-
-
+    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event + new_building)
+    return prediction
 
 if st.button("Make Projection"):
-    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    #prediction1 =  (prediction) ** (2)  St. Johns formula is not squared
-    kids_1122 = prediction * service_options['Kids Projection']
+    if select_service == '7:22':
+        # Calculate predictions for 9:00 and 11:22 services
+        prediction_9 = calculate_prediction('09:00', numerical_date, select_week, select_pastor, select_event)
+        prediction_11 = calculate_prediction('11:22', numerical_date, select_week, select_pastor, select_event)
+        
+        # Calculate 7:22 as 20% of the combined total
+        combined_total = prediction_9 + prediction_11
+        prediction = combined_total * coefficients['7:22']['PercentofTotal']
+        
+        # For 7:22, we'll use the kids projection from 9:00 service as a default
+        kids_1122 = prediction * coefficients['09:00']['Kids Projection']
+        kids_easter = prediction * coefficients['09:00']['Kids Easter']
+        
+    else:
+        # Original calculation for 9:00 and 11:22
+        service_options = coefficients[select_service]
+        weeknum_effect = service_options['week_number'] * (select_week)
+        sundaydate_effect = service_options['sunday_date'] * (numerical_date)
+        pastor = service_options[select_pastor]
+        new_building = service_options['New Building']
+        
+        ### No Event coefficient needs to be 0
+        no_event = 0
+        if select_event != 'None':
+            no_event = service_options[select_event]
+        
+        prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event + new_building)   ###need to figure out where new building fits in
+        kids_1122 = prediction * service_options['Kids Projection']
+        kids_easter = prediction * service_options['Kids Easter']
     
-    kids_easter = prediction * service_options['Kids Easter']
-    #kids_1122 = prediction1 * service_options['kids_projection']
-    capacity = prediction / 760 * (100)
+    capacity = prediction / 1948 * (100)
     kids_capacity = kids_1122 / 470 * (100)
-    
-
-
     
     #divider before projected attendance
     st.divider()
@@ -176,8 +217,9 @@ if st.button("Make Projection"):
     #kids projections with Easter
     if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        color = "red" if kids_capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
+        kids_capacity_easter = kids_easter / 470 * (100)  # Fixed capacity calculation for Easter
+        color = "red" if kids_capacity_easter > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity_easter:.0f}%</p>", unsafe_allow_html=True)
     
     else: 
         st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
@@ -188,10 +230,55 @@ if st.button("Make Projection"):
 
 st.divider()
 
+title = st.header("St. Johns Students Projection")
 
+# Second set of selectboxes for students
+date_options_students = st.selectbox("Select SundayDate", date_week_options, key="students_date")
+select_students = st.selectbox("Select Students", student_options_list)  # Fixed variable name
+select_in_out = st.selectbox("Select Time of Year", school_year )
 
-title = st.title("St. Johns Students Attendance Projection")
+# Parse the selected date for students (same logic as above)
+selected_date_str_students = date_options_students.split(' ')[0]
+select_week_students = int(date_options_students.split('Week ')[-1].strip(')'))
+numerical_date_students = date_mapping[selected_date_str_students]
 
+if st.button("Make Projection", key="students_projection"):
+    # Use students coefficients instead of service_options
+    student_options = students[select_students]
+    
+    # Calculate prediction using students coefficients INCLUDING week number
+    sundaydate_effect_students = student_options['sunday_date'] * numerical_date_students
+    weeknum_effect_students = student_options['week_number'] * select_week_students
+    
+    # Apply In_Out coefficient based on selection
+    # If "In-School" is selected, use the coefficient value
+    # If "Summer" is selected, use 0 (no effect)
+    in_out_effect = student_options['In_Out'] if select_in_out == "In-School" else 0
+    
+    # Handle New Building coefficient - only apply if it exists for the selected student group
+    if select_students == "Middle School" and 'New Building' in student_options:
+        new_building_effect = student_options['New Building']
+    else:
+        new_building_effect = 0
+
+    prediction_students = (student_options['intercept'] + 
+                          sundaydate_effect_students + 
+                          weeknum_effect_students + 
+                          in_out_effect +
+                          new_building_effect)
+    
+    # Apply the square transformation as shown in your code
+    prediction_students_final = prediction_students ** 2
+    
+    # Show total attendance for both groups
+    st.write(f"Projected {select_students} Total: {prediction_students_final:.0f}")
+    
+    # Only show Wednesday attendance for Middle School
+    if select_students == "Middle School":
+        wednesday = prediction_students_final * .45
+        sunday = prediction_students_final * .55
+        st.write(f"Projected {select_students} Wednesday Attendance: {wednesday:.0f}")
+        st.write(f"Projected {select_students} Sunday Attendance: {sunday:.0f}")
 
 
 
