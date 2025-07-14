@@ -12,37 +12,37 @@ coefficients = {
 
 '09:00'  :   {
 
-    'intercept' : -7319.7344,
-    'sunday_date' : 0.4052,
-    'week_number' : -0.8006,
-    'Guest Pastor' : -24.5846,
-    'Executive Pastor' : -11.2854,
-    'Pastor Joby' : -9.9740,
-    'Easter' : 366.5613,
-    'BacktoSchool' : 98.5655,
-    'Saturated Sunday' : 142.8192,
-    'Christmas' : 267.1385 ,
-    'Kids Projection' : .37,
+    'intercept' : -7376.0256,
+    'sunday_date' : 0.4081,
+    'week_number' : -0.7781,
+    'Guest Pastor' : -25.0405,
+    'Executive Pastor' : -10.8755,
+    'Pastor Joby' : -12.5410,
+    'Easter' : 368.6713,
+    'BacktoSchool' : 99.6941,
+    'Saturated Sunday' : 144.4888,
+    'Christmas' : 267.1487,
+    'Kids Projection' : .35,
     'Kids Easter' : .24,
-    'New Building' : 706.0721
+    'New Building' : 674.2372
 
 },
 
 '11:22' : {
 
-    'intercept' : -5819.98219,
-    'sunday_date' :  0.32295,
-    'week_number' : -1.40040,
-    'Guest Pastor' : -15.11825,
-    'Executive Pastor' : -21.48908,
-    'Pastor Joby' : 9.44896,
-    'Easter' : 384.33688,
-    'BacktoSchool' : 128.17882,
-    'Saturated Sunday' : 147.10815,
+    'intercept' : -5681.6164,
+    'sunday_date' : 0.3158,
+    'week_number' : -1.4148,
+    'Guest Pastor' : -13.0240,
+    'Executive Pastor' : 0.1442,
+    'Pastor Joby' :2.1450,
+    'Easter' : 373.0117,
+    'BacktoSchool' : 129.6823,
+    'Saturated Sunday' : 156.1531,
     'Christmas' : 285.94632,
-    'Kids Projection' : .29,
+    'Kids Projection' : .25,
     'Kids Easter' : .15,
-    'New Building' : 516.5903
+    'New Building' : 492.5563
 
 },
 
@@ -279,82 +279,6 @@ if st.button("Make Projection", key="students_projection"):
         sunday = prediction_students_final * .55
         st.write(f"Projected {select_students} Wednesday Attendance: {wednesday:.0f}")
         st.write(f"Projected {select_students} Sunday Attendance: {sunday:.0f}")
-
-
-st.divider()
-
-# CSV Generation Button
-if st.button("Generate CSV Report"):
-    # Calculate adult attendance using current selections
-    if select_service == '7:22':
-        pred_9 = calculate_prediction('09:00', numerical_date, select_week, select_pastor, select_event)
-        pred_11 = calculate_prediction('11:22', numerical_date, select_week, select_pastor, select_event)
-        combined = pred_9 + pred_11
-        adult_attendance = combined * coefficients['7:22']['PercentofTotal']
-        kids_attendance = adult_attendance * coefficients['09:00']['Kids Projection']
-        kids_easter_attendance = adult_attendance * coefficients['09:00']['Kids Easter']
-    else:
-        adult_attendance = calculate_prediction(select_service, numerical_date, select_week, select_pastor, select_event)
-        service_opts = coefficients[select_service]
-        kids_attendance = adult_attendance * service_opts['Kids Projection']
-        kids_easter_attendance = adult_attendance * service_opts['Kids Easter']
-    
-    # Use Easter kids projection if event is Easter
-    final_kids_attendance = kids_easter_attendance if select_event == 'Easter' else kids_attendance
-    
-    # Calculate capacities
-    adult_capacity = adult_attendance / 1948 * 100
-    kids_capacity = final_kids_attendance / 470 * 100
-    
-    # Calculate student attendance using current selections
-    student_opts = students[select_students]
-    sunday_effect = student_opts['sunday_date'] * numerical_date_students
-    week_effect = student_opts['week_number'] * select_week_students
-    in_out_effect = student_opts['In_Out'] if select_in_out == "In-School" else 0
-    new_building_effect = student_opts['New Building'] if select_students == "Middle School" and 'New Building' in student_opts else 0
-    
-    student_prediction = (student_opts['intercept'] + sunday_effect + week_effect + in_out_effect + new_building_effect)
-    student_final = student_prediction ** 2
-    
-    # Middle School breakdown
-    if select_students == "Middle School":
-        student_wednesday = student_final * 0.45
-        student_sunday = student_final * 0.55
-    else:
-        student_wednesday = None
-        student_sunday = None
-    
-    # Create CSV data
-    csv_data = [{
-        'Date': selected_date_str,
-        'Week': select_week,
-        'Service_Time': select_service,
-        'Pastor': select_pastor,
-        'Event': select_event,
-        'Adult_Attendance': round(adult_attendance),
-        'Adult_Capacity_Percent': round(adult_capacity, 1),
-        'Kids_Attendance': round(final_kids_attendance),
-        'Kids_Capacity_Percent': round(kids_capacity, 1),
-        'Student_Date': selected_date_str_students,
-        'Student_Week': select_week_students,
-        'Student_Group': select_students,
-        'Time_of_Year': select_in_out,
-        'Student_Total': round(student_final),
-        'Student_Wednesday': round(student_wednesday) if student_wednesday else None,
-        'Student_Sunday': round(student_sunday) if student_sunday else None
-    }]
-    
-    # Create DataFrame and CSV
-    df = pd.DataFrame(csv_data)
-    csv_string = df.to_csv(index=False)
-    
-    # Download button
-    st.download_button(
-        label="Download CSV",
-        data=csv_string,
-        file_name=f"stjohns_projections_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-        mime="text/csv"
-    )
 
 
 
