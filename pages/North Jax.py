@@ -56,7 +56,7 @@ with st.sidebar:
                 Important Dates: 
                 - 08-10-2025 (Promotion Week)  
                 - 09-14-2025 (Saturated)
-                - 12-24-2024 (Christmas)
+                - 12-24-2025 (Christmas)
                 - 01-05-2026 (Back to School)
                 - 04-05-2026 (Easter) """)
 
@@ -140,7 +140,7 @@ service_options = coefficients[select_service]
 
     
 
-st.write("***This Campus Projection is Still In Development")
+
 ####predict button
 
 if st.button("Make Projection"):
@@ -197,6 +197,14 @@ if st.button("Make Projection"):
     
     kids_easter_capacity = kids_easter / 350 *(100)
     
+    # Store projection data for CSV generation
+    st.session_state.last_projection_data = {
+        'adult_attendance': prediction,
+        'kids_attendance': kids_projection,
+        'adult_capacity': capacity,
+        'kids_capacity': kids_capacity
+    }
+    
         
     
 
@@ -224,4 +232,38 @@ if st.button("Make Projection"):
         st.write(f"Easter Kids Attendance: {kids_easter: .0f}")
         color = "red" if kids_capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
+
+# Generate CSV button
+if st.button("Generate CSV"):
+    # Create data for CSV
+    csv_data = {
+        'Date': [selected_date_str],
+        'Week_Number': [select_week],
+        'Service_Time': [select_service],
+        'Event': [select_event],
+        'Adult_Attendance': [0],  # Will be filled when projection is made
+        'Kids_Attendance': [0],   # Will be filled when projection is made
+        'Adult_Capacity_Percent': [0],  # Will be filled when projection is made
+        'Kids_Capacity_Percent': [0]    # Will be filled when projection is made
+    }
+    
+    # If a projection has been made, include the projection data
+    if st.session_state.get('last_projection_data'):
+        proj_data = st.session_state.last_projection_data
+        csv_data['Adult_Attendance'] = [proj_data['adult_attendance']]
+        csv_data['Kids_Attendance'] = [proj_data['kids_attendance']]
+        csv_data['Adult_Capacity_Percent'] = [proj_data['adult_capacity']]
+        csv_data['Kids_Capacity_Percent'] = [proj_data['kids_capacity']]
+    
+    # Create DataFrame and CSV
+    df = pd.DataFrame(csv_data)
+    csv_string = df.to_csv(index=False)
+    
+    # Download button
+    st.download_button(
+        label="Download CSV",
+        data=csv_string,
+        file_name=f"attendance_projection_{selected_date_str.replace('-', '_')}.csv",
+        mime='text/csv'
+    )
         
