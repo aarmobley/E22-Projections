@@ -11,31 +11,34 @@ from datetime import datetime, timedelta
 
 coefficients = {
 
- '9:00:00': {
-        'intercept' : -1489.2378,
-        'sunday_date' : 0.0961,
-        'week_number' : -1.3899,
-        'Saturated Sunday' : 125.3024,
-        'Easter' : 86.2632,
-        'Promotion Week' : 61.8972,
-        'kids_projection' : .32,
-        'kids_easter' : .27,
-        'Christmas' : 85.7072
-
+ '9:00': {
+        'intercept' : -5996.548,
+        'sunday_date' :  0.323,
+        'WeekNumber' : -0.672,
+        'Saturated Sunday' : 105.441,
+        'Easter' : 125.539,
+        'Promotion Week' : 11.408,
+        'kids_projection' : .28,
+        'kids_easter' : .08,
+        'Christmas' : -158.638,
+        'Wildlight' : -130.274
     },
- '11:22:00': {
-        'intercept' : 1066.1896,
-        'sunday_date' : -0.0362,
-        'week_number' : -1.0235,
-        'Saturated Sunday' : 280.5179,
-        'Easter' : 80.8687,
-        'Promotion Week' : 92.1327,
-        'Back to School' : 92.1327,
-        'kids_projection' : .23,
-        'kids_easter' : .29,
-        'Christmas' : 38.8151
+ '11:22': {
+        'intercept' : -1798.8597,
+        'sunday_date' :  0.1082,
+        'WeekNumber' : -0.5227,
+        'Saturated Sunday' : 164.4344,
+        'Easter' : 181.8301,
+        'Promotion Week' : 59.5298,
+        'kids_projection' : .28,
+        'kids_easter' : .08,
+        'Christmas' : 41.9161,
+        'Wildlight' : -76.7777
+    },
 
-    }
+'7:22' :  {
+       'New' : .23
+}   
     
 }
 
@@ -51,13 +54,11 @@ st.image(logo_file, width=150)
 with st.sidebar:
     st.markdown("""
                 Important Dates: 
-                - 08-10-2025 (Promotion Week)  
-                - 09-14-2025 (Saturated Sunday)
-                - 12-24-2025 (Christmas)
-                - 01-04-2026 (Back to School)
-                - 04-05-2026 (Easter) 
-                
-                """)
+                - 08-11-2024 (Promotion Week)  
+                - 09-15-2024 (Saturated)
+                - 12-22-2024 (Christmas)
+                - 01-05-2025 (Back to School)
+                - 04-20-2025 (Easter) """)
 
 title = st.title("North Jax Attendance Projection")
 
@@ -68,7 +69,7 @@ title = st.title("North Jax Attendance Projection")
 #num_date = dates['num_date'].tolist()
 num_week = [week for _ in range(2) for week in range(1, 53)]
 if len(num_week) < 104:
-    num_week.apend(53)
+    num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
@@ -77,7 +78,7 @@ service_times = list(coefficients.keys())
 
 
 ##create dates for 2 year projection
-start_date = datetime(2025, 1, 5)  # Start date
+start_date = datetime(2024, 1, 7)  # Start date
 date_range = [start_date + timedelta(weeks=i) for i in range(104)]  # 104 weeks range
 
 # Create date mapping with numerical values as days since Unix epoch (1970-01-01)
@@ -125,20 +126,7 @@ numerical_date = date_mapping[selected_date_str]                                
 
 service_options = coefficients[select_service]
 
-#weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-weeknum_effect = service_options['week_number'] * (select_week)
-
-#pastor = service_options[select_pastor]
-
-
-
-### No Event coefficient needs to be 0 and pastor needs to be zero if any event is selected so it's not calcualted
-no_event = 0
-pastor = 0
-if select_event != 'None':
-    no_event = service_options[select_event]
+# Variables will be set inside the conditional blocks below
 
 
 
@@ -156,26 +144,57 @@ st.write("***This Campus Projection is Still In Development")
 ####predict button
 
 if st.button("Make Projection"):
-    prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect)  + no_event)
-    #prediction1 =  (prediction) ** (2)
     
-    # breaking down total into separate 9:00 and 11:22 services
-    #prediction900 = prediction / 2.25
+    # Handle 7:22 service differently - it's calculated as 23% of 9:00 + 11:22
+    if select_service == '7:22':
+        # Calculate 9:00 service projection
+        service_900 = coefficients['9:00']
+        weeknum_effect_900 = service_900['WeekNumber'] * (select_week)
+        sundaydate_effect_900 = service_900['sunday_date'] * (numerical_date)
+        wildlight_effect_900 = service_900['Wildlight']
+        no_event_900 = 0
+        if select_event != 'None':
+            no_event_900 = service_900[select_event]
+        prediction_900 = ((service_900['intercept']) + (sundaydate_effect_900) + (weeknum_effect_900) + wildlight_effect_900 + no_event_900)
+        
+        # Calculate 11:22 service projection
+        service_1122 = coefficients['11:22']
+        weeknum_effect_1122 = service_1122['WeekNumber'] * (select_week)
+        sundaydate_effect_1122 = service_1122['sunday_date'] * (numerical_date)
+        wildlight_effect_1122 = service_1122['Wildlight']
+        no_event_1122 = 0
+        if select_event != 'None':
+            no_event_1122 = service_1122[select_event]
+        prediction_1122 = ((service_1122['intercept']) + (sundaydate_effect_1122) + (weeknum_effect_1122) + wildlight_effect_1122 + no_event_1122)
+        
+        # 7:22 is 23% of the total of 9:00 and 11:22
+        prediction = (prediction_900 + prediction_1122) * 0.23
+        
+        # Use 9:00 service coefficients for kids projections for 7:22
+        kids_projection = prediction * service_900['kids_projection']
+        kids_easter = prediction * service_900['kids_easter']
+        
+    else:
+        # For 9:00 and 11:22 services, use original calculation
+        weeknum_effect = service_options['WeekNumber'] * (select_week)
+        sundaydate_effect = service_options['sunday_date'] * (numerical_date)
+        wildlight_effect = service_options['Wildlight']
+        no_event = 0
+        if select_event != 'None':
+            no_event = service_options[select_event]
+        prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + wildlight_effect + no_event)
+        
+        # Kids projection for the selected service
+        kids_projection = prediction * service_options['kids_projection']
+        kids_easter = prediction * service_options['kids_easter']
     
-    #prediction1122 = prediction900 * 1.25
-    
-    kids_nj = prediction * service_options['kids_projection']
- 
-    
-    #kids easter percentage
-    kids_easter = prediction * service_options['kids_easter']
     
     
-    #capacity for worship center
+    
     capacity = prediction / 700 * (100)
     
-    #formula for capacity for kids
-    kids_capacity = kids_nj / 350 * 100
+    kids_capacity = kids_projection / 350 * (100)
+    
     kids_easter_capacity = kids_easter / 350 *(100)
     
         
@@ -185,32 +204,24 @@ if st.button("Make Projection"):
     #divider before projected attendance
     st.divider()
     
-    ###needs 9:00 and 11:22
-    st.markdown(f"Projected Adult Attendance: {prediction:.0f}")
+    ###Display projection for selected service
+    st.markdown(f"{select_service} Projected Adult Attendance  - {prediction:.0f}")
     
-    #st.markdown(f"11:22 Projected Adult Attendance - {prediction1122:.0f}")
+    st.markdown(f"Projected Kids Attendance: {kids_projection:.0f}")
     
     ### HTML and MArkdown for adult capacity
-    color = "red" if kids_capacity > 70 else "blue"
-    st.markdown(f"<p style='color:{color}; font-size:18px;'>Worship Center Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)
+    color = "red" if capacity > 80 else "blue"
     
     #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {capacity:.0f}%</p>", unsafe_allow_html=True)                                       #st.write(f"Adult Capacity: {capacity: .0f}%")
     
+    
+    ###st.write(f"Weekly Total: {select_service: .0f} ")
     #####
     st.divider()
     
     
     if select_event == 'Easter':
-        st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
+        st.write(f"Easter Kids Attendance: {kids_easter: .0f}")
         color = "red" if kids_capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_easter_capacity:.0f}%</p>", unsafe_allow_html=True)
-    
-    else: 
-        st.write(f"Projected Kids Attendance: {kids_nj: .0f}")
-        color = "red" if kids_capacity > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
-        
-         ## HTML and markdown for kids capacity
-        #color = "red" if kids_capacity > 80 else "blue"
-        #st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
         
