@@ -29,7 +29,7 @@ coefficients = {
     
     
     
-  '09:00': {
+  '9:00': {
         'intercept' : -179.262118,
         'sunday_date' : 0.011448, 
         'week_number' : -0.006540,
