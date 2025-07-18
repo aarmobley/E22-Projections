@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 coefficients = {
     
-    '09:00:00': {
+    '09:00': {
         'intercept' : -67.30,
         'sunday_date' :  .004270, 
         'week_number' : -.001089,
@@ -28,7 +28,7 @@ coefficients = {
 
     },
     
-  '11:22:00': {
+  '11:22': {
 
        	
         'intercept' : -43.74,
@@ -46,7 +46,7 @@ coefficients = {
     },
     
 
- '7:22:00': {
+ '7:22': {
         'Total Attendance' : .16
  }
 }
