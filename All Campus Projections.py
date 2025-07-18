@@ -20,7 +20,7 @@ campus_coefficients = {
             'kids_easter': .08,
             'Christmas': 6.2412
         },
-        '09:00:00': {
+        '9:00': {
             'intercept': -179.262118,
             'sunday_date': 0.011448, 
             'week_number': -0.006540,
@@ -35,7 +35,7 @@ campus_coefficients = {
             'kids_easter': .12,
             'Christmas': 4.326568
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -151.7846,
             'sunday_date': 0.01,
             'week_number': -0.0726,
@@ -54,7 +54,7 @@ campus_coefficients = {
         },
     },
     'Arlington': {
-        '09:00:00': {
+        '9:00': {
             'intercept': -38.65,
             'sunday_date': .002963, 
             'week_number': .003602,
@@ -67,7 +67,7 @@ campus_coefficients = {
             'kids_projection': 0.29,
             'kids_easter': .25
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -4.1528006,
             'sunday_date': 0.0011252,
             'week_number': -.0178361,
@@ -82,7 +82,7 @@ campus_coefficients = {
         },
     },
     'Baymeadows': {
-        '09:00:00': {
+        '9:00': {
             'intercept': -67.30,
             'sunday_date': .004270, 
             'week_number': -.001089,
@@ -96,7 +96,7 @@ campus_coefficients = {
             'kids_easter': .19,
             'Christmas': -1.303112
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -43.74,
             'sunday_date': .003019, 
             'week_number': -.005647,
@@ -110,7 +110,7 @@ campus_coefficients = {
             'kids_easter': .19,
             'Christmas': -1.018843
         },
-        '7:22:00': {
+        '7:22': {
             'Total Attendance': .16
         }
     },
@@ -130,7 +130,7 @@ campus_coefficients = {
             'kids_easter': .13,
             'Christmas': 6.746094
         },
-        '09:00:00': {
+        '9:00': {
             'intercept': -59.344,
             'sunday_date': 0.0041, 
             'week_number': -0.0079,
@@ -145,7 +145,7 @@ campus_coefficients = {
             'kids_easter': .20,
             'Christmas': 2.5449
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -52.0234,
             'sunday_date': 0.0038,
             'week_number': -0.0316,
@@ -162,7 +162,7 @@ campus_coefficients = {
         },
     },
     'Jesup': {
-        '09:00:00': {
+        '9:00': {
             'intercept': -73.607412,
             'sunday_date': 0.004340, 
             'week_number': 0.014782,
@@ -174,7 +174,7 @@ campus_coefficients = {
             'kids_easter': .25,
             'Christmas': 3.982514
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -23.31375,
             'sunday_date': 0.00167,
             'week_number': -0.02805,
@@ -188,7 +188,7 @@ campus_coefficients = {
         },
     },
     'Mandarin': {
-        '09:00:00': {
+        '9:00': {
             'intercept': -50.25,
             'sunday_date': .003850, 
             'week_number': -.000900,
@@ -202,7 +202,7 @@ campus_coefficients = {
             'kids_easter': .18,
             'Christmas': -1.100
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': -35.60,
             'sunday_date': .002800, 
             'week_number': -.004500,
@@ -218,7 +218,7 @@ campus_coefficients = {
         }
     },
     'North Jax': {
-        '9:00:00': {
+        '9:00': {
             'intercept': -1489.2378,
             'sunday_date': 0.0961,
             'week_number': -1.3899,
@@ -229,7 +229,7 @@ campus_coefficients = {
             'kids_easter': .27,
             'Christmas': 85.7072
         },
-        '11:22:00': {
+        '11:22': {
             'intercept': 1066.1896,
             'sunday_date': -0.0362,
             'week_number': -1.0235,
@@ -273,7 +273,7 @@ campus_coefficients = {
         },
     },
     'Ponte Vedra': {
-        '09:00:00': {
+        '9:00': {
             'intercept' : -6.321507,
             'sunday_date' :0.001285, 
             'week_number' : -0.012768,
@@ -286,7 +286,7 @@ campus_coefficients = {
             'Christmas' : 2.685164,
             'Inclement Weather' : .15
         },
-        '11:22:00': {
+        '11:22': {
             'intercept' : 36.036786,
        	    'sunday_date' : -0.001003,
             'week_number' : -0.013473,
