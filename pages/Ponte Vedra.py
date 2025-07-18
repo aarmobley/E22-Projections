@@ -10,42 +10,32 @@ from datetime import datetime, timedelta
 
 coefficients = {
     '09:00:00': {
-        'intercept' : 45.8364,
-        'sunday_date' :-0.0013, 
-        'week_number' : -0.0119,
-        'Guest Pastor' : -1.708413,
-        'Executive Pastor' :  -1.202008,
-        'Pastor Joby' : 0.983648,
-        'Easter' : 4.9653,
-       	'Promotion Week' : 1.4468,
-        'Back to School' : 1.4468,
-        'Saturated Sunday' : 1.9425,
-        'kids_projection' : 0.30,
-        'kids_easter' : .12,
-        'Christmas' : 3.021,
-        'Inclement Weather' : .15
-        
-
-    },
-    
-  '11:22:00': {
-
-       	'intercept' : 19.6101,
-       	'sunday_date' : -0.0002,
-        'week_number' : -0.0174,
-       	'Guest Pastor' :  -1.751985,
-      	'Executive Pastor' : -1.373052,
-       	'Pastor Joby' : 0.204181,
-        'Easter' : 6.1558,
-        'Promotion Week' : 1.952,
-        'Back to School' : 1.952,
-        'Saturated Sunday' : 3.5193,
-        'kids_projection' : .30,
-        'kids_easter' : .12,
-        'kids_labor' : 17.64,
-        'Christmas' : 4.3488,
-        'Inclement Weather' : .15
-    },
+            'intercept' : -6.321507,
+            'sunday_date' :0.001285, 
+            'week_number' : -0.012768,
+            'Easter' : 5.188487,
+       	    'Promotion Week' : 1.4468,
+            'Back to School' : 1.443064,
+            'Saturated Sunday' : 1.851372,
+            'kids_projection' : 0.22,
+            'kids_easter' : .12,
+            'Christmas' : 2.685164,
+            'Inclement Weather' : .15
+        },
+        '11:22:00': {
+            'intercept' : 36.036786,
+       	    'sunday_date' : -0.001003,
+            'week_number' : -0.013473,
+            'Easter' : 6.922727,
+            'Promotion Week' : 1.979547,
+            'Back to School' : 1.952,
+            'Saturated Sunday' : 3.556182,
+            'kids_projection' : .15,
+            'kids_easter' : .12,
+            'kids_labor' : 17.64,
+            'Christmas' : 4.411963,
+            'Inclement Weather' : .15
+        }
     
 }
 
