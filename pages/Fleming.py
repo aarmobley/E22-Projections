@@ -29,7 +29,7 @@ coefficients = {
     
     
     
-    '09:00:00': {
+    '9:00': {
         'intercept' : -59.344,
         'sunday_date' : 0.0041, 
         'week_number' : -0.0079,
@@ -45,7 +45,7 @@ coefficients = {
         'Christmas' : 2.5449
     },
     
-    '11:22:00': {
+    '11:22': {
 
         'intercept' : -52.0234 ,
         'sunday_date' : 0.0038,
