@@ -62,6 +62,9 @@ coefficients = {
         'Christmas' : 4.6251
     },
     
+    '4:22' : {
+        'NewService' : .06
+    }
 }
 
 ### logo
@@ -148,6 +151,44 @@ select_event = st.selectbox("Select Event", event_options)
 def calculate_projection(service_time, pastor, event, numerical_date, week_number):
     service_options = coefficients[service_time]
     
+    # Special handling for 4:22 service
+    if service_time == '4:22':
+        # Calculate total attendance for all other services first
+        total_other_services = 0
+        for other_service in ['7:22', '09:00:00', '11:22:00']:
+            other_options = coefficients[other_service]
+            weeknum_effect = other_options['week_number'] * week_number
+            sundaydate_effect = other_options['sunday_date'] * numerical_date
+            
+            # Handle pastor and event coefficients
+            pastor_coeff = 0
+            event_coeff = 0
+            
+            if event != 'None':
+                event_coeff = other_options[event]
+            else:
+                pastor_coeff = other_options[pastor]
+            
+            prediction = ((other_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor_coeff) + event_coeff)
+            prediction_squared = prediction ** 2
+            total_other_services += prediction_squared
+        
+        # 4:22 attendance is 6% of total of other services
+        adult_attendance = total_other_services * service_options['NewService']
+        kids_attendance = adult_attendance * 0.15  # Using similar kids ratio as 7:22
+        
+        # Calculate capacities (assuming similar capacity constraints)
+        adult_capacity = adult_attendance / 766 * 100
+        kids_capacity = kids_attendance / 250 * 100
+        
+        return {
+            'adult_attendance': adult_attendance,
+            'kids_attendance': kids_attendance,
+            'adult_capacity': adult_capacity,
+            'kids_capacity': kids_capacity
+        }
+    
+    # Original calculation for other services
     weeknum_effect = service_options['week_number'] * week_number
     sundaydate_effect = service_options['sunday_date'] * numerical_date
     
@@ -187,37 +228,61 @@ numerical_date = date_mapping[selected_date_str]                                
 
 service_options = coefficients[select_service]
 
-weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-pastor = service_options[select_pastor]
-
-### No Event coefficient needs to be 0
-no_event = 0
-pastor = 0
-if select_event != 'None':
-    no_event = service_options[select_event]
+# Special handling for 4:22 service in the main prediction
+if select_service == '4:22':
+    # Calculate total attendance for all other services first
+    total_other_services = 0
+    for other_service in ['7:22', '09:00:00', '11:22:00']:
+        other_options = coefficients[other_service]
+        weeknum_effect = other_options['week_number'] * select_week
+        sundaydate_effect = other_options['sunday_date'] * numerical_date
+        
+        # Handle pastor and event coefficients
+        pastor_coeff = 0
+        event_coeff = 0
+        
+        if select_event != 'None':
+            event_coeff = other_options[select_event]
+        else:
+            pastor_coeff = other_options[select_pastor]
+        
+        prediction = ((other_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor_coeff) + event_coeff)
+        prediction_squared = prediction ** 2
+        total_other_services += prediction_squared
+    
+    # Set variables for 4:22 service
+    prediction1 = total_other_services * service_options['NewService']
+    kids_1122 = prediction1 * 0.15  # Using similar kids ratio as 7:22
+    kids_easter = prediction1 * 0.13  # Using similar Easter kids ratio as 7:22
+    
 else:
-    pastor = service_options[select_pastor ]
+    # Original calculation for other services
+    weeknum_effect = service_options['week_number'] * (select_week)
+    sundaydate_effect = service_options['sunday_date'] * (numerical_date)
 
-#event = service_options[select_event]
+    pastor = service_options[select_pastor]
 
+    ### No Event coefficient needs to be 0
+    no_event = 0
+    pastor = 0
+    if select_event != 'None':
+        no_event = service_options[select_event]
+    else:
+        pastor = service_options[select_pastor ]
 
-
-
-
-if st.button("Make Projection"):
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
     prediction1 = (prediction) ** (2)
     kids_1122 = prediction1 * service_options['kids_projection']
     kids_easter = prediction1 * service_options['kids_easter']
-                                                
+
+#event = service_options[select_event]
+
+if st.button("Make Projection"):
     ###kids_capacity = prediction1 /
     capacity = prediction1 / 766 * (100)
     kids_capacity = kids_1122 / 250 * (100)
     kids_easter_capacity = kids_easter / 250 * (100)
     
-
 
     
     #divider before projected attendance
@@ -295,7 +360,6 @@ if st.button("Generate All Services to CSV"):
     # Show preview of the data
     st.subheader("Preview of Generated Data")
     st.dataframe(df)
-    
     
     
     
