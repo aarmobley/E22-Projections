@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 ###########Coefficients for Ponte Vedra Campus
 
 coefficients = {
-    '09:00:00': {
+    '9:00': {
             'intercept' : -6.321507,
             'sunday_date' :0.001285, 
             'week_number' : -0.012768,
@@ -22,7 +22,7 @@ coefficients = {
             'Christmas' : 2.685164,
             'Inclement Weather' : .15
         },
-        '11:22:00': {
+        '11:22': {
             'intercept' : 36.036786,
        	    'sunday_date' : -0.001003,
             'week_number' : -0.013473,
