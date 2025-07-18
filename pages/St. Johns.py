@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 coefficients = {
     
 
-'09:00'  :   {
+'9:00'  :   {
 
     'intercept' : -7376.0256,
     'sunday_date' : 0.4081,
