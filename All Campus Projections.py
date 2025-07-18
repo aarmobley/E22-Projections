@@ -273,19 +273,32 @@ campus_coefficients = {
         },
     },
     'Ponte Vedra': {
-        '10:00:00': {
-            'intercept': -45.80,
-            'sunday_date': .003200, 
-            'week_number': -.001200,
-            'Guest Pastor': -.2800,
-            'Executive Pastor': -.1800,
-            'Pastor Joby': .3200,
-            'Easter': 2.800,
-            'Promotion Week': .750,
-            'Saturated Sunday': 1.000,
-            'kids_projection': 0.18, 
-            'kids_easter': .15,
-            'Christmas': -.800
+        '09:00:00': {
+            'intercept' : -6.321507,
+            'sunday_date' :0.001285, 
+            'week_number' : -0.012768,
+            'Easter' : 5.188487,
+       	    'Promotion Week' : 1.4468,
+            'Back to School' : 1.443064,
+            'Saturated Sunday' : 1.851372,
+            'kids_projection' : 0.22,
+            'kids_easter' : .12,
+            'Christmas' : 2.685164,
+            'Inclement Weather' : .15
+        },
+        '11:22:00': {
+            'intercept' : 36.036786,
+       	    'sunday_date' : -0.001003,
+            'week_number' : -0.013473,
+            'Easter' : 6.922727,
+            'Promotion Week' : 1.979547,
+            'Back to School' : 1.952,
+            'Saturated Sunday' : 3.556182,
+            'kids_projection' : .15,
+            'kids_easter' : .12,
+            'kids_labor' : 17.64,
+            'Christmas' : 4.411963,
+            'Inclement Weather' : .15
         }
     },
     'St. Johns': {
