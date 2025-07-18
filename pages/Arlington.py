@@ -17,7 +17,7 @@ import io
 coefficients = {
 
 	
-	'09:00:00': {
+	'9:00': {
         	'intercept' : -38.65,
         	'sunday_date' : .002963, 
         	'week_number' : .003602,
@@ -33,7 +33,7 @@ coefficients = {
 		
     },
     
-    '11:22:00': {
+    '11:22': {
 
        		'intercept' : -4.1528006,
        		'sunday_date' : 0.0011252,
