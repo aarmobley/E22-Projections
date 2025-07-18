@@ -52,6 +52,9 @@ campus_coefficients = {
             'Christmas': 9.5353,
             'Inclement Weather': .15
         },
+        '4:22': {
+            'Total Attendance': .06
+        }
     },
     'Arlington': {
         '9:00': {
@@ -463,6 +466,17 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
     
     return max(0, adult_attendance), max(0, kids_attendance)
 
+# Function to calculate attendance for services that are based on total attendance
+def calculate_total_based_attendance(campus, service_time, coefficients, other_services_adult, other_services_kids):
+    """Calculate attendance for services that are based on total attendance of other services"""
+    multiplier = coefficients.get('Total Attendance', 0)
+    
+    # Calculate adult and kids attendance as percentage of other services
+    adult_attendance = other_services_adult * multiplier
+    kids_attendance = other_services_kids * multiplier
+    
+    return max(0, adult_attendance), max(0, kids_attendance)
+
 # Generate projections for all campuses
 st.divider()
 
@@ -474,8 +488,16 @@ if st.button("Generate All Campus Projections"):
         campus_total_adults = 0
         campus_total_kids = 0
         
+        # First pass: calculate standard services
+        standard_services_adult = 0
+        standard_services_kids = 0
+        
         for service_time, service_coefficients in campus_services.items():
-            # Skip services that don't have intercept (like the Baymeadows 7:22 example)
+            # Skip services that are based on total attendance
+            if 'Total Attendance' in service_coefficients:
+                continue
+                
+            # Skip services that don't have intercept
             if 'intercept' not in service_coefficients:
                 continue
                 
@@ -489,8 +511,8 @@ if st.button("Generate All Campus Projections"):
             adult_capacity_pct = (adult_attendance / capacity_info['adult']) * 100
             kids_capacity_pct = (kids_attendance / capacity_info['kids']) * 100
             
-            campus_total_adults += adult_attendance
-            campus_total_kids += kids_attendance
+            standard_services_adult += adult_attendance
+            standard_services_kids += kids_attendance
             
             all_campus_data.append({
                 'Campus': campus_name,
@@ -506,6 +528,46 @@ if st.button("Generate All Campus Projections"):
                 'Adult_Capacity_Limit': capacity_info['adult'],
                 'Kids_Capacity_Limit': capacity_info['kids']
             })
+        
+        # Second pass: calculate services based on total attendance
+        for service_time, service_coefficients in campus_services.items():
+            if 'Total Attendance' not in service_coefficients:
+                continue
+                
+            adult_attendance, kids_attendance = calculate_total_based_attendance(
+                campus_name, service_time, service_coefficients, 
+                standard_services_adult, standard_services_kids
+            )
+            
+            # Get capacity information
+            capacity_info = campus_capacities.get(campus_name, {'adult': 1000, 'kids': 250})
+            adult_capacity_pct = (adult_attendance / capacity_info['adult']) * 100
+            kids_capacity_pct = (kids_attendance / capacity_info['kids']) * 100
+            
+            all_campus_data.append({
+                'Campus': campus_name,
+                'Service_Time': service_time,
+                'Date': selected_date_str,
+                'Week': select_week,
+                'Pastor': select_pastor,
+                'Event': select_event,
+                'Adult_Attendance': round(adult_attendance, 0),
+                'Kids_Attendance': round(kids_attendance, 0),
+                'Adult_Capacity_Percent': round(adult_capacity_pct, 1),
+                'Kids_Capacity_Percent': round(kids_capacity_pct, 1),
+                'Adult_Capacity_Limit': capacity_info['adult'],
+                'Kids_Capacity_Limit': capacity_info['kids']
+            })
+        
+        # Calculate campus total (including all services)
+        campus_total_adults = standard_services_adult + sum(
+            row['Adult_Attendance'] for row in all_campus_data 
+            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {})
+        )
+        campus_total_kids = standard_services_kids + sum(
+            row['Kids_Attendance'] for row in all_campus_data 
+            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {})
+        )
         
         # Add campus total row
         all_campus_data.append({
@@ -580,9 +642,15 @@ if st.button("Generate All Campus Projections"):
 with st.expander("View All Campuses and Service Times"):
     for campus, services in campus_coefficients.items():
         st.write(f"**{campus}:**")
-        service_times = [s for s in services.keys() if 'intercept' in services[s]]
+        service_times = []
+        for service_time, coeffs in services.items():
+            if 'intercept' in coeffs:
+                service_times.append(f"{service_time} (standard)")
+            elif 'Total Attendance' in coeffs:
+                service_times.append(f"{service_time} ({coeffs['Total Attendance']:.0%} of other services)")
+        
         if service_times:
             st.write(f"  - Service Times: {', '.join(service_times)}")
         else:
-            st.write(f"  - No standard services configured")
+            st.write(f"  - No services configured")
         st.write("")
