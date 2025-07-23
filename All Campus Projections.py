@@ -437,7 +437,7 @@ if saturated_option == 'Thursday':
 
 if saturated_option == 'Friday':
     # Load the Excel file from GitHub
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated - Friday.xlsx"
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
     try:
         df_saturated_wed = pd.read_excel(github_excel_url, engine="openpyxl")
         #st.success("Successfully loaded Saturated Wednesday file.")
