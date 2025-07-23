@@ -2,6 +2,12 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
+# Set page config FIRST - before any other Streamlit commands
+st.set_page_config(
+    page_title="CoE22 Projections",
+    layout="wide",  # Optional: use 'wide' or 'centered'
+    initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
+
 # Campus coefficients (your existing data structure)
 campus_coefficients = {
     'San Pablo': {
@@ -243,8 +249,12 @@ campus_coefficients = {
             'kids_projection': .23,
             'kids_easter': .29,
             'Christmas': 38.8151
+        },
+        '7:22': {
+            'Total Attendance': .23
         }
     },
+    
     'Orange Park': {
         '9:00': {
             'intercept': -45.317708,
@@ -333,6 +343,9 @@ campus_coefficients = {
             'Kids Projection': .29,
             'Kids Easter': .15
         },
+    '7:22' : {
+    'Total Attendance' : .20
+}
     }
 }
 
@@ -354,8 +367,6 @@ campus_capacities = {
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 st.image(logo_file, width=150)
 
-
-
 ##### Sidebar
 with st.sidebar:
     st.markdown("""
@@ -367,15 +378,6 @@ with st.sidebar:
                 - 04-05-2026 (Easter) 
                 
                 *Choose Inclement Weather if the weather will affect attendance""")
-
-
-
-
-
-st.set_page_config(
-    page_title="CoE22 Projections",
-    layout="wide",  # Optional: use 'wide' or 'centered'
-    initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
 
 
 # Create week numbers
@@ -407,6 +409,33 @@ event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christ
 # Select boxes
 select_pastor = st.selectbox("Select a Pastor", pastor_options)
 select_event = st.selectbox("Select Event", event_options)
+
+####adding drop down for Saturated
+st.divider()
+st.subheader("📊 Saturated Projections")
+saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
+
+if saturated_option == 'Wednesday':
+    # Load the Excel file from GitHub
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx"
+    try:
+        df_saturated_wed = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated_wed)
+    except Exception as e:
+        st.error(f"Could not load Saturated Wednesday file: {e}")
+
+if saturated_option == 'Thursday':
+    # Load the Excel file from GitHub
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx"
+    try:
+        df_saturated_wed = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated_wed)
+    except Exception as e:
+        st.error(f"Could not load Saturated Thursday file: {e}")
+
+
 
 # Function to calculate attendance for a service
 def calculate_attendance(campus, service_time, coefficients, numerical_date, week_num, pastor, event):
@@ -619,7 +648,7 @@ if st.button("Generate All Campus Projections"):
     
     # Show preview of data
     st.subheader("Preview of Projections")
-    st.dataframe(df_all_campuses.head(10))
+    st.dataframe(df_all_campuses.head(25))
     
     # Create CSV with metadata
     csv_data = f"# All Campus Attendance Projections\n"
