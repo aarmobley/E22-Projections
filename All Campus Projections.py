@@ -435,6 +435,16 @@ if saturated_option == 'Thursday':
     except Exception as e:
         st.error(f"Could not load Saturated Thursday file: {e}")
 
+if saturated_option == 'Friday':
+    # Load the Excel file from GitHub
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated - Friday.xlsx"
+    try:
+        df_saturated_wed = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated_wed)
+    except Exception as e:
+        st.error(f"Could not load Saturated Friday file: {e}")
+
 
 
 # Function to calculate attendance for a service
