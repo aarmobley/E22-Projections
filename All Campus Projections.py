@@ -422,7 +422,7 @@ if saturated_option == 'Wednesday':
     github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx"
     try:
         df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        st.success("Successfully loaded Saturated Wednesday file.")
+        #st.success("Successfully loaded Saturated Wednesday file.")
         st.dataframe(df_saturated)
     except Exception as e:
         st.error(f"Could not load Saturated Wednesday file: {e}")
@@ -431,7 +431,7 @@ if saturated_option == 'Thursday':
     github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx"
     try:
         df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        st.success("Successfully loaded Saturated Wednesday file.")
+        #st.success("Successfully loaded Saturated Wednesday file.")
         st.dataframe(df_saturated)
     except Exception as e:
         st.error(f"Could not load Saturated Wednesday file: {e}")
@@ -440,7 +440,7 @@ if saturated_option == 'Friday':
     github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
     try:
         df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        st.success("Successfully loaded Saturated Wednesday file.")
+        #st.success("Successfully loaded Saturated Wednesday file.")
         st.dataframe(df_saturated)
     except Exception as e:
         st.error(f"Could not load Saturated Wednesday file: {e}")
