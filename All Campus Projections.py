@@ -416,11 +416,6 @@ st.subheader("📊 Saturated 2025 Projections")
 saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
 
 
-
-
-
-saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
-
 df_saturated = None
 
 if saturated_option == 'Wednesday':
