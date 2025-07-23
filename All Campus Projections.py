@@ -437,7 +437,7 @@ if saturated_option == 'Thursday':
         st.error(f"Could not load Saturated Wednesday file: {e}")
 
 if saturated_option == 'Friday':
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
     try:
         df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
         #st.success("Successfully loaded Saturated Wednesday file.")
