@@ -315,37 +315,39 @@ campus_coefficients = {
         }
     },
     'St. Johns': {
-        '09:00': {
-            'intercept': -7313.2975,
-            'sunday_date': 0.4043,
-            'week_number': -0.4042,
-            'Guest Pastor': -34.2460,
-            'Executive Pastor': -17.9290,
-            'Pastor Joby': 1.4485,
-            'Easter': 384.6168,
-            'BacktoSchool': 56.9989,
-            'Saturated Sunday': 132.4245,
-            'Christmas': 348.4167,
-            'Kids Projection': .37,
-            'Kids Easter': .24
+        '9:00': {
+            'intercept': -7376.0256,
+            'sunday_date': 0.4081,
+            'week_number': -0.7781,
+            'Guest Pastor': -25.0405,
+            'Executive Pastor': -10.8755,
+            'Pastor Joby': -12.5410,
+            'Easter': 368.6713,
+            'BacktoSchool': 99.6941,
+            'Saturated Sunday': 144.4888,
+            'Christmas': 267.1487,
+            'Kids Projection': .35,
+            'Kids Easter': .24,
+            'New Building': 674.2372
         },
         '11:22': {
-            'intercept': -5819.98219,
-            'sunday_date': 0.32295,
-            'week_number': -1.40040,
-            'Guest Pastor': -15.11825,
-            'Executive Pastor': -21.48908,
-            'Pastor Joby': 9.44896,
-            'Easter': 384.33688,
-            'BacktoSchool': 128.17882,
-            'Saturated Sunday': 147.10815,
+            'intercept': -5681.6164,
+            'sunday_date': 0.3158,
+            'week_number': -1.4148,
+            'Guest Pastor': -13.0240,
+            'Executive Pastor': 0.1442,
+            'Pastor Joby': 2.1450,
+            'Easter': 373.0117,
+            'BacktoSchool': 129.6823,
+            'Saturated Sunday': 156.1531,
             'Christmas': 285.94632,
-            'Kids Projection': .29,
-            'Kids Easter': .15
+            'Kids Projection': .25,
+            'Kids Easter': .15,
+            'New Building': 492.5563
         },
-    '7:22' : {
-    'Total Attendance' : .20
-}
+        '7:22': {
+            'Total Attendance': .20
+        }
     }
 }
 
@@ -490,9 +492,14 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
     else:
         pastor_effect = service_options.get(pastor, 0)
     
-       # Calculate base prediction
+    # Add New Building effect for St. Johns campus (always applied)
+    new_building_effect = 0
+    if campus == 'St. Johns':
+        new_building_effect = service_options.get('New Building', 0)
+    
+    # Calculate base prediction
     intercept = service_options.get('intercept', 0)
-    prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
+    prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect + new_building_effect
     
     #Make correct transformation based on Campus --- St. Johns and North Jax do not need to be squared
     if campus in ['St. Johns', 'North Jax']:
@@ -678,7 +685,7 @@ if st.button("Generate All Campus Projections"):
     
     # Show preview of data
     st.subheader("Preview of Projections")
-    st.dataframe(df_all_campuses.head(25))
+    st.dataframe(df_all_campuses.head(40))
     
     # Create CSV with metadata
     csv_data = f"# All Campus Attendance Projections\n"
