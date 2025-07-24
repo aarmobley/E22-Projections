@@ -652,21 +652,21 @@ if st.button("Generate All Campus Projections"):
     )
 
 # Optional: Show campus list
-with st.expander("View All Campuses and Service Times"):
-    for campus, services in campus_coefficients.items():
-        st.write(f"**{campus}:**")
-        service_times = []
-        for service_time, coeffs in services.items():
-            if 'intercept' in coeffs:
-                service_times.append(f"{service_time} (standard)")
-            elif 'Total Attendance' in coeffs:
-                service_times.append(f"{service_time} ({coeffs['Total Attendance']:.0%} of other services)")
+#with st.expander("View All Campuses and Service Times"):
+    #for campus, services in campus_coefficients.items():
+        #st.write(f"**{campus}:**")
+        #service_times = []
+        #for service_time, coeffs in services.items():
+            #if 'intercept' in coeffs:
+                #service_times.append(f"{service_time} (standard)")
+            #elif 'Total Attendance' in coeffs:
+                #service_times.append(f"{service_time} ({coeffs['Total Attendance']:.0%} of other services)")
         
-        if service_times:
-            st.write(f"  - Service Times: {', '.join(service_times)}")
-        else:
-            st.write(f"  - No services configured")
-        st.write("")
+        #if service_times:
+            #st.write(f"  - Service Times: {', '.join(service_times)}")
+        #else:
+            #st.write(f"  - No services configured")
+        #st.write("")
 
 
 
