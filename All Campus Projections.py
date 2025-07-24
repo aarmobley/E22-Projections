@@ -445,6 +445,15 @@ if saturated_option == 'Friday':
     except Exception as e:
         st.error(f"Could not load Saturated Wednesday file: {e}")
 
+if saturated_option == 'Saturday':
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedSaturday2025.xlsx"
+    try:
+        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated)
+    except Exception as e:
+        st.error(f"Could not load Saturated Saturday file: {e}")
+
 # --------------------- SATURATED DOWNLOAD BUTTON --------------------- #
 if df_saturated is not None:
     st.markdown("### 📥 Export Saturated Projections")
