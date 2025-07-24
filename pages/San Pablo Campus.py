@@ -90,7 +90,7 @@ with st.sidebar:
                 
                
                 
-                *Choose Inclement Weather if the weather will effect attendance""")
+                """)
 
 title = st.title("San Pablo Attendance Projection")
 
