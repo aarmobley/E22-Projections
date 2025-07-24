@@ -412,60 +412,7 @@ event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christ
 select_pastor = st.selectbox("Select a Pastor", pastor_options)
 select_event = st.selectbox("Select Event", event_options)
 
-####adding drop down for Saturated
-st.divider()
-st.subheader("📊 Saturated 2025 Projections")
-saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
 
-
-df_saturated = None
-
-if saturated_option == 'Wednesday':
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx"
-    try:
-        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        #st.success("Successfully loaded Saturated Wednesday file.")
-        st.dataframe(df_saturated)
-    except Exception as e:
-        st.error(f"Could not load Saturated Wednesday file: {e}")
-        
-if saturated_option == 'Thursday':
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx"
-    try:
-        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        #st.success("Successfully loaded Saturated Wednesday file.")
-        st.dataframe(df_saturated)
-    except Exception as e:
-        st.error(f"Could not load Saturated Wednesday file: {e}")
-
-if saturated_option == 'Friday':
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
-    try:
-        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        #st.success("Successfully loaded Saturated Wednesday file.")
-        st.dataframe(df_saturated)
-    except Exception as e:
-        st.error(f"Could not load Saturated Wednesday file: {e}")
-
-if saturated_option == 'Saturday':
-    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedSaturday2025.xlsx"
-    try:
-        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
-        #st.success("Successfully loaded Saturated Wednesday file.")
-        st.dataframe(df_saturated)
-    except Exception as e:
-        st.error(f"Could not load Saturated Saturday file: {e}")
-
-# --------------------- SATURATED DOWNLOAD BUTTON --------------------- #
-if df_saturated is not None:
-    st.markdown("### 📥 Export Saturated Projections")
-    saturated_csv = df_saturated.to_csv(index=False)
-
-    st.download_button(
-        label="📤 Download Saturated Projections as CSV",
-        data=saturated_csv,
-        file_name=f"Saturated_{saturated_option}_Projections.csv",
-        mime="text/csv")
 
 
 
@@ -720,3 +667,61 @@ with st.expander("View All Campuses and Service Times"):
         else:
             st.write(f"  - No services configured")
         st.write("")
+
+
+
+
+####adding drop down for Saturated
+st.divider()
+st.subheader("📊 Saturated 2025 Projections")
+saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
+
+
+df_saturated = None
+
+if saturated_option == 'Wednesday':
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx"
+    try:
+        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated)
+    except Exception as e:
+        st.error(f"Could not load Saturated Wednesday file: {e}")
+        
+if saturated_option == 'Thursday':
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx"
+    try:
+        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated)
+    except Exception as e:
+        st.error(f"Could not load Saturated Wednesday file: {e}")
+
+if saturated_option == 'Friday':
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx"
+    try:
+        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated)
+    except Exception as e:
+        st.error(f"Could not load Saturated Wednesday file: {e}")
+
+if saturated_option == 'Saturday':
+    github_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedSaturday2025.xlsx"
+    try:
+        df_saturated = pd.read_excel(github_excel_url, engine="openpyxl")
+        #st.success("Successfully loaded Saturated Wednesday file.")
+        st.dataframe(df_saturated)
+    except Exception as e:
+        st.error(f"Could not load Saturated Saturday file: {e}")
+
+# --------------------- SATURATED DOWNLOAD BUTTON --------------------- #
+if df_saturated is not None:
+    st.markdown("### 📥 Export Saturated Projections")
+    saturated_csv = df_saturated.to_csv(index=False)
+
+    st.download_button(
+        label="📤 Download Saturated Projections as CSV",
+        data=saturated_csv,
+        file_name=f"Saturated_{saturated_option}_Projections.csv",
+        mime="text/csv")
