@@ -379,7 +379,7 @@ with st.sidebar:
                 - 01-04-2026 (Back to School)
                 - 04-05-2026 (Easter) 
                 
-                *Choose Inclement Weather if the weather will affect attendance""")
+                """)
 
 
 # Create week numbers
