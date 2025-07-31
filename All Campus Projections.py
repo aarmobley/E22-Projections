@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
+query_params = st.query_params
+embedded = query_params.get('embedded', 'false') == 'true'
+
+if embedded:
+    st.markdown("""
+    <style>
+        .stApp > header {display: none;}
+        .stApp > div:first-child {display: none;}
+        .main .block-container {padding-top: 0.5rem;}
+    </style>
+    """, unsafe_allow_html=True)
 # Set page config FIRST - before any other Streamlit commands
 st.set_page_config(
     page_title="CoE22 Projections",
