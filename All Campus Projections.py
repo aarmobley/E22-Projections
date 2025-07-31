@@ -8,6 +8,16 @@ st.set_page_config(
     layout="wide",  # Optional: use 'wide' or 'centered'
     initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
 
+st.markdown("""
+<script>
+if (window.parent !== window) {
+    // Running in iframe
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+}
+</script>
+""", unsafe_allow_html=True)
+
 # Campus coefficients (your existing data structure)
 campus_coefficients = {
     'San Pablo': {
