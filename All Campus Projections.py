@@ -2,6 +2,19 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
+st.markdown("""
+<div style="background-color: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1f77b4; margin-bottom: 20px;">
+    <p style="margin: 0; font-size: 14px;">
+        <strong>💡 Download Tip:</strong> If the download button doesn't work, 
+        <a href="https://e22projections.streamlit.app/" target="_blank" style="color: #1f77b4; text-decoration: none;">
+        <strong>click here to open in a new window</strong></a> where downloads work perfectly.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+
+
+
 query_params = st.query_params
 embedded = query_params.get('embedded', 'false') == 'true'
 
