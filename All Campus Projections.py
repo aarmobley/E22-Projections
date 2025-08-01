@@ -2,13 +2,22 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
+
 st.markdown("""
-<div style="background-color: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1f77b4; margin-bottom: 20px;">
-    <p style="margin: 0; font-size: 14px;">
-        <strong>💡 Download Tip:</strong> If the download button doesn't work, 
-        <a href="https://e22projections.streamlit.app/" target="_blank" style="color: #1f77b4; text-decoration: none;">
-        <strong>click here to open in a new window</strong></a> where downloads work perfectly.
-    </p>
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="https://e22projections.streamlit.app/" target="_blank" 
+       style="display: inline-block; 
+              background-color: #1f77b4; 
+              color: white; 
+              padding: 8px 16px; 
+              border-radius: 6px; 
+              text-decoration: none; 
+              font-size: 14px;
+              font-weight: 500;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              transition: background-color 0.3s;">
+        🔗 Open in New Window for Downloads
+    </a>
 </div>
 """, unsafe_allow_html=True)
 
