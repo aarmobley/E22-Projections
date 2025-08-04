@@ -417,7 +417,7 @@ if st.button("Make Projection"):
         # Calculate total attendance from all three main services first
         total_attendance = 0
         
-        for service in ['7:22', '09:00', '11:22']:
+        for service in ['7:22', '09:00', '11:22', '4:22']:
             service_options = coefficients[service]
             weeknum_effect = service_options['week_number'] * select_week
             sundaydate_effect = service_options['sunday_date'] * numerical_date
@@ -576,3 +576,4 @@ if st.button("Make Projection"):
             file_name=f"San_Pablo_{select_service.replace(':', '_')}_{selected_date_str.replace('-', '_')}.csv",
             mime="text/csv"
         )
+
