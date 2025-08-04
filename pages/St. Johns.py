@@ -171,7 +171,7 @@ def calculate_prediction(service_name, numerical_date, select_week, select_pasto
 if st.button("Make Projection"):
     if select_service == '7:22':
         # Calculate predictions for 9:00 and 11:22 services
-        prediction_9 = calculate_prediction('09:00', numerical_date, select_week, select_pastor, select_event)
+        prediction_9 = calculate_prediction('9:00', numerical_date, select_week, select_pastor, select_event)
         prediction_11 = calculate_prediction('11:22', numerical_date, select_week, select_pastor, select_event)
         
         # Calculate 7:22 as 20% of the combined total
@@ -179,8 +179,8 @@ if st.button("Make Projection"):
         prediction = combined_total * coefficients['7:22']['PercentofTotal']
         
         # For 7:22, we'll use the kids projection from 9:00 service as a default
-        kids_1122 = prediction * coefficients['09:00']['Kids Projection']
-        kids_easter = prediction * coefficients['09:00']['Kids Easter']
+        kids_1122 = prediction * coefficients['9:00']['Kids Projection']
+        kids_easter = prediction * coefficients['9:00']['Kids Easter']
         
     else:
         # Original calculation for 9:00 and 11:22
@@ -279,6 +279,7 @@ if st.button("Make Projection", key="students_projection"):
         sunday = prediction_students_final * .55
         st.write(f"Projected {select_students} Wednesday Attendance: {wednesday:.0f}")
         st.write(f"Projected {select_students} Sunday Attendance: {sunday:.0f}")
+
 
 
 
