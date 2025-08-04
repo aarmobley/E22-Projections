@@ -155,7 +155,7 @@ def calculate_projection(service_time, pastor, event, numerical_date, week_numbe
     if service_time == '4:22':
         # Calculate total attendance for all other services first
         total_other_services = 0
-        for other_service in ['7:22', '09:00:00', '11:22:00']:
+        for other_service in ['7:22', '09:00', '11:22']:
             other_options = coefficients[other_service]
             weeknum_effect = other_options['week_number'] * week_number
             sundaydate_effect = other_options['sunday_date'] * numerical_date
@@ -232,7 +232,7 @@ service_options = coefficients[select_service]
 if select_service == '4:22':
     # Calculate total attendance for all other services first
     total_other_services = 0
-    for other_service in ['7:22', '09:00:00', '11:22:00']:
+    for other_service in ['7:22', '9:00', '11:22']:
         other_options = coefficients[other_service]
         weeknum_effect = other_options['week_number'] * select_week
         sundaydate_effect = other_options['sunday_date'] * numerical_date
@@ -372,3 +372,4 @@ if st.button("Generate All Services to CSV"):
 #st.write(f"Kids Projection: {kids1122: .2f}")
     
     
+
