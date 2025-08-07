@@ -19,7 +19,7 @@ coefficients = {
     'Executive Pastor' : -10.8755,
     'Pastor Joby' : -12.5410,
     'Easter' : 368.6713,
-    'BacktoSchool' : 99.6941,
+    'Promotion Week' : 99.6941,
     'Saturated Sunday' : 144.4888,
     'Christmas' : 267.1487,
     'Kids Projection' : .35,
@@ -37,7 +37,7 @@ coefficients = {
     'Executive Pastor' : 0.1442,
     'Pastor Joby' :2.1450,
     'Easter' : 373.0117,
-    'BacktoSchool' : 129.6823,
+    'Promotion Week' : 129.6823,
     'Saturated Sunday' : 156.1531,
     'Christmas' : 285.94632,
     'Kids Projection' : .25,
@@ -129,7 +129,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
 
 
 ####creating selectbox options
@@ -279,6 +279,7 @@ if st.button("Make Projection", key="students_projection"):
         sunday = prediction_students_final * .55
         st.write(f"Projected {select_students} Wednesday Attendance: {wednesday:.0f}")
         st.write(f"Projected {select_students} Sunday Attendance: {sunday:.0f}")
+
 
 
 
