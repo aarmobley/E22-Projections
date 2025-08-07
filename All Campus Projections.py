@@ -3,6 +3,13 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 
+# Set page config FIRST - before any other Streamlit commands
+st.set_page_config(
+    page_title="CoE22 Projections",
+    layout="wide",  # Optional: use 'wide' or 'centered'
+    initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
+
+
 st.markdown("""
 <div style="text-align: center; margin-bottom: 20px;">
     <a href="https://e22projections.streamlit.app/" 
@@ -37,11 +44,7 @@ if embedded:
         .main .block-container {padding-top: 0.5rem;}
     </style>
     """, unsafe_allow_html=True)
-# Set page config FIRST - before any other Streamlit commands
-st.set_page_config(
-    page_title="CoE22 Projections",
-    layout="wide",  # Optional: use 'wide' or 'centered'
-    initial_sidebar_state="expanded")  # 👈 THIS forces sidebar to stay open
+
 
 st.markdown("""
 <script>
@@ -134,6 +137,9 @@ campus_coefficients = {
             'kids_projection': .30,
             'kids_easter': .25
         },
+        '7:22': {
+            'Total Attendance': .16
+        }
     },
     'Baymeadows': {
         '9:00': {
@@ -769,4 +775,5 @@ if df_saturated is not None:
         label="📤 Download Saturated Projections as CSV",
         data=saturated_csv,
         file_name=f"Saturated_{saturated_option}_Projections.csv",
-        mime="text/csv")
+        mime="text/csv"
+    )
