@@ -17,7 +17,7 @@ coefficients = {
     'Executive Pastor' : -0.054834,
     'Pastor Joby' : 0.545095,
     'Easter' : 5.713542,
-    'BacktoSchool' : 1.382218,
+    'Promotion Week' : 1.382218,
     'Saturated Sunday' : 1.507777,
     'Christmas' : 1.679073,
     'Kids Projection' : .27,
@@ -34,7 +34,7 @@ coefficients = {
     'Executive Pastor' : -0.305494,
     'Pastor Joby' : -0.325970,
     'Easter' : 6.184421,
-    'BacktoSchool' : 1.411250,
+    'Promotion Week' : 1.411250,
     'Saturated Sunday' : 1.431013,
     'Christmas' : 3.997914,
     'Kids Projection' : .33,
@@ -101,7 +101,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
 
 
 ####creating selectbox options
@@ -190,3 +190,4 @@ if st.button("Make Projection"):
          ## HTML and markdown for kids capacity
         color = "red" if kids_capacity > 80 else "blue"
         st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_capacity:.0f}%</p>", unsafe_allow_html=True)
+
