@@ -2,11 +2,6 @@
 
 
 
-
-
-
-
-
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -49,6 +44,10 @@ coefficients = {
 	    'Christmas' : 3.285601
     },
     
+    '7:22': {
+        'Total_Attendance' : .16
+    }
+    
 }
 
 ### logo
@@ -80,7 +79,7 @@ title = st.title("Arlington Attendance Projection")
 #num_date = dates['num_date'].tolist()
 num_week = [week for _ in range(3) for week in range(1, 53)]
 if len(num_week) < 156:
-    num_week.apend(53)
+    num_week.append(53)
 #momentum = ['Easter', 'Back to School-August', 'Christmas', 'Back to School-January', 'Easter 2025']
 
 
@@ -132,42 +131,77 @@ numerical_date = date_mapping[selected_date_str]                                
 
 service_options = coefficients[select_service]
 
-weeknum_effect = service_options['week_number'] * (select_week)
-sundaydate_effect = service_options['sunday_date'] * (numerical_date)
-
-pastor = service_options[select_pastor]
-
-
-### If there is no event, select none
-### No Event coefficient needs to be 0
-no_event = 0
-pastor = 0
-
-if select_event != 'None':
-    no_event = service_options[select_event]
-else: pastor = service_options[select_pastor]
-
-#event = service_options[select_event]
-
-
+# Function to calculate 9:00 and 11:22 combined attendance for 7:22 calculation
+def calculate_combined_attendance():
+    combined_attendance = 0
     
+    for service in ['9:00', '11:22']:
+        service_coeff = coefficients[service]
+        
+        # Calculate effects
+        weeknum_effect = service_coeff['week_number'] * select_week
+        sundaydate_effect = service_coeff['sunday_date'] * numerical_date
+        
+        # Determine pastor and event effects
+        pastor_effect = 0
+        event_effect = 0
+        
+        if select_event != 'None':
+            event_effect = service_coeff[select_event]
+        else:
+            pastor_effect = service_coeff[select_pastor]
+        
+        # Calculate prediction for this service
+        prediction = service_coeff['intercept'] + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
+        adult_attendance = prediction ** 2
+        combined_attendance += adult_attendance
+    
+    return combined_attendance
 
+# Calculate attendance based on service type
+if select_service == '7:22':
+    # For 7:22, calculate 16% of combined 9:00 and 11:22 attendance
+    combined_attendance = calculate_combined_attendance()
+    prediction1 = combined_attendance * service_options['Total_Attendance']
+    
+    # For 7:22, use average kids projection from other services
+    kids_projection_722 = 0.29  # Same as other services
+    kids_easter_722 = 0.25     # Same as other services
+    
+    kids_1122 = prediction1 * kids_projection_722
+    kids_easter = prediction1 * kids_easter_722
+    
+else:
+    # Original calculation for 9:00 and 11:22
+    weeknum_effect = service_options['week_number'] * (select_week)
+    sundaydate_effect = service_options['sunday_date'] * (numerical_date)
 
-### Predict button fromula
+    pastor = service_options[select_pastor]
 
-if st.button("Make Projection"):
+    ### If there is no event, select none
+    ### No Event coefficient needs to be 0
+    no_event = 0
+    pastor = 0
+
+    if select_event != 'None':
+        no_event = service_options[select_event]
+    else: 
+        pastor = service_options[select_pastor]
+
     prediction = ((service_options['intercept']) + (sundaydate_effect) + (weeknum_effect) + (pastor) + no_event)
-    prediction1 =  (prediction) ** (2)
+    prediction1 = (prediction) ** (2)
     
     kids_1122 = prediction1 * service_options['kids_projection']
     kids_easter = prediction1 * service_options['kids_easter']
-    
-    
+
+
+### Predict button formula
+
+if st.button("Make Projection"):
     ###capacity
     capacity = prediction1 / 850 * (100)
     kids_cap = kids_1122 / 225 * (100)
     
-
 
     
     #divider before projected attendance
@@ -191,8 +225,9 @@ if st.button("Make Projection"):
     #####kids projection and capacity
     if select_event == 'Easter':
         st.write(f"Projected Kids Attendance: {kids_easter: .0f}")
-        color = "red" if kids_cap > 80 else "blue"
-        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_cap:.0f}%</p>", unsafe_allow_html=True)
+        kids_cap_easter = kids_easter / 225 * 100
+        color = "red" if kids_cap_easter > 80 else "blue"
+        st.markdown(f"<p style='color:{color}; font-size:18px;'>Capacity: {kids_cap_easter:.0f}%</p>", unsafe_allow_html=True)
     
     else: 
         st.write(f"Projected Kids Attendance: {kids_1122: .0f}")
@@ -206,8 +241,10 @@ def generate_all_services_csv():
     # Calculate projections for all services
     data = []
     
-    for service_time in service_times:
-        service_coeff = coefficients[service_time]
+    # First calculate combined attendance for 7:22 calculation
+    combined_attendance = 0
+    for service in ['9:00', '11:22']:
+        service_coeff = coefficients[service]
         
         # Calculate effects
         weeknum_effect = service_coeff['week_number'] * select_week
@@ -225,12 +262,45 @@ def generate_all_services_csv():
         # Calculate prediction
         prediction = service_coeff['intercept'] + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
         adult_attendance = prediction ** 2
-        
-        # Calculate kids attendance
-        if select_event == 'Easter':
-            kids_attendance = adult_attendance * service_coeff['kids_easter']
+        combined_attendance += adult_attendance
+    
+    for service_time in service_times:
+        if service_time == '7:22':
+            # Special calculation for 7:22
+            adult_attendance = combined_attendance * coefficients[service_time]['Total_Attendance']
+            
+            # Use standard kids projections for 7:22
+            if select_event == 'Easter':
+                kids_attendance = adult_attendance * 0.25
+            else:
+                kids_attendance = adult_attendance * 0.29
+                
         else:
-            kids_attendance = adult_attendance * service_coeff['kids_projection']
+            # Original calculation for 9:00 and 11:22
+            service_coeff = coefficients[service_time]
+            
+            # Calculate effects
+            weeknum_effect = service_coeff['week_number'] * select_week
+            sundaydate_effect = service_coeff['sunday_date'] * numerical_date
+            
+            # Determine pastor and event effects
+            pastor_effect = 0
+            event_effect = 0
+            
+            if select_event != 'None':
+                event_effect = service_coeff[select_event]
+            else:
+                pastor_effect = service_coeff[select_pastor]
+            
+            # Calculate prediction
+            prediction = service_coeff['intercept'] + sundaydate_effect + weeknum_effect + pastor_effect + event_effect
+            adult_attendance = prediction ** 2
+            
+            # Calculate kids attendance
+            if select_event == 'Easter':
+                kids_attendance = adult_attendance * service_coeff['kids_easter']
+            else:
+                kids_attendance = adult_attendance * service_coeff['kids_projection']
         
         # Calculate capacities
         adult_capacity = (adult_attendance / 850) * 100
@@ -274,5 +344,4 @@ if st.button("Generate CSV Report for All Services"):
     # Display preview of the data
     st.write("Preview of CSV data:")
     st.dataframe(csv_data)
-    
-    
+
