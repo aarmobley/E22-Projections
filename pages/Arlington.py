@@ -20,7 +20,7 @@ coefficients = {
         	'Executive Pastor' :  -.8438,
         	'Pastor Joby' : -.1221,
         	'Easter' : 6.193,
-       	 	'BacktoSchool' : .08546,
+       	 	'Promotion Week' : .08546,
         	'Saturated Sunday' : .9908,
         	'kids_projection' : 0.29,
 			'kids_easter' : .25,
@@ -37,7 +37,7 @@ coefficients = {
       		'Executive Pastor' : -.3526798,
        		'Pastor Joby' : .1628141,
         	'Easter' : 5.4945168,
-        	'BacktoSchool' : -.9172174,
+        	'Promotion Week' : -.9172174,
         	'Saturated Sunday' : 1.6824265,
         	'kids_projection' : .29,
 			'kids_easter' : .25,
@@ -111,7 +111,7 @@ select_week = int(date_options.split('Week ')[-1].strip(')'))
 #list pastors
 pastor_options = ['Pastor Joby', 'Guest Pastor', 'Executive Pastor']
 
-event_options = ['None', 'Easter', 'BacktoSchool', 'Saturated Sunday', 'Christmas']
+event_options = ['None', 'Easter', 'Promotion Week', 'Saturated Sunday', 'Christmas']
 
 
 select_service = st.selectbox("Select a Service", service_times)
@@ -344,4 +344,5 @@ if st.button("Generate CSV Report for All Services"):
     # Display preview of the data
     st.write("Preview of CSV data:")
     st.dataframe(csv_data)
+
 
