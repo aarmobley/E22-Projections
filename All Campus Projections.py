@@ -75,19 +75,19 @@ campus_coefficients = {
             'Christmas': 6.2412
         },
         '9:00': {
-            'intercept': -179.262118,
-            'sunday_date': 0.011448, 
-            'week_number': -0.006540,
-            'Guest Pastor': -1.275874,
-            'Executive Pastor': -0.510051,
-            'Pastor Joby': 1.122999,
-            'Easter': 14.028790,
-            'Promotion Week': 0.332188,
-            'Back to School': 1.276608,
-            'Saturated Sunday': 7.142149,
+            'intercept': -171.987662,
+            'sunday_date': 0.011074, 
+            'week_number': -0.008375,
+            'Guest Pastor': -1.329637,
+            'Executive Pastor': -0.615583,
+            'Pastor Joby': 1.029747,
+            'Easter': 14.137845,
+            'Promotion Week': 1.400238,
+            'Back to School': 1.400238,
+            'Saturated Sunday': 7.225865,
             'kids_projection': 0.20,
             'kids_easter': .12,
-            'Christmas': 4.326568
+            'Christmas': 4.600030
         },
         '11:22': {
             'intercept': -151.7846,
@@ -777,4 +777,5 @@ if df_saturated is not None:
         file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
+
 
