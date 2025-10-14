@@ -60,19 +60,16 @@ if (window.parent !== window) {
 campus_coefficients = {
     'San Pablo': {
         '7:22': {
-            'intercept': -128.6394,
-            'sunday_date': 0.0087,
-            'week_number': -0.067,
-            'Guest Pastor': -1.856,
-            'Executive Pastor': -1.1375,
-            'Pastor Joby': -1.1643,
-            'Easter': 8.5637,
-            'Promotion Week': 1.52663,
-            'Back to School': 1.8641,
-            'Saturated Sunday': 13.8692,
+            'intercept': -142.667110,
+            'sunday_date': 0.009315,
+            'week_number': -0.056675,
+            'Easter': 8.531395,
+            'Promotion Week': 1.680988,
+            'Back to School': 1.680988,
+            'Saturated Sunday': 13.262508,
             'kids_projection': .08,
             'kids_easter': .08,
-            'Christmas': 6.2412
+            'Christmas': 5.896587
         },
         '9:00': {
             'intercept': -171.987662,
@@ -777,5 +774,6 @@ if df_saturated is not None:
         file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
+
 
 
