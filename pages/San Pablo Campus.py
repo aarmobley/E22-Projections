@@ -11,64 +11,53 @@ from datetime import datetime, timedelta
 
 coefficients = {
 
- '7:22': {
-        'intercept' : -128.6394,
-        'sunday_date' : 0.0087,
-        'week_number' : -0.067,
-        'Guest Pastor' : -1.856,
-        'Executive Pastor' : -1.1375,
-        'Pastor Joby' : -1.1643,
-        'Easter' :  8.5637,
-        'Promotion Week' : 1.52663,
-        'Back to School' : 1.8641,
-        'Saturated Sunday' :  13.8692,
-        'kids_projection' : .08,
-        'kids_easter' : .08,
-        'Christmas' : 6.2412
-    },
-    
-    
-    
-  '9:00': {
-        'intercept' : -179.262118,
-        'sunday_date' : 0.011448, 
-        'week_number' : -0.006540,
-        'Guest Pastor' : -1.275874,
-        'Executive Pastor' :  -0.510051,
-        'Pastor Joby' : 1.122999,
-        'Easter' : 14.028790,
-       	'Promotion Week' : 0.332188,
-        'Back to School' : 1.276608,
-        'Saturated Sunday' : 7.142149,
-        'kids_projection' : 0.20,
-        'kids_easter' : .12,
-        'Christmas' : 4.326568
-        
-
-    },
-    
-   '11:22': {                     ##### updated 02/24/25
-
-       	'intercept' : -151.7846,
-       	'sunday_date' : 0.01,
-        'week_number' : -0.0726,
-       	'Guest Pastor' :  -1.6713,
-      	'Executive Pastor' : -1.4246,
-       	'Pastor Joby' : 0.2733,
-        'Easter' : 14.6459,
-        'Promotion Week' : 3.4931,
-        'Back to School' : 3.4931,
-        'Saturated Sunday' : 6.2969,
-        'kids_projection' : .15,
-        'kids_easter' : .12,
-        'kids_labor' : 17.64,
-        'Christmas' : 9.5353,
-        'Inclement Weather' : .15
-    },
-    
- '4:22': {
-        'Total Attendance' : .06
-}
+  '7:22': {
+            'intercept': -142.667110,
+            'sunday_date': 0.009315,
+            'week_number': -0.056675,
+            'Easter': 8.531395,
+            'Promotion Week': 1.680988,
+            'Back to School': 1.680988,
+            'Saturated Sunday': 13.262508,
+            'kids_projection': .08,
+            'kids_easter': .08,
+            'Christmas': 5.896587
+        },
+        '9:00': {
+            'intercept': -171.987662,
+            'sunday_date': 0.011074, 
+            'week_number': -0.008375,
+            'Guest Pastor': -1.329637,
+            'Executive Pastor': -0.615583,
+            'Pastor Joby': 1.029747,
+            'Easter': 14.137845,
+            'Promotion Week': 1.400238,
+            'Back to School': 1.400238,
+            'Saturated Sunday': 7.225865,
+            'kids_projection': 0.20,
+            'kids_easter': .12,
+            'Christmas': 4.600030
+        },
+        '11:22': {
+            'intercept': -151.7846,
+            'sunday_date': 0.01,
+            'week_number': -0.0726,
+            'Guest Pastor': -1.6713,
+            'Executive Pastor': -1.4246,
+            'Pastor Joby': 0.2733,
+            'Easter': 14.6459,
+            'Promotion Week': 3.4931,
+            'Back to School': 3.4931,
+            'Saturated Sunday': 6.2969,
+            'kids_projection': .15,
+            'kids_easter': .12,
+            'kids_labor': 17.64,
+            'Christmas': 9.5353,
+            'Inclement Weather': .15
+        },
+        '4:22': {
+            'Total Attendance': .06
+        }
 }
 
 ### logo
@@ -576,6 +565,7 @@ if st.button("Make Projection"):
             file_name=f"San_Pablo_{select_service.replace(':', '_')}_{selected_date_str.replace('-', '_')}.csv",
             mime="text/csv"
         )
+
 
 
 
