@@ -287,16 +287,16 @@ campus_coefficients = {
             'Christmas': 71.7278
         },
         '11:22': {
-            'intercept': 1066.1896,
-            'sunday_date': -0.0362,
-            'week_number': -1.0235,
-            'Saturated Sunday': 280.5179,
-            'Easter': 80.8687,
+            'intercept': -85.5483,
+            'sunday_date': 0.0206 ,
+            'week_number': -0.2566,
+            'Saturated Sunday': 248.2769,
+            'Easter': 179.4513,
             'Promotion Week': 92.1327,
-            'Back to School': 92.1327,
+            'Back to School': 51.4164,
             'kids_projection': .23,
             'kids_easter': .29,
-            'Christmas': 38.8151
+            'Christmas': 20.1802
         },
         '7:22': {
             'Total Attendance': .23
@@ -774,6 +774,7 @@ if df_saturated is not None:
         file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
+
 
 
 
