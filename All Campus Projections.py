@@ -276,15 +276,15 @@ campus_coefficients = {
     },
     'North Jax': {
         '9:00': {
-            'intercept': -1489.2378,
-            'sunday_date': 0.0961,
-            'week_number': -1.3899,
-            'Saturated Sunday': 125.3024,
-            'Easter': 86.2632,
-            'Promotion Week': 61.8972,
+            'intercept': -1717.7378,
+            'sunday_date': 0.1062,
+            'week_number': -0.6172,
+            'Saturated Sunday': 156.4363,
+            'Easter': 125.3663,
+            'Promotion Week':  22.1525,
             'kids_projection': .32,
             'kids_easter': .27,
-            'Christmas': 85.7072
+            'Christmas': 71.7278
         },
         '11:22': {
             'intercept': 1066.1896,
@@ -774,6 +774,7 @@ if df_saturated is not None:
         file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
+
 
 
 
