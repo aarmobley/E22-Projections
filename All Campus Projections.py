@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 st.set_page_config(
     page_title="CoE22 Projections",
     layout="wide",
-    initial_sidebar_state="expanded")
+    initial_sidebar_state="collapsed")
 
 
 st.markdown("""
@@ -59,15 +59,13 @@ easter_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Update
 try:
     df_easter = pd.read_excel(easter_excel_url, engine="openpyxl")
 
-    # Clean ServiceDateTime - remove trailing :00 seconds
+    # Clean ServiceDateTime - remove :00 seconds (5:22:00 PM → 5:22 PM)
     if 'ServiceDateTime' in df_easter.columns:
         cleaned = []
         for val in df_easter['ServiceDateTime']:
-            s = str(val)
-            if len(s) >= 5:
-                cleaned.append(s[:5])
-            else:
-                cleaned.append(s)
+            s = str(val).strip()
+            s = s.replace(':00 ', ' ').replace(':00', '')
+            cleaned.append(s)
         df_easter['ServiceDateTime'] = cleaned
 
     # Filter dropdowns side by side
@@ -507,16 +505,12 @@ campus_capacities = {
 }
 
 
-with st.sidebar:
-    st.markdown("""
-                Important Dates: 
-                - 08-10-2025 (Promotion Week)  
-                - 09-14-2025 (Saturated Sunday)
-                - 12-24-2025 (Christmas)
-                - 01-04-2026 (Back to School)
-                - 04-05-2026 (Easter) 
-                
-                """)
+# Important Dates: 
+# - 08-10-2025 (Promotion Week)  
+# - 09-14-2025 (Saturated Sunday)
+# - 12-24-2025 (Christmas)
+# - 01-04-2026 (Back to School)
+# - 04-05-2026 (Easter)
 
 
 num_week = [week for _ in range(3) for week in range(1, 53)]
