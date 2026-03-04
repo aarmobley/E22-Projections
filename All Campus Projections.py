@@ -8,14 +8,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed")
 
-# Hide sidebar completely
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    [data-testid="stSidebarCollapsedControl"] {display: none;}
-</style>
-""", unsafe_allow_html=True)
-
 
 st.markdown("""
 <div style="text-align: center; margin-bottom: 20px;">
