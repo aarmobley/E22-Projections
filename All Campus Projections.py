@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 st.set_page_config(
     page_title="CoE22 Projections",
     layout="wide",
-    initial_sidebar_state="collapsed")
+    initial_sidebar_state="expanded")
 
 
 st.markdown("""
