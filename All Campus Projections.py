@@ -700,26 +700,6 @@ if st.button("Generate All Campus Projections"):
             'Kids_Capacity_Limit': 'N/A'
         })
 
-    grand_total_adults = sum(row['Adult_Attendance'] for row in all_campus_data
-                           if row['Service_Time'] != 'ALL' and isinstance(row['Adult_Attendance'], (int, float)))
-    grand_total_kids = sum(row['Kids_Attendance'] for row in all_campus_data
-                         if row['Service_Time'] != 'ALL' and isinstance(row['Kids_Attendance'], (int, float)))
-
-    all_campus_data.append({
-        'Campus': 'GRAND TOTAL - ALL CAMPUSES',
-        'Service_Time': 'ALL',
-        'Date': selected_date_str,
-        'Week': select_week,
-        'Pastor': select_pastor,
-        'Event': select_event,
-        'Adult_Attendance': round(grand_total_adults, 0),
-        'Kids_Attendance': round(grand_total_kids, 0),
-        'Adult_Capacity_Percent': 'N/A',
-        'Kids_Capacity_Percent': 'N/A',
-        'Adult_Capacity_Limit': 'N/A',
-        'Kids_Capacity_Limit': 'N/A'
-    })
-
     df_all_campuses = pd.DataFrame(all_campus_data)
 
     st.subheader("Preview of Projections")
@@ -727,10 +707,7 @@ if st.button("Generate All Campus Projections"):
 
     csv_data = f"# All Campus Attendance Projections\n"
     csv_data += f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    csv_data += f"# Parameters: Date={selected_date_str}, Week={select_week}, Pastor={select_pastor}, Event={select_event}\n"
-    csv_data += f"# Grand Total Adults: {grand_total_adults:,.0f}\n"
-    csv_data += f"# Grand Total Kids: {grand_total_kids:,.0f}\n"
-    csv_data += f"# Grand Total All: {grand_total_adults + grand_total_kids:,.0f}\n\n"
+    csv_data += f"# Parameters: Date={selected_date_str}, Week={select_week}, Pastor={select_pastor}, Event={select_event}\n\n"
     csv_data += df_all_campuses.to_csv(index=False)
 
     st.download_button(
