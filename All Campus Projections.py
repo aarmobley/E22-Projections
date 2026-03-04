@@ -8,6 +8,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed")
 
+# Hide sidebar completely
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {display: none;}
+    [data-testid="stSidebarCollapsedControl"] {display: none;}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <div style="text-align: center; margin-bottom: 20px;">
@@ -30,7 +37,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
 query_params = st.query_params
 embedded = query_params.get('embedded', 'false') == 'true'
 
@@ -42,7 +48,6 @@ if embedded:
         .main .block-container {padding-top: 0.5rem;}
     </style>
     """, unsafe_allow_html=True)
-
 
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 st.image(logo_file, width=150)
@@ -59,14 +64,20 @@ easter_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Update
 try:
     df_easter = pd.read_excel(easter_excel_url, engine="openpyxl")
 
-    # Clean ServiceDateTime - remove :00 seconds (5:22:00 PM → 5:22 PM)
-    if 'ServiceDateTime' in df_easter.columns:
-        cleaned = []
-        for val in df_easter['ServiceDateTime']:
-            s = str(val).strip()
-            s = s.replace(':00 ', ' ').replace(':00', '')
-            cleaned.append(s)
-        df_easter['ServiceDateTime'] = cleaned
+    # Fix Service time column — pandas reads Excel times as datetime objects
+    if 'Service' in df_easter.columns:
+        cleaned_times = []
+        for val in df_easter['Service']:
+            try:
+                if hasattr(val, 'strftime'):
+                    cleaned_times.append(val.strftime('%I:%M %p').lstrip('0'))
+                else:
+                    s = str(val).strip()
+                    s = s.replace(':00 ', ' ').replace(':00', '')
+                    cleaned_times.append(s)
+            except Exception:
+                cleaned_times.append(str(val))
+        df_easter['Service'] = cleaned_times
 
     # Filter dropdowns side by side
     filter_col1, filter_col2 = st.columns(2)
@@ -77,7 +88,7 @@ try:
             day_filter = "All"
         else:
             day_list = df_easter['Day'].dropna().unique().tolist()
-            day_sorted = sorted(day_list, key=lambda x: {'Thu': 0, 'Sat': 1, 'Sun': 2}.get(x, 3))
+            day_sorted = sorted(day_list, key=lambda x: {'Thu': 0, 'Sat': 1, 'Sun': 2}.get(str(x), 3))
             day_options = ["All"] + day_sorted
             day_filter = st.selectbox("Filter by Day", day_options)
 
@@ -96,13 +107,13 @@ try:
     if campus_filter != "All":
         df_easter_filtered = df_easter_filtered[df_easter_filtered['Campus'] == campus_filter]
 
-    # Find attendance column
+    # Find attendance column — match actual Excel header
     att_col = None
-    if 'service_attendance' in df_easter.columns:
-        att_col = 'service_attendance'
-    elif 'Projected' in df_easter.columns:
-        att_col = 'Projected'
-    else:
+    for col_name in ['Service Attendance', 'service_attendance', 'Projected']:
+        if col_name in df_easter.columns:
+            att_col = col_name
+            break
+    if att_col is None:
         numeric_cols = df_easter.select_dtypes(include='number').columns.tolist()
         if numeric_cols:
             att_col = numeric_cols[0]
@@ -504,14 +515,12 @@ campus_capacities = {
     'St. Johns': {'adult': 1948, 'kids': 559}
 }
 
-
-# Important Dates: 
-# - 08-10-2025 (Promotion Week)  
+# Important Dates:
+# - 08-10-2025 (Promotion Week)
 # - 09-14-2025 (Saturated Sunday)
 # - 12-24-2025 (Christmas)
 # - 01-04-2026 (Back to School)
 # - 04-05-2026 (Easter)
-
 
 num_week = [week for _ in range(3) for week in range(1, 53)]
 if len(num_week) < 156:
@@ -603,9 +612,6 @@ if st.button("Generate All Campus Projections"):
     all_campus_data = []
 
     for campus_name, campus_services in campus_coefficients.items():
-        campus_total_adults = 0
-        campus_total_kids = 0
-
         standard_services_adult = 0
         standard_services_kids = 0
 
@@ -708,38 +714,5 @@ if st.button("Generate All Campus Projections"):
         label="Download All Campus Projections (CSV)",
         data=csv_data,
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
-        mime="text/csv"
-    )
-
-
-# =====================================================================
-# SATURATED 2025 PROJECTIONS
-# =====================================================================
-
-st.divider()
-st.subheader("Saturated 2025 Projections")
-saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
-
-df_saturated = None
-
-saturated_urls = {
-    'Wednesday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx",
-    'Thursday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx",
-    'Friday': "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx",
-    'Saturday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedSaturday2025.xlsx"
-}
-
-try:
-    df_saturated = pd.read_excel(saturated_urls[saturated_option], engine="openpyxl")
-    st.dataframe(df_saturated)
-except Exception as e:
-    st.error(f"Could not load Saturated {saturated_option} file: {e}")
-
-if df_saturated is not None:
-    saturated_csv = df_saturated.to_csv(index=False)
-    st.download_button(
-        label="Download Saturated Projections as CSV",
-        data=saturated_csv,
-        file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
