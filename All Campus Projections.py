@@ -8,14 +8,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed")
 
-# Hide sidebar completely
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    [data-testid="stSidebarCollapsedControl"] {display: none;}
-</style>
-""", unsafe_allow_html=True)
-
 
 st.markdown("""
 <div style="text-align: center; margin-bottom: 20px;">
@@ -716,5 +708,38 @@ if st.button("Generate All Campus Projections"):
         label="Download All Campus Projections (CSV)",
         data=csv_data,
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
+        mime="text/csv"
+    )
+
+
+# =====================================================================
+# SATURATED 2025 PROJECTIONS
+# =====================================================================
+
+st.divider()
+st.subheader("Saturated 2025 Projections")
+saturated_option = st.selectbox("Saturated", ['Wednesday', 'Thursday', 'Friday', 'Saturday'])
+
+df_saturated = None
+
+saturated_urls = {
+    'Wednesday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedWednesday2025.xlsx",
+    'Thursday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedThursday2025.xlsx",
+    'Friday': "https://github.com/aarmobley/E22-Projections/raw/main/Saturated%20-%20Friday.xlsx",
+    'Saturday': "https://github.com/aarmobley/E22-Projections/raw/main/SaturatedSaturday2025.xlsx"
+}
+
+try:
+    df_saturated = pd.read_excel(saturated_urls[saturated_option], engine="openpyxl")
+    st.dataframe(df_saturated)
+except Exception as e:
+    st.error(f"Could not load Saturated {saturated_option} file: {e}")
+
+if df_saturated is not None:
+    saturated_csv = df_saturated.to_csv(index=False)
+    st.download_button(
+        label="Download Saturated Projections as CSV",
+        data=saturated_csv,
+        file_name=f"Saturated_{saturated_option}_Projections.csv",
         mime="text/csv"
     )
