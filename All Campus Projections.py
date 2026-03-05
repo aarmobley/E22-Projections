@@ -8,7 +8,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed")
 
-# Hide sidebar completely
 st.markdown("""
 <style>
     [data-testid="stSidebar"] {display: none;}
@@ -59,12 +58,12 @@ st.image(logo_file, width=150)
 
 st.subheader("Easter 2026 Projections - April 5, 2026")
 
-easter_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
+easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 
 try:
-    df_easter = pd.read_excel(easter_excel_url, engine="openpyxl")
+    df_easter = pd.read_excel(easter_url, engine="openpyxl")
 
-    # Fix Service time column — pandas reads Excel times as datetime objects
+    # Clean Service time column
     if 'Service' in df_easter.columns:
         cleaned_times = []
         for val in df_easter['Service']:
@@ -79,72 +78,65 @@ try:
                 cleaned_times.append(str(val))
         df_easter['Service'] = cleaned_times
 
-    # Filter dropdowns side by side
-    filter_col1, filter_col2 = st.columns(2)
+    # --- THREE FILTER DROPDOWNS ---
+    dd1, dd2, dd3 = st.columns(3)
 
-    with filter_col1:
-        if 'Day' not in df_easter.columns:
-            st.warning("Day column not found in Excel.")
-            day_filter = "All"
+    with dd1:
+        if 'Day' in df_easter.columns:
+            days = df_easter['Day'].dropna().unique().tolist()
+            days = sorted(days, key=lambda x: {'Thu': 0, 'Sat': 1, 'Sun': 2}.get(str(x), 3))
+            day_pick = st.selectbox("Filter by Day", ["All"] + days)
         else:
-            day_list = df_easter['Day'].dropna().unique().tolist()
-            day_sorted = sorted(day_list, key=lambda x: {'Thu': 0, 'Sat': 1, 'Sun': 2}.get(str(x), 3))
-            day_options = ["All"] + day_sorted
-            day_filter = st.selectbox("Filter by Day", day_options)
+            day_pick = "All"
 
-    with filter_col2:
+    with dd2:
         if 'Campus' in df_easter.columns:
-            campus_list = sorted(df_easter['Campus'].dropna().unique().tolist())
-            campus_options = ["All"] + campus_list
-            campus_filter = st.selectbox("Filter by Campus", campus_options)
+            campuses = sorted(df_easter['Campus'].dropna().unique().tolist())
+            campus_pick = st.selectbox("Filter by Campus", ["All"] + campuses)
         else:
-            campus_filter = "All"
+            campus_pick = "All"
 
-    # Apply filters
-    df_easter_filtered = df_easter.copy()
-    if day_filter != "All":
-        df_easter_filtered = df_easter_filtered[df_easter_filtered['Day'] == day_filter]
-    if campus_filter != "All":
-        df_easter_filtered = df_easter_filtered[df_easter_filtered['Campus'] == campus_filter]
+    with dd3:
+        category_pick = st.selectbox("Filter by Category", ["Adults", "Kids", "Total"])
 
-    # Find attendance column — match actual Excel header
-    att_col = None
-    for col_name in ['Service Attendance', 'service_attendance', 'Projected']:
-        if col_name in df_easter.columns:
-            att_col = col_name
-            break
-    if att_col is None:
-        numeric_cols = df_easter.select_dtypes(include='number').columns.tolist()
-        if numeric_cols:
-            att_col = numeric_cols[0]
+    # --- APPLY FILTERS ---
+    df_show = df_easter.copy()
+    if day_pick != "All":
+        df_show = df_show[df_show['Day'] == day_pick]
+    if campus_pick != "All":
+        df_show = df_show[df_show['Campus'] == campus_pick]
 
-    # Display metrics
-    if att_col:
-        filtered_total = df_easter_filtered[att_col].sum()
-        num_services = len(df_easter_filtered)
+    # --- MAP CATEGORY TO COLUMN ---
+    att_col = category_pick
+    if att_col not in df_show.columns:
+        for c in df_show.columns:
+            if att_col.lower() in c.lower():
+                att_col = c
+                break
 
-        met_col1, met_col2 = st.columns(2)
-        with met_col1:
-            label = "Total"
-            if day_filter != "All" or campus_filter != "All":
-                parts = []
-                if day_filter != "All":
-                    parts.append(day_filter)
-                if campus_filter != "All":
-                    parts.append(campus_filter)
-                label = "Total (" + " - ".join(parts) + ")"
-            st.metric(label, f"{filtered_total:,.0f}")
-        with met_col2:
-            st.metric("Services Shown", num_services)
+    # --- METRICS ---
+    if att_col in df_show.columns:
+        the_sum = int(df_show[att_col].sum())
+        svc_count = len(df_show)
 
-    # Display the dataframe
-    st.dataframe(df_easter_filtered, use_container_width=True, hide_index=True)
+        m1, m2 = st.columns(2)
+        with m1:
+            parts = [category_pick]
+            if day_pick != "All":
+                parts.append(day_pick)
+            if campus_pick != "All":
+                parts.append(campus_pick)
+            st.metric(" - ".join(parts), f"{the_sum:,}")
+        with m2:
+            st.metric("Services Shown", svc_count)
 
-    # Download button
-    easter_csv = df_easter_filtered.to_csv(index=False)
+    # --- TABLE ---
+    st.dataframe(df_show, use_container_width=True, hide_index=True)
+
+    # --- DOWNLOAD ---
     st.download_button(
         label="Download Easter Projections (CSV)",
-        data=easter_csv,
+        data=df_show.to_csv(index=False),
         file_name="Easter_2026_Projections.csv",
         mime="text/csv"
     )
@@ -515,13 +507,6 @@ campus_capacities = {
     'St. Johns': {'adult': 1948, 'kids': 559}
 }
 
-# Important Dates:
-# - 08-10-2025 (Promotion Week)
-# - 09-14-2025 (Saturated Sunday)
-# - 12-24-2025 (Christmas)
-# - 01-04-2026 (Back to School)
-# - 04-05-2026 (Easter)
-
 num_week = [week for _ in range(3) for week in range(1, 53)]
 if len(num_week) < 156:
     num_week.append(53)
@@ -548,13 +533,10 @@ select_event = st.selectbox("Select Event", event_options)
 
 def calculate_attendance(campus, service_time, coefficients, numerical_date, week_num, pastor, event):
     service_options = coefficients
-
     weeknum_effect = service_options.get('week_number', 0) * week_num
     sundaydate_effect = service_options.get('sunday_date', 0) * numerical_date
-
     pastor_effect = 0
     event_effect = 0
-
     if event != 'None':
         event_keys = [event, event.replace(' ', ''), event.replace(' ', 'to'), event.replace(' ', '_')]
         for key in event_keys:
@@ -563,38 +545,29 @@ def calculate_attendance(campus, service_time, coefficients, numerical_date, wee
                 break
     else:
         pastor_effect = service_options.get(pastor, 0)
-
     new_building_effect = 0
     if campus == 'St. Johns':
         new_building_effect = service_options.get('New Building', 0)
-
     intercept = service_options.get('intercept', 0)
     prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect + new_building_effect
-
     if campus in ['St. Johns', 'North Jax']:
         adult_attendance = prediction
     else:
         adult_attendance = prediction ** 2
-
     if event == 'Inclement Weather':
         weather_reduction = service_options.get('Inclement Weather', 0.15)
         if weather_reduction < 1:
             adult_attendance = adult_attendance * (1 - weather_reduction)
         else:
             adult_attendance = adult_attendance + weather_reduction
-
     kids_coefficient = 'kids_easter' if event == 'Easter' else 'kids_projection'
-    kids_keys = [kids_coefficient, kids_coefficient.replace('_', ' ').title(),
-                 'Kids Projection', 'Kids Easter']
-
+    kids_keys = [kids_coefficient, kids_coefficient.replace('_', ' ').title(), 'Kids Projection', 'Kids Easter']
     kids_multiplier = 0.2
     for key in kids_keys:
         if key in service_options:
             kids_multiplier = service_options[key]
             break
-
     kids_attendance = adult_attendance * kids_multiplier
-
     return max(0, adult_attendance), max(0, kids_attendance)
 
 
@@ -610,36 +583,26 @@ st.divider()
 if st.button("Generate All Campus Projections"):
     numerical_date = date_mapping[selected_date_str]
     all_campus_data = []
-
     for campus_name, campus_services in campus_coefficients.items():
         standard_services_adult = 0
         standard_services_kids = 0
-
         for service_time, service_coefficients in campus_services.items():
             if 'Total Attendance' in service_coefficients:
                 continue
             if 'intercept' not in service_coefficients:
                 continue
-
             adult_attendance, kids_attendance = calculate_attendance(
                 campus_name, service_time, service_coefficients,
-                numerical_date, select_week, select_pastor, select_event
-            )
-
+                numerical_date, select_week, select_pastor, select_event)
             capacity_info = campus_capacities.get(campus_name, {'adult': 1000, 'kids': 250})
             adult_capacity_pct = (adult_attendance / capacity_info['adult']) * 100
             kids_capacity_pct = (kids_attendance / capacity_info['kids']) * 100
-
             standard_services_adult += adult_attendance
             standard_services_kids += kids_attendance
-
             all_campus_data.append({
-                'Campus': campus_name,
-                'Service_Time': service_time,
-                'Date': selected_date_str,
-                'Week': select_week,
-                'Pastor': select_pastor,
-                'Event': select_event,
+                'Campus': campus_name, 'Service_Time': service_time,
+                'Date': selected_date_str, 'Week': select_week,
+                'Pastor': select_pastor, 'Event': select_event,
                 'Adult_Attendance': round(adult_attendance, 0),
                 'Kids_Attendance': round(kids_attendance, 0),
                 'Adult_Capacity_Percent': round(adult_capacity_pct, 1),
@@ -647,27 +610,19 @@ if st.button("Generate All Campus Projections"):
                 'Adult_Capacity_Limit': capacity_info['adult'],
                 'Kids_Capacity_Limit': capacity_info['kids']
             })
-
         for service_time, service_coefficients in campus_services.items():
             if 'Total Attendance' not in service_coefficients:
                 continue
-
             adult_attendance, kids_attendance = calculate_total_based_attendance(
                 campus_name, service_time, service_coefficients,
-                standard_services_adult, standard_services_kids
-            )
-
+                standard_services_adult, standard_services_kids)
             capacity_info = campus_capacities.get(campus_name, {'adult': 1000, 'kids': 250})
             adult_capacity_pct = (adult_attendance / capacity_info['adult']) * 100
             kids_capacity_pct = (kids_attendance / capacity_info['kids']) * 100
-
             all_campus_data.append({
-                'Campus': campus_name,
-                'Service_Time': service_time,
-                'Date': selected_date_str,
-                'Week': select_week,
-                'Pastor': select_pastor,
-                'Event': select_event,
+                'Campus': campus_name, 'Service_Time': service_time,
+                'Date': selected_date_str, 'Week': select_week,
+                'Pastor': select_pastor, 'Event': select_event,
                 'Adult_Attendance': round(adult_attendance, 0),
                 'Kids_Attendance': round(kids_attendance, 0),
                 'Adult_Capacity_Percent': round(adult_capacity_pct, 1),
@@ -675,33 +630,23 @@ if st.button("Generate All Campus Projections"):
                 'Adult_Capacity_Limit': capacity_info['adult'],
                 'Kids_Capacity_Limit': capacity_info['kids']
             })
-
         campus_total_adults = standard_services_adult + sum(
             row['Adult_Attendance'] for row in all_campus_data
-            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {})
-        )
+            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {}))
         campus_total_kids = standard_services_kids + sum(
             row['Kids_Attendance'] for row in all_campus_data
-            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {})
-        )
-
+            if row['Campus'] == campus_name and 'Total Attendance' in campus_services.get(row['Service_Time'], {}))
         all_campus_data.append({
-            'Campus': f"{campus_name} - TOTAL",
-            'Service_Time': 'ALL',
-            'Date': selected_date_str,
-            'Week': select_week,
-            'Pastor': select_pastor,
-            'Event': select_event,
+            'Campus': f"{campus_name} - TOTAL", 'Service_Time': 'ALL',
+            'Date': selected_date_str, 'Week': select_week,
+            'Pastor': select_pastor, 'Event': select_event,
             'Adult_Attendance': round(campus_total_adults, 0),
             'Kids_Attendance': round(campus_total_kids, 0),
-            'Adult_Capacity_Percent': 'N/A',
-            'Kids_Capacity_Percent': 'N/A',
-            'Adult_Capacity_Limit': 'N/A',
-            'Kids_Capacity_Limit': 'N/A'
+            'Adult_Capacity_Percent': 'N/A', 'Kids_Capacity_Percent': 'N/A',
+            'Adult_Capacity_Limit': 'N/A', 'Kids_Capacity_Limit': 'N/A'
         })
 
     df_all_campuses = pd.DataFrame(all_campus_data)
-
     st.subheader("Preview of Projections")
     st.dataframe(df_all_campuses.head(40))
 
@@ -716,4 +661,3 @@ if st.button("Generate All Campus Projections"):
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
-
