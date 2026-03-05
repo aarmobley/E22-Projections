@@ -671,3 +671,4 @@ if st.button("Generate All Campus Projections"):
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
+
