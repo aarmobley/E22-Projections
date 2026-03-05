@@ -97,7 +97,7 @@ try:
             campus_pick = "All"
 
     with dd3:
-        category_pick = st.selectbox("Filter by Category", ["Adults", "Kids", "Total"])
+        category_pick = st.selectbox("Filter by Category", ["Total", "Adults", "Kids"])
 
     # --- APPLY FILTERS ---
     df_show = df_easter.copy()
@@ -106,13 +106,23 @@ try:
     if campus_pick != "All":
         df_show = df_show[df_show['Campus'] == campus_pick]
 
-    # --- MAP CATEGORY TO COLUMN ---
-    att_col = category_pick
-    if att_col not in df_show.columns:
-        for c in df_show.columns:
-            if att_col.lower() in c.lower():
-                att_col = c
-                break
+    # --- FILTER COLUMNS BY CATEGORY ---
+    base_cols = [c for c in df_show.columns if c not in ['Adults', 'Kids', 'Total', 'KidsRatio']]
+    if category_pick == "Adults":
+        show_cols = base_cols + [c for c in ['Adults', 'AdultCapacity'] if c in df_show.columns]
+        att_col = 'Adults'
+    elif category_pick == "Kids":
+        show_cols = base_cols + [c for c in ['Kids'] if c in df_show.columns]
+        att_col = 'Kids'
+    else:
+        show_cols = base_cols + [c for c in ['Adults', 'Kids', 'Total'] if c in df_show.columns]
+        att_col = 'Total'
+
+    # Remove AdultCapacity from base if showing Kids or Total (it's added back for Adults)
+    if category_pick != "Adults":
+        show_cols = [c for c in show_cols if c != 'AdultCapacity']
+
+    df_show = df_show[[c for c in show_cols if c in df_show.columns]]
 
     # --- METRICS ---
     if att_col in df_show.columns:
