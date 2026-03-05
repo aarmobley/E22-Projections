@@ -59,7 +59,7 @@ st.image(logo_file, width=150)
 
 st.subheader("Easter 2026 Projections - April 5, 2026")
 
-easter_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections.xlsx"
+easter_excel_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 
 try:
     df_easter = pd.read_excel(easter_excel_url, engine="openpyxl")
@@ -716,3 +716,4 @@ if st.button("Generate All Campus Projections"):
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
+
