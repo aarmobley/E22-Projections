@@ -58,6 +58,23 @@ st.image(logo_file, width=150)
 
 st.subheader("Easter 2026 Projections - April 5, 2026")
 
+# --- 2025 ACTUAL DATA ---
+data_2025 = {
+    'Adults': {
+        'Arlington': 1455, 'Baymeadows': 971, 'Fleming Island': 3210,
+        'Jesup': 510, 'Mandarin': 1716, 'North Jax': 1801,
+        'Orange Park': 939, 'Palatka': 190, 'Ponte Vedra': 1418,
+        'San Pablo': 15704, 'St. Augustine': 530, 'St. Johns': 4353,
+        'Wildlight': 771
+    },
+    'Kids': {
+        'Arlington': 279, 'Baymeadows': 157, 'Fleming Island': 652,
+        'Jesup': 116, 'Mandarin': 354, 'North Jax': 390,
+        'Orange Park': 274, 'Palatka': 60, 'Ponte Vedra': 342,
+        'San Pablo': 1691, 'St. Johns': 936, 'Wildlight': 144
+    }
+}
+
 easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 
 try:
@@ -118,7 +135,6 @@ try:
         show_cols = base_cols + [c for c in ['Adults', 'Kids', 'Total'] if c in df_show.columns]
         att_col = 'Total'
 
-    # Remove AdultCapacity from base if showing Kids or Total (it's added back for Adults)
     if category_pick != "Adults":
         show_cols = [c for c in show_cols if c != 'AdultCapacity']
 
@@ -129,16 +145,47 @@ try:
         the_sum = int(df_show[att_col].sum())
         svc_count = len(df_show)
 
-        m1, m2 = st.columns(2)
+        # --- CALCULATE 2025 COMPARISON ---
+        if campus_pick != "All":
+            # Single campus selected
+            campuses_to_sum = [campus_pick]
+        else:
+            # All campuses — use whichever appear in the 2026 filtered data
+            if 'Campus' in df_show.columns:
+                campuses_to_sum = df_show['Campus'].dropna().unique().tolist()
+            else:
+                campuses_to_sum = list(data_2025['Adults'].keys())
+
+        if category_pick == "Adults":
+            sum_2025 = sum(data_2025['Adults'].get(c, 0) for c in campuses_to_sum)
+        elif category_pick == "Kids":
+            sum_2025 = sum(data_2025['Kids'].get(c, 0) for c in campuses_to_sum)
+        else:
+            # Total = Adults + Kids
+            sum_2025 = sum(
+                data_2025['Adults'].get(c, 0) + data_2025['Kids'].get(c, 0)
+                for c in campuses_to_sum
+            )
+
+        label_parts = [category_pick]
+        if day_pick != "All":
+            label_parts.append(day_pick)
+        if campus_pick != "All":
+            label_parts.append(campus_pick)
+        label_base = " - ".join(label_parts)
+
+        yoy_delta = the_sum - sum_2025
+
+        m1, m2, m3 = st.columns(3)
         with m1:
-            parts = [category_pick]
-            if day_pick != "All":
-                parts.append(day_pick)
-            if campus_pick != "All":
-                parts.append(campus_pick)
-            st.metric(" - ".join(parts), f"{the_sum:,}")
+            st.metric(f"2026 Projection - {label_base}", f"{the_sum:,}")
         with m2:
-            st.metric("Services Shown", svc_count)
+            st.metric(f"2025 Actual - {label_base}", f"{sum_2025:,}")
+        with m3:
+            arrow = "▲" if yoy_delta >= 0 else "▼"
+            st.metric("YoY Difference", f"{arrow} {abs(yoy_delta):,}")
+        
+        st.metric("Services Shown", svc_count)
 
     # --- TABLE ---
     st.dataframe(df_show, use_container_width=True, hide_index=True)
@@ -154,8 +201,6 @@ try:
 except Exception as e:
     st.error(f"Could not load Easter projections file: {e}")
     st.info("Make sure the Excel file is uploaded to the GitHub repo.")
-
-
 st.divider()
 
 
@@ -671,4 +716,5 @@ if st.button("Generate All Campus Projections"):
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
+
 
