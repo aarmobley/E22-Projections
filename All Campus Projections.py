@@ -56,7 +56,7 @@ st.image(logo_file, width=150)
 # EASTER 2026 PROJECTIONS
 # =====================================================================
 
-st.subheader("Easter 2026 Projections - April 5, 2026")
+st.subheader("Easter 2026 Projections")
 
 # --- 2025 ACTUAL DATA ---
 data_2025 = {
@@ -716,6 +716,7 @@ if st.button("Generate All Campus Projections"):
         file_name=f"All_Campus_Projections_{selected_date_str.replace('-', '_')}.csv",
         mime="text/csv"
     )
+
 
 
 
