@@ -56,7 +56,7 @@ st.image(logo_file, width=150)
 # EASTER 2026 PROJECTIONS
 # =====================================================================
 
-st.subheader("Easter 2026 Projections")
+st.subheader("Easter 2026 Projections - April 5, 2026")
 
 # --- 2025 ACTUAL DATA ---
 data_2025 = {
@@ -146,13 +146,14 @@ try:
         svc_count = len(df_show)
 
         # --- CALCULATE 2025 COMPARISON ---
+        # Determine which campuses to pull 2025 data for
         if campus_pick != "All":
-            # Single campus selected
             campuses_to_sum = [campus_pick]
         else:
-            # All campuses — use whichever appear in the 2026 filtered data
-            if 'Campus' in df_show.columns:
-                campuses_to_sum = df_show['Campus'].dropna().unique().tolist()
+            # Use all unique campuses in the UNFILTERED easter data so campus
+            # list doesn't shrink when a day is selected
+            if 'Campus' in df_easter.columns:
+                campuses_to_sum = df_easter['Campus'].dropna().unique().tolist()
             else:
                 campuses_to_sum = list(data_2025['Adults'].keys())
 
@@ -161,30 +162,34 @@ try:
         elif category_pick == "Kids":
             sum_2025 = sum(data_2025['Kids'].get(c, 0) for c in campuses_to_sum)
         else:
-            # Total = Adults + Kids
             sum_2025 = sum(
                 data_2025['Adults'].get(c, 0) + data_2025['Kids'].get(c, 0)
                 for c in campuses_to_sum
             )
 
         label_parts = [category_pick]
-        if day_pick != "All":
-            label_parts.append(day_pick)
         if campus_pick != "All":
             label_parts.append(campus_pick)
         label_base = " - ".join(label_parts)
 
+        # 2026 label includes day if filtered; 2025 never can since we only
+        # have campus-level totals for 2025
+        label_2026 = f"2026 Projection - {label_base}"
+        if day_pick != "All":
+            label_2026 += f" ({day_pick})"
+
         yoy_delta = the_sum - sum_2025
 
-        m1, m2, m3 = st.columns(3)
+        m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.metric(f"2026 Projection - {label_base}", f"{the_sum:,}")
+            st.metric(label_2026, f"{the_sum:,}")
         with m2:
-            st.metric(f"2025 Actual - {label_base}", f"{sum_2025:,}")
+            note = " (Full Easter)" if day_pick != "All" else ""
+            st.metric(f"2025 Actual - {label_base}{note}", f"{sum_2025:,}")
         with m3:
             st.metric("YoY Difference", f"{yoy_delta:+,}", delta=yoy_delta)
-        
-        st.metric("Services Shown", svc_count)
+        with m4:
+            st.metric("Services Shown", svc_count)
 
     # --- TABLE ---
     st.dataframe(df_show, use_container_width=True, hide_index=True)
