@@ -58,22 +58,56 @@ st.image(logo_file, width=150)
 
 st.subheader("Easter 2026 Projections - April 5, 2026")
 
-# --- 2025 ACTUAL DATA ---
-data_2025 = {
-    'Adults': {
-        'Arlington': 1455, 'Baymeadows': 971, 'Fleming Island': 3210,
-        'Jesup': 510, 'Mandarin': 1716, 'North Jax': 1801,
-        'Orange Park': 939, 'Palatka': 190, 'Ponte Vedra': 1418,
-        'San Pablo': 15704, 'St. Augustine': 530, 'St. Johns': 4353,
-        'Wildlight': 771
-    },
-    'Kids': {
-        'Arlington': 279, 'Baymeadows': 157, 'Fleming Island': 652,
-        'Jesup': 116, 'Mandarin': 354, 'North Jax': 390,
-        'Orange Park': 274, 'Palatka': 60, 'Ponte Vedra': 342,
-        'San Pablo': 1691, 'St. Johns': 936, 'Wildlight': 144
-    }
-}
+# --- 2025 ACTUAL DATA (by campus, day, category) ---
+# Day abbreviations mapped to match the 2026 Excel filter values
+DAY_MAP = {'Sunday': 'Sun', 'Saturday': 'Sat', 'Thursday': 'Thu',
+           'Tuesday': 'Tue', 'Wednesday': 'Wed'}
+
+data_2025_rows = [
+    ('Arlington','Sun','Adults',682),('Arlington','Sun','Kids',148),
+    ('Arlington','Sun','Adults',556),('Arlington','Sun','Kids',90),
+    ('Arlington','Thu','Adults',217),('Arlington','Thu','Kids',41),
+    ('Baymeadows','Sun','Adults',410),('Baymeadows','Sun','Kids',95),
+    ('Baymeadows','Sun','Adults',294),('Baymeadows','Sun','Kids',42),
+    ('Baymeadows','Thu','Adults',267),('Baymeadows','Thu','Kids',20),
+    ('Fleming Island','Sat','Adults',479),('Fleming Island','Sat','Kids',110),
+    ('Fleming Island','Sat','Adults',609),('Fleming Island','Sat','Kids',157),
+    ('Fleming Island','Sun','Adults',802),('Fleming Island','Sun','Kids',166),
+    ('Fleming Island','Sun','Adults',694),('Fleming Island','Sun','Kids',135),
+    ('Fleming Island','Thu','Adults',626),('Fleming Island','Thu','Kids',84),
+    ('Jesup','Sun','Adults',270),('Jesup','Sun','Kids',52),
+    ('Jesup','Sun','Adults',139),('Jesup','Sun','Kids',43),
+    ('Jesup','Thu','Adults',101),('Jesup','Thu','Kids',21),
+    ('Mandarin','Sun','Adults',869),('Mandarin','Sun','Kids',224),
+    ('Mandarin','Sun','Adults',525),('Mandarin','Sun','Kids',80),
+    ('Mandarin','Thu','Adults',322),('Mandarin','Thu','Kids',50),
+    ('North Jax','Sat','Adults',394),('North Jax','Sat','Kids',71),
+    ('North Jax','Sun','Adults',566),('North Jax','Sun','Kids',149),
+    ('North Jax','Sun','Adults',589),('North Jax','Sun','Kids',122),
+    ('North Jax','Thu','Adults',252),('North Jax','Thu','Kids',48),
+    ('Orange Park','Sun','Adults',436),('Orange Park','Sun','Kids',100),
+    ('Orange Park','Sun','Adults',354),('Orange Park','Sun','Kids',114),
+    ('Orange Park','Thu','Adults',149),('Orange Park','Thu','Kids',60),
+    ('Palatka','Sun','Adults',190),('Palatka','Sun','Kids',60),
+    ('Ponte Vedra','Sat','Adults',276),('Ponte Vedra','Sat','Kids',86),
+    ('Ponte Vedra','Sun','Adults',601),('Ponte Vedra','Sun','Kids',148),
+    ('Ponte Vedra','Sun','Adults',541),('Ponte Vedra','Sun','Kids',108),
+    ('San Pablo','Sat','Adults',2452),('San Pablo','Sat','Kids',384),
+    ('San Pablo','Sat','Adults',2459),('San Pablo','Sat','Kids',271),
+    ('San Pablo','Sun','Adults',913),('San Pablo','Sun','Kids',78),
+    ('San Pablo','Sun','Adults',3378),('San Pablo','Sun','Kids',359),
+    ('San Pablo','Sun','Adults',3121),('San Pablo','Sun','Kids',340),
+    ('San Pablo','Thu','Adults',3381),('San Pablo','Thu','Kids',259),
+    ('St. Augustine','Sun','Adults',350),('St. Augustine','Sun','Kids',0),
+    ('St. Augustine','Sun','Adults',180),('St. Augustine','Sun','Kids',0),
+    ('St. Johns','Sat','Adults',959),('St. Johns','Sat','Kids',246),
+    ('St. Johns','Sat','Adults',701),('St. Johns','Sat','Kids',152),
+    ('St. Johns','Sun','Adults',1320),('St. Johns','Sun','Kids',266),
+    ('St. Johns','Sun','Adults',1373),('St. Johns','Sun','Kids',272),
+    ('Wildlight','Sun','Adults',407),('Wildlight','Sun','Kids',82),
+    ('Wildlight','Sun','Adults',364),('Wildlight','Sun','Kids',62),
+]
+df_2025 = pd.DataFrame(data_2025_rows, columns=['Campus','Day','Category','Count'])
 
 easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 
@@ -145,47 +179,34 @@ try:
         the_sum = int(df_show[att_col].sum())
         svc_count = len(df_show)
 
-        # --- CALCULATE 2025 COMPARISON ---
-        # Determine which campuses to pull 2025 data for
+        # --- CALCULATE 2025 COMPARISON (filtered to match day + campus) ---
+        df_2025_filtered = df_2025.copy()
         if campus_pick != "All":
-            campuses_to_sum = [campus_pick]
-        else:
-            # Use all unique campuses in the UNFILTERED easter data so campus
-            # list doesn't shrink when a day is selected
-            if 'Campus' in df_easter.columns:
-                campuses_to_sum = df_easter['Campus'].dropna().unique().tolist()
-            else:
-                campuses_to_sum = list(data_2025['Adults'].keys())
+            df_2025_filtered = df_2025_filtered[df_2025_filtered['Campus'] == campus_pick]
+        if day_pick != "All":
+            df_2025_filtered = df_2025_filtered[df_2025_filtered['Day'] == day_pick]
 
         if category_pick == "Adults":
-            sum_2025 = sum(data_2025['Adults'].get(c, 0) for c in campuses_to_sum)
+            sum_2025 = int(df_2025_filtered[df_2025_filtered['Category'] == 'Adults']['Count'].sum())
         elif category_pick == "Kids":
-            sum_2025 = sum(data_2025['Kids'].get(c, 0) for c in campuses_to_sum)
+            sum_2025 = int(df_2025_filtered[df_2025_filtered['Category'] == 'Kids']['Count'].sum())
         else:
-            sum_2025 = sum(
-                data_2025['Adults'].get(c, 0) + data_2025['Kids'].get(c, 0)
-                for c in campuses_to_sum
-            )
+            sum_2025 = int(df_2025_filtered['Count'].sum())
 
         label_parts = [category_pick]
+        if day_pick != "All":
+            label_parts.append(day_pick)
         if campus_pick != "All":
             label_parts.append(campus_pick)
         label_base = " - ".join(label_parts)
-
-        # 2026 label includes day if filtered; 2025 never can since we only
-        # have campus-level totals for 2025
-        label_2026 = f"2026 Projection - {label_base}"
-        if day_pick != "All":
-            label_2026 += f" ({day_pick})"
 
         yoy_delta = the_sum - sum_2025
 
         m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.metric(label_2026, f"{the_sum:,}")
+            st.metric(f"2026 Projection - {label_base}", f"{the_sum:,}")
         with m2:
-            note = " (Full Easter)" if day_pick != "All" else ""
-            st.metric(f"2025 Actual - {label_base}{note}", f"{sum_2025:,}")
+            st.metric(f"2025 Actual - {label_base}", f"{sum_2025:,}")
         with m3:
             st.metric("YoY Difference", f"{yoy_delta:+,}", delta=yoy_delta)
         with m4:
