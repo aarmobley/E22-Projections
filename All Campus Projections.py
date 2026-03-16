@@ -174,10 +174,18 @@ try:
 
     df_show = df_show[[c for c in show_cols if c in df_show.columns]]
 
-    # --- METRICS ---
+    # --- METRICS (always compute regardless of column availability) ---
     if att_col in df_show.columns:
         the_sum = int(df_show[att_col].sum())
-        svc_count = len(df_show)
+    elif category_pick == "Total":
+        # Fall back to Adults + Kids if no Total column
+        adults_sum = int(df_show['Adults'].sum()) if 'Adults' in df_show.columns else 0
+        kids_sum = int(df_show['Kids'].sum()) if 'Kids' in df_show.columns else 0
+        the_sum = adults_sum + kids_sum
+    else:
+        the_sum = 0
+    svc_count = len(df_show)
+    if True:
 
         # --- CALCULATE 2025 COMPARISON (filtered to match day + campus) ---
         df_2025_filtered = df_2025.copy()
