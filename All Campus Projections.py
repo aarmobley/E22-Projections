@@ -56,7 +56,7 @@ st.image(logo_file, width=150)
 # EASTER 2026 PROJECTIONS
 # =====================================================================
 
-st.subheader("Easter 2026 Projections - April 5, 2026")
+st.subheader("Easter 2026 Projections")
 
 # --- 2025 ACTUAL DATA (by campus, day, category) ---
 # Day abbreviations mapped to match the 2026 Excel filter values
