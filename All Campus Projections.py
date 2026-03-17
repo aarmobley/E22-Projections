@@ -255,7 +255,7 @@ try:
                 font-size: 0.875rem;
             }}
             .modern-table thead tr {{
-                background: #1f77b4;
+                background: #8B1A1A;
                 color: white;
                 text-align: left;
                 letter-spacing: 0.04em;
