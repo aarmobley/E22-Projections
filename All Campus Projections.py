@@ -56,7 +56,7 @@ st.image(logo_file, width=150)
 # EASTER 2026 PROJECTIONS
 # =====================================================================
 
-st.subheader("Easter 2026 Projections")
+st.subheader("Easter 2026 Projections - April 5, 2026")
 
 # --- 2025 ACTUAL DATA (by campus, day, category) ---
 # Day abbreviations mapped to match the 2026 Excel filter values
@@ -220,8 +220,81 @@ try:
         with m4:
             st.metric("Services Shown", svc_count)
 
-    # --- TABLE ---
-    st.dataframe(df_show, use_container_width=True, hide_index=True)
+    # --- STYLED HTML TABLE ---
+    def style_table(df):
+        headers = "".join(f"<th>{col}</th>" for col in df.columns)
+
+        rows_html = ""
+        for i, (_, row) in enumerate(df.iterrows()):
+            row_class = "row-even" if i % 2 == 0 else "row-odd"
+            cells = ""
+            for col in df.columns:
+                val = row[col]
+                # Right-align numeric columns
+                align = "right" if isinstance(val, (int, float)) else "left"
+                # Format numbers with commas
+                if isinstance(val, float) and val == int(val):
+                    val = f"{int(val):,}"
+                elif isinstance(val, (int, float)):
+                    val = f"{val:,}"
+                cells += f'<td style="text-align:{align}">{val}</td>'
+            rows_html += f'<tr class="{row_class}">{cells}</tr>'
+
+        html = f"""
+        <style>
+            .modern-table-wrap {{
+                overflow-x: auto;
+                border-radius: 12px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+                margin: 1rem 0;
+            }}
+            .modern-table {{
+                width: 100%;
+                border-collapse: collapse;
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 0.875rem;
+            }}
+            .modern-table thead tr {{
+                background: #1f77b4;
+                color: white;
+                text-align: left;
+                letter-spacing: 0.04em;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+            }}
+            .modern-table thead th {{
+                padding: 12px 16px;
+                font-weight: 600;
+                white-space: nowrap;
+            }}
+            .modern-table tbody tr.row-even {{
+                background-color: #ffffff;
+            }}
+            .modern-table tbody tr.row-odd {{
+                background-color: #f4f7fb;
+            }}
+            .modern-table tbody tr:hover {{
+                background-color: #ddeeff;
+                transition: background 0.15s ease;
+            }}
+            .modern-table td {{
+                padding: 10px 16px;
+                border-bottom: 1px solid #e8edf3;
+                white-space: nowrap;
+                color: #2c3e50;
+            }}
+        </style>
+        <div class="modern-table-wrap">
+            <table class="modern-table">
+                <thead><tr>{headers}</tr></thead>
+                <tbody>{rows_html}</tbody>
+            </table>
+        </div>
+        """
+        return html
+
+    st.markdown(style_table(df_show), unsafe_allow_html=True)
+    st.write("")  # spacing
 
     # --- DOWNLOAD ---
     st.download_button(
