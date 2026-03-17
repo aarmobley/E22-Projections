@@ -49,7 +49,7 @@ if embedded:
     """, unsafe_allow_html=True)
 
 logo_file = "https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
-st.image(logo_file, width=150)
+st.image(logo_file, width=90)
 
 
 # =====================================================================
