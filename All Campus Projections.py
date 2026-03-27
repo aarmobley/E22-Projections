@@ -4,6 +4,14 @@ from datetime import datetime, timedelta
 import pyodbc
 
 
+
+st.set_page_config(
+    page_title="CoE22 Projections",
+    layout="wide",
+    initial_sidebar_state="collapsed")
+
+
+
 # ── DB connection helper ────────────────────────────────────────────────
 @st.cache_resource
 def get_connection():
@@ -22,10 +30,7 @@ tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
 with tab1:
 
 
-st.set_page_config(
-    page_title="CoE22 Projections",
-    layout="wide",
-    initial_sidebar_state="collapsed")
+
 
 st.markdown("""
 <style>
