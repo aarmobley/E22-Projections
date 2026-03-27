@@ -598,67 +598,11 @@ with tab1:
         label_base = " - ".join(label_parts)
         yoy_delta  = the_sum - sum_2025
 
-        diff_color  = "#27ae60" if yoy_delta >= 0 else "#c0392b"
-        diff_icon   = "▲" if yoy_delta >= 0 else "▼"
-        diff_bg     = "#eafaf1" if yoy_delta >= 0 else "#fdedec"
-
-        st.markdown(f"""
-        <div style="display:flex; gap:16px; margin:1rem 0 1.5rem 0; flex-wrap:wrap;">
-
-            <div style="flex:1; min-width:160px; background:#fff; border-radius:14px;
-                        box-shadow:0 2px 10px rgba(0,0,0,0.08); padding:20px 24px;
-                        border-top: 4px solid #C0392B;">
-                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                            letter-spacing:0.08em; color:#888; margin-bottom:6px;">
-                    2026 Projection
-                </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">{label_base}</div>
-                <div style="font-size:2rem; font-weight:800; color:#2c3e50; line-height:1.1;">
-                    {the_sum:,}
-                </div>
-            </div>
-
-            <div style="flex:1; min-width:160px; background:#fff; border-radius:14px;
-                        box-shadow:0 2px 10px rgba(0,0,0,0.08); padding:20px 24px;
-                        border-top: 4px solid #7f8c8d;">
-                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                            letter-spacing:0.08em; color:#888; margin-bottom:6px;">
-                    2025 Actual
-                </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">{label_base}</div>
-                <div style="font-size:2rem; font-weight:800; color:#2c3e50; line-height:1.1;">
-                    {sum_2025:,}
-                </div>
-            </div>
-
-            <div style="flex:1; min-width:160px; background:{diff_bg}; border-radius:14px;
-                        box-shadow:0 2px 10px rgba(0,0,0,0.08); padding:20px 24px;
-                        border-top: 4px solid {diff_color};">
-                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                            letter-spacing:0.08em; color:#888; margin-bottom:6px;">
-                    YoY Difference
-                </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">vs Last Year</div>
-                <div style="font-size:2rem; font-weight:800; color:{diff_color}; line-height:1.1;">
-                    {diff_icon} {abs(yoy_delta):,}
-                </div>
-            </div>
-
-            <div style="flex:1; min-width:160px; background:#fff; border-radius:14px;
-                        box-shadow:0 2px 10px rgba(0,0,0,0.08); padding:20px 24px;
-                        border-top: 4px solid #2980b9;">
-                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                            letter-spacing:0.08em; color:#888; margin-bottom:6px;">
-                    Services Shown
-                </div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:4px;">In current filter</div>
-                <div style="font-size:2rem; font-weight:800; color:#2c3e50; line-height:1.1;">
-                    {svc_count}
-                </div>
-            </div>
-
-        </div>
-        """, unsafe_allow_html=True)
+        m1, m2, m3, m4 = st.columns(4)
+        with m1: st.metric(f"2026 Projection - {label_base}", f"{the_sum:,}")
+        with m2: st.metric(f"2025 Actual - {label_base}",     f"{sum_2025:,}")
+        with m3: st.metric("YoY Difference", f"{yoy_delta:+,}", delta=yoy_delta)
+        with m4: st.metric("Services Shown", svc_count)
 
         def style_table(df):
             headers   = "".join(f"<th>{col}</th>" for col in df.columns)
