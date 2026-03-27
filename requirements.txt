@@ -4,3 +4,4 @@ numpy
 openpyxl
 datetime
 timedelta
+pyodbc
