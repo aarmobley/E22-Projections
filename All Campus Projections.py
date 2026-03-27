@@ -5,10 +5,6 @@ import pyodbc
 
 
 
-st.set_page_config(
-    page_title="CoE22 Projections",
-    layout="wide",
-    initial_sidebar_state="collapsed")
 
 
 
@@ -25,9 +21,11 @@ def get_connection():
     return pyodbc.connect(conn_str)
 
 
-tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
+st.set_page_config(
+    page_title="CoE22 Projections",
+    layout="wide",
+    initial_sidebar_state="collapsed")
 
-with tab1:
 
 
 
