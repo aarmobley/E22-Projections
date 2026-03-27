@@ -1,6 +1,25 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
+import pyodbc
+
+
+# ── DB connection helper ────────────────────────────────────────────────
+@st.cache_resource
+def get_connection():
+    conn_str = (
+        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+        f"SERVER={st.secrets['db']['server']};"
+        f"DATABASE={st.secrets['db']['database']};"
+        f"UID={st.secrets['db']['username']};"
+        f"PWD={st.secrets['db']['password']};"
+    )
+    return pyodbc.connect(conn_str)
+
+
+tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
+
+with tab1:
 
 
 st.set_page_config(
@@ -824,7 +843,7 @@ if st.button("Generate All Campus Projections"):
         mime="text/csv"
     )
 
-
+pass
 
 
 
