@@ -29,25 +29,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div style="text-align: center; margin-bottom: 20px;">
-    <a href="https://e22projections.streamlit.app/" 
-       target="_blank" 
-       rel="noopener noreferrer"
-       style="display: inline-block; 
-              background-color: #1f77b4; 
-              color: white; 
-              padding: 8px 16px; 
-              border-radius: 6px; 
-              text-decoration: none; 
-              font-size: 14px;
-              font-weight: 500;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-              cursor: pointer;">
-        Open in New Window for Downloads
-    </a>
-</div>
-""", unsafe_allow_html=True)
+
 
 query_params = st.query_params
 embedded = query_params.get('embedded', 'false') == 'true'
