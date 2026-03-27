@@ -454,16 +454,17 @@ with tab1:
         sub_style    = "font-size:0.8rem;color:#aaa;margin-bottom:4px;"
         num_style    = "font-size:2rem;font-weight:800;line-height:1.1;"
 
+        red_card  = card_style + 'background:#fff;border-top:4px solid #C0392B;'
         cards_html = (
             '<div style="display:flex;gap:16px;margin:1rem 0 1.5rem 0;flex-wrap:wrap;">'
 
-            + '<div style="' + card_style + 'background:#fff;border-top:4px solid #C0392B;">'
+            + '<div style="' + red_card + '">'
             + '<div style="' + label_style + '">2026 Projection</div>'
             + '<div style="' + sub_style   + '">' + label_base + '</div>'
             + '<div style="' + num_style   + 'color:#2c3e50;">' + "{:,}".format(the_sum) + '</div>'
             + '</div>'
 
-            + '<div style="' + card_style + 'background:#fff;border-top:4px solid #7f8c8d;">'
+            + '<div style="' + red_card + '">'
             + '<div style="' + label_style + '">2025 Actual</div>'
             + '<div style="' + sub_style   + '">' + label_base + '</div>'
             + '<div style="' + num_style   + 'color:#2c3e50;">' + "{:,}".format(sum_2025) + '</div>'
@@ -475,7 +476,7 @@ with tab1:
             + '<div style="' + num_style   + 'color:' + diff_color + ';">' + diff_icon + ' ' + "{:,}".format(abs(yoy_delta)) + '</div>'
             + '</div>'
 
-            + '<div style="' + card_style + 'background:#fff;border-top:4px solid #2980b9;">'
+            + '<div style="' + red_card + '">'
             + '<div style="' + label_style + '">Services Shown</div>'
             + '<div style="' + sub_style   + '">In current filter</div>'
             + '<div style="' + num_style   + 'color:#2c3e50;">' + str(svc_count) + '</div>'
