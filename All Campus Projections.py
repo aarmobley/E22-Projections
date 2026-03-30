@@ -303,6 +303,27 @@ def style_table(df, hover_color="#fdecea"):
     </div>"""
 
 
+# ── Load Easter projections once — shared across both tabs ───────────────
+easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
+try:
+    df_easter = pd.read_excel(easter_url, engine="openpyxl")
+    if 'Service' in df_easter.columns:
+        cleaned = []
+        for val in df_easter['Service']:
+            try:
+                if hasattr(val, 'strftime'):
+                    cleaned.append(val.strftime('%I:%M %p').lstrip('0'))
+                else:
+                    s = str(val).strip().replace(':00 ', ' ').replace(':00', '')
+                    cleaned.append(s)
+            except Exception:
+                cleaned.append(str(val))
+        df_easter['Service'] = cleaned
+    easter_load_error = None
+except Exception as e:
+    df_easter = pd.DataFrame()
+    easter_load_error = str(e)
+
 # ── TABS ─────────────────────────────────────────────────────────────────
 tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
 
@@ -365,20 +386,8 @@ with tab1:
     easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 
     try:
-        df_easter = pd.read_excel(easter_url, engine="openpyxl")
-
-        if 'Service' in df_easter.columns:
-            cleaned = []
-            for val in df_easter['Service']:
-                try:
-                    if hasattr(val, 'strftime'):
-                        cleaned.append(val.strftime('%I:%M %p').lstrip('0'))
-                    else:
-                        s = str(val).strip().replace(':00 ', ' ').replace(':00', '')
-                        cleaned.append(s)
-                except Exception:
-                    cleaned.append(str(val))
-            df_easter['Service'] = cleaned
+        if easter_load_error:
+            raise Exception(easter_load_error)
 
         dd1, dd2, dd3 = st.columns(3)
         with dd1:
@@ -709,38 +718,27 @@ with tab2:
     else:
         df_pivot = pd.DataFrame(columns=['Campus','Day','SvcLabel','Actual_Adults','Actual_Kids','Actual_Total'])
 
-    # ── Build projections ────────────────────────────────────────────
-    proj_rows = []
-    for campus_name, campus_services in campus_coefficients.items():
-        std_adult, std_kids = 0, 0
-        for svc_time, svc_coeff in campus_services.items():
-            if 'Total Attendance' in svc_coeff or 'intercept' not in svc_coeff:
-                continue
-            p_adult, p_kids = calculate_attendance(
-                campus_name, svc_time, svc_coeff,
-                sc_num_date, sc_week, 'Pastor Joby', 'None')
-            std_adult += p_adult
-            std_kids  += p_kids
-            proj_rows.append({
-                'Campus': campus_name, 'SvcLabel': svc_time,
-                'Proj_Adults': round(p_adult), 'Proj_Kids': round(p_kids),
-                'Proj_Total':  round(p_adult + p_kids)
-            })
-        for svc_time, svc_coeff in campus_services.items():
-            if 'Total Attendance' not in svc_coeff:
-                continue
-            p_adult, p_kids = calculate_total_based_attendance(
-                campus_name, svc_time, svc_coeff, std_adult, std_kids)
-            proj_rows.append({
-                'Campus': campus_name, 'SvcLabel': svc_time,
-                'Proj_Adults': round(p_adult), 'Proj_Kids': round(p_kids),
-                'Proj_Total':  round(p_adult + p_kids)
-            })
-
-    df_proj = pd.DataFrame(proj_rows)
+    # ── Build projections from Easter Excel (same source as Tab 1) ───
+    if not df_easter.empty:
+        df_proj = df_easter.copy()
+        # Rename columns to match scorecard expectations
+        df_proj = df_proj.rename(columns={
+            'Service': 'SvcLabel',
+            'Adults':  'Proj_Adults',
+            'Kids':    'Proj_Kids',
+            'Total':   'Proj_Total'
+        })
+        # Fill missing proj cols
+        if 'Proj_Adults' not in df_proj.columns: df_proj['Proj_Adults'] = 0
+        if 'Proj_Kids'   not in df_proj.columns: df_proj['Proj_Kids']   = 0
+        if 'Proj_Total'  not in df_proj.columns:
+            df_proj['Proj_Total'] = df_proj['Proj_Adults'] + df_proj['Proj_Kids']
+        df_proj = df_proj[['Campus', 'Day', 'SvcLabel', 'Proj_Adults', 'Proj_Kids', 'Proj_Total']]
+    else:
+        df_proj = pd.DataFrame(columns=['Campus','Day','SvcLabel','Proj_Adults','Proj_Kids','Proj_Total'])
 
     # ── Merge ────────────────────────────────────────────────────────
-    df_score = df_proj.merge(df_pivot, on=['Campus', 'SvcLabel'], how='left')
+    df_score = df_proj.merge(df_pivot, on=['Campus', 'Day', 'SvcLabel'], how='left')
     for col in ['Actual_Adults', 'Actual_Kids', 'Actual_Total']:
         if col not in df_score.columns:
             df_score[col] = 0
