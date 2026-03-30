@@ -268,11 +268,16 @@ def calculate_total_based_attendance(campus, service_time, coefficients, other_a
     return max(0, other_adult * m), max(0, other_kids * m)
 
 
-def style_table(df, hover_color="#fdecea"):
+def style_table(df, hover_color="#fdecea", preview_rows=8):
+    import uuid
+    table_id  = "tbl_" + uuid.uuid4().hex[:8]
+    toggle_id = "tog_" + uuid.uuid4().hex[:8]
     headers   = "".join("<th>" + col + "</th>" for col in df.columns)
     rows_html = ""
+    total     = len(df)
     for i, (_, row) in enumerate(df.iterrows()):
         row_class = "row-even" if i % 2 == 0 else "row-odd"
+        hidden    = ' class="extra-row" style="display:none;"' if i >= preview_rows else ' class="' + row_class + '"'
         cells = ""
         for col in df.columns:
             val   = row[col]
@@ -282,7 +287,29 @@ def style_table(df, hover_color="#fdecea"):
             elif isinstance(val, (int, float)):
                 val = "{:,}".format(val)
             cells += '<td style="text-align:' + align + '">' + str(val) + '</td>'
-        rows_html += '<tr class="' + row_class + '">' + cells + '</tr>'
+        rows_html += "<tr" + hidden + ">" + cells + "</tr>"
+
+    col_count  = len(df.columns)
+    remaining  = total - preview_rows
+    toggle_row = ""
+    if total > preview_rows:
+        toggle_row = (
+            '<tr id="' + toggle_id + '_row">'
+            + '<td colspan="' + str(col_count) + '" '
+            + 'style="text-align:center;padding:10px;cursor:pointer;'
+            + 'color:#C0392B;font-weight:600;font-size:0.82rem;'
+            + 'border-top:2px solid #e8edf3;background:#fff;"'
+            + ' onclick="'
+            + "var rows=document.querySelectorAll('#" + table_id + " .extra-row');"
+            + "var btn=document.getElementById('" + toggle_id + "_row').querySelector('td');"
+            + "var hidden=rows[0].style.display==='none';"
+            + "rows.forEach(function(r){r.style.display=hidden?'':'none';});"
+            + "btn.textContent=hidden?'▲ Show less':'▼ Show all " + str(remaining) + " more rows';"
+            + '">'
+            + '▼ Show all ' + str(remaining) + ' more rows'
+            + '</td></tr>'
+        )
+
     return """
     <style>
         .modern-table-wrap {overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}
@@ -295,9 +322,9 @@ def style_table(df, hover_color="#fdecea"):
         .modern-table td {padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}
     </style>
     <div class="modern-table-wrap">
-        <table class="modern-table">
+        <table class="modern-table" id=\"""" + table_id + """">
             <thead><tr>""" + headers + """</tr></thead>
-            <tbody>""" + rows_html + """</tbody>
+            <tbody>""" + rows_html + toggle_row + """</tbody>
         </table>
     </div>"""
 
@@ -487,11 +514,7 @@ with tab1:
 
         st.markdown(cards_html, unsafe_allow_html=True)
 
-        st.markdown(style_table(df_show.head(8)), unsafe_allow_html=True)
-
-        with st.expander("Show all " + str(len(df_show)) + " rows"):
-            st.markdown(style_table(df_show), unsafe_allow_html=True)
-
+        st.markdown(style_table(df_show), unsafe_allow_html=True)
         st.write("")
 
         st.download_button(
