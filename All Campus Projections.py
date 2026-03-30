@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from datetime import datetime, timedelta
 import pyodbc
@@ -514,7 +515,7 @@ with tab1:
 
         st.markdown(cards_html, unsafe_allow_html=True)
 
-        st.markdown(style_table(df_show), unsafe_allow_html=True)
+        components.html(style_table(df_show), height=min(600, 60 + len(df_show.head(8)) * 45 + 50), scrolling=True)
         st.write("")
 
         st.download_button(
