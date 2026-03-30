@@ -30,7 +30,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
+st.markdown("""
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="https://e22projections.streamlit.app/"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-block;background-color:#1f77b4;color:white;
+              padding:8px 16px;border-radius:6px;text-decoration:none;
+              font-size:14px;font-weight:500;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        Open in New Window for Downloads
+    </a>
+</div>
+""", unsafe_allow_html=True)
 
 query_params = st.query_params
 embedded = query_params.get('embedded', 'false') == 'true'
@@ -629,27 +639,27 @@ with tab1:
         )
 
 
-
 # =====================================================================
 with tab2:
 # =====================================================================
 
     st.subheader("🎯 Scorecard — Projected vs Actual")
 
+    EASTER_2026_DATE = "2026-04-05"
+
     # ── Filters ──────────────────────────────────────────────────────
-    sc1, sc2, sc3, sc4 = st.columns(4)
+    sc1, sc2, sc3 = st.columns(3)
     with sc1:
-        sc_date_opt = st.selectbox("Select Date", date_week_options, key="sc_date")
-    with sc2:
         sc_campus = st.selectbox("Campus", ["All"] + sorted(campus_coefficients.keys()), key="sc_campus")
-    with sc3:
+    with sc2:
         sc_day = st.selectbox("Day", ["All", "Thu", "Sat", "Sun"], key="sc_day")
-    with sc4:
+    with sc3:
         sc_category = st.selectbox("Category", ["Total", "Adults", "Kids"], key="sc_category")
 
-    sc_date_str = sc_date_opt.split(' ')[0]
-    sc_week     = int(sc_date_opt.split('Week ')[-1].strip(')'))
-    sc_num_date = date_mapping[sc_date_str]
+    # Easter week number and numerical date for projections
+    easter_dt   = datetime.strptime(EASTER_2026_DATE, "%Y-%m-%d")
+    sc_num_date = (easter_dt - datetime(1970, 1, 1)).days
+    sc_week     = num_week[date_range.index(easter_dt)] if easter_dt in date_range else 14
 
     # ── Service time normaliser (DB format → projection key) ─────────
     DAY_FROM_TIME = {
@@ -672,7 +682,7 @@ with tab2:
 
     try:
         conn      = get_connection()
-        df_raw    = pd.read_sql(QUERY, conn, params=[sc_date_str])
+        df_raw    = pd.read_sql(QUERY, conn, params=[EASTER_2026_DATE])
         db_ok     = True
     except Exception as e:
         st.warning("Could not connect to database: " + str(e))
@@ -853,6 +863,6 @@ with tab2:
     st.download_button(
         label="Download Scorecard (CSV)",
         data=df_display.to_csv(index=False),
-        file_name="Scorecard_" + sc_date_str.replace('-', '_') + ".csv",
+        file_name="Scorecard_Easter_2026.csv",
         mime="text/csv"
     )
