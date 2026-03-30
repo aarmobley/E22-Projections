@@ -30,6 +30,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="https://e22projections.streamlit.app/"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-block;background-color:#1f77b4;color:white;
+              padding:8px 16px;border-radius:6px;text-decoration:none;
+              font-size:14px;font-weight:500;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        Open in New Window for Downloads
+    </a>
+</div>
+""", unsafe_allow_html=True)
 
 query_params = st.query_params
 embedded = query_params.get('embedded', 'false') == 'true'
@@ -444,32 +455,38 @@ with tab1:
         sub_style    = "font-size:0.8rem;color:#aaa;margin-bottom:4px;"
         num_style    = "font-size:2rem;font-weight:800;line-height:1.1;"
 
-        plain_card = card_style + 'background:#fff;'
         cards_html = (
-            '<div style="display:flex;gap:16px;margin:1rem 0 1.5rem 0;flex-wrap:wrap;">'
+            '<div style="display:flex;align-items:center;background:#fff;border-radius:12px;'
+            'box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:20px 0;margin:1rem 0 1.5rem 0;">'
 
-            + '<div style="' + plain_card + '">'
-            + '<div style="' + label_style + '">2026 Projection</div>'
-            + '<div style="' + sub_style   + '">' + label_base + '</div>'
-            + '<div style="' + num_style   + 'color:#2c3e50;">' + "{:,}".format(the_sum) + '</div>'
+            + '<div style="flex:1;text-align:center;padding:0 24px;">'
+            + '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;">2026 Projection</div>'
+            + '<div style="font-size:1.75rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(the_sum) + '</div>'
+            + '<div style="font-size:0.75rem;color:#bbb;margin-top:3px;">' + label_base + '</div>'
             + '</div>'
 
-            + '<div style="' + plain_card + '">'
-            + '<div style="' + label_style + '">2025 Actual</div>'
-            + '<div style="' + sub_style   + '">' + label_base + '</div>'
-            + '<div style="' + num_style   + 'color:#2c3e50;">' + "{:,}".format(sum_2025) + '</div>'
+            + '<div style="width:1px;background:#e8edf3;align-self:stretch;"></div>'
+
+            + '<div style="flex:1;text-align:center;padding:0 24px;">'
+            + '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;">2025 Actual</div>'
+            + '<div style="font-size:1.75rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(sum_2025) + '</div>'
+            + '<div style="font-size:0.75rem;color:#bbb;margin-top:3px;">' + label_base + '</div>'
             + '</div>'
 
-            + '<div style="' + plain_card + '">'
-            + '<div style="' + label_style + '">YoY Difference</div>'
-            + '<div style="' + sub_style   + '">vs Last Year</div>'
-            + '<div style="' + num_style   + 'color:' + diff_color + ';">' + diff_icon + ' ' + "{:,}".format(abs(yoy_delta)) + '</div>'
+            + '<div style="width:1px;background:#e8edf3;align-self:stretch;"></div>'
+
+            + '<div style="flex:1;text-align:center;padding:0 24px;">'
+            + '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;">YoY Difference</div>'
+            + '<div style="font-size:1.75rem;font-weight:800;color:' + diff_color + ';">' + diff_icon + ' ' + "{:,}".format(abs(yoy_delta)) + '</div>'
+            + '<div style="font-size:0.75rem;color:#bbb;margin-top:3px;">vs Last Year</div>'
             + '</div>'
 
-            + '<div style="' + plain_card + '">'
-            + '<div style="' + label_style + '">Services Shown</div>'
-            + '<div style="' + sub_style   + '">In current filter</div>'
-            + '<div style="' + num_style   + 'color:#2c3e50;">' + str(svc_count) + '</div>'
+            + '<div style="width:1px;background:#e8edf3;align-self:stretch;"></div>'
+
+            + '<div style="flex:1;text-align:center;padding:0 24px;">'
+            + '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;">Services Shown</div>'
+            + '<div style="font-size:1.75rem;font-weight:800;color:#2c3e50;">' + str(svc_count) + '</div>'
+            + '<div style="font-size:0.75rem;color:#bbb;margin-top:3px;">In current filter</div>'
             + '</div>'
 
             + '</div>'
