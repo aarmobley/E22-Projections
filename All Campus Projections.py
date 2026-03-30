@@ -629,8 +629,230 @@ with tab1:
         )
 
 
+
 # =====================================================================
 with tab2:
 # =====================================================================
-    st.subheader("🎯 Scorecard — coming soon")
-    # Paste scorecard code here when ready
+
+    st.subheader("🎯 Scorecard — Projected vs Actual")
+
+    # ── Filters ──────────────────────────────────────────────────────
+    sc1, sc2, sc3, sc4 = st.columns(4)
+    with sc1:
+        sc_date_opt = st.selectbox("Select Date", date_week_options, key="sc_date")
+    with sc2:
+        sc_campus = st.selectbox("Campus", ["All"] + sorted(campus_coefficients.keys()), key="sc_campus")
+    with sc3:
+        sc_day = st.selectbox("Day", ["All", "Thu", "Sat", "Sun"], key="sc_day")
+    with sc4:
+        sc_category = st.selectbox("Category", ["Total", "Adults", "Kids"], key="sc_category")
+
+    sc_date_str = sc_date_opt.split(' ')[0]
+    sc_week     = int(sc_date_opt.split('Week ')[-1].strip(')'))
+    sc_num_date = date_mapping[sc_date_str]
+
+    # ── Service time normaliser (DB format → projection key) ─────────
+    DAY_FROM_TIME = {
+        '07:00:00': 'Sun', '09:22:00': 'Sun', '11:22:00': 'Sun',
+        '15:00:00': 'Sat', '17:22:00': 'Sat',
+        '19:22:00': 'Thu',
+    }
+    TIME_LABEL_MAP = {
+        '07:00:00': '7:22',  '09:22:00': '9:00',  '11:22:00': '11:22',
+        '15:00:00': '9:00',  '17:22:00': '11:22', '19:22:00': '7:22',
+    }
+
+    # ── Pull actuals from DB ─────────────────────────────────────────
+    QUERY = """
+        SELECT Campus, ServiceTime, MetricName, Value
+        FROM _com_CoE22_RockMetrics
+        WHERE SundayDate = ?
+        AND MetricName IN ('Attendance - Adults', 'Attendance - Kids')
+    """
+
+    try:
+        conn      = get_connection()
+        df_raw    = pd.read_sql(QUERY, conn, params=[sc_date_str])
+        db_ok     = True
+    except Exception as e:
+        st.warning("Could not connect to database: " + str(e))
+        df_raw = pd.DataFrame(columns=['Campus', 'ServiceTime', 'MetricName', 'Value'])
+        db_ok  = False
+
+    # Normalise and pivot
+    if not df_raw.empty:
+        df_raw['Day']       = df_raw['ServiceTime'].map(DAY_FROM_TIME).fillna('Sun')
+        df_raw['SvcLabel']  = df_raw['ServiceTime'].map(TIME_LABEL_MAP).fillna(df_raw['ServiceTime'])
+        df_pivot = df_raw.pivot_table(
+            index=['Campus', 'Day', 'SvcLabel'],
+            columns='MetricName', values='Value', aggfunc='sum'
+        ).reset_index()
+        df_pivot.columns.name = None
+        df_pivot = df_pivot.rename(columns={
+            'Attendance - Adults': 'Actual_Adults',
+            'Attendance - Kids':   'Actual_Kids'
+        })
+        for col in ['Actual_Adults', 'Actual_Kids']:
+            if col not in df_pivot.columns:
+                df_pivot[col] = 0
+        df_pivot['Actual_Total'] = df_pivot['Actual_Adults'] + df_pivot['Actual_Kids']
+    else:
+        df_pivot = pd.DataFrame(columns=['Campus','Day','SvcLabel','Actual_Adults','Actual_Kids','Actual_Total'])
+
+    # ── Build projections ────────────────────────────────────────────
+    proj_rows = []
+    for campus_name, campus_services in campus_coefficients.items():
+        std_adult, std_kids = 0, 0
+        for svc_time, svc_coeff in campus_services.items():
+            if 'Total Attendance' in svc_coeff or 'intercept' not in svc_coeff:
+                continue
+            p_adult, p_kids = calculate_attendance(
+                campus_name, svc_time, svc_coeff,
+                sc_num_date, sc_week, 'Pastor Joby', 'None')
+            std_adult += p_adult
+            std_kids  += p_kids
+            proj_rows.append({
+                'Campus': campus_name, 'SvcLabel': svc_time,
+                'Proj_Adults': round(p_adult), 'Proj_Kids': round(p_kids),
+                'Proj_Total':  round(p_adult + p_kids)
+            })
+        for svc_time, svc_coeff in campus_services.items():
+            if 'Total Attendance' not in svc_coeff:
+                continue
+            p_adult, p_kids = calculate_total_based_attendance(
+                campus_name, svc_time, svc_coeff, std_adult, std_kids)
+            proj_rows.append({
+                'Campus': campus_name, 'SvcLabel': svc_time,
+                'Proj_Adults': round(p_adult), 'Proj_Kids': round(p_kids),
+                'Proj_Total':  round(p_adult + p_kids)
+            })
+
+    df_proj = pd.DataFrame(proj_rows)
+
+    # ── Merge ────────────────────────────────────────────────────────
+    df_score = df_proj.merge(df_pivot, on=['Campus', 'SvcLabel'], how='left')
+    for col in ['Actual_Adults', 'Actual_Kids', 'Actual_Total']:
+        if col not in df_score.columns:
+            df_score[col] = 0
+        df_score[col] = df_score[col].fillna(0).astype(int)
+
+    # ── Apply filters ────────────────────────────────────────────────
+    if sc_campus != "All":
+        df_score = df_score[df_score['Campus'] == sc_campus]
+    if sc_day != "All" and 'Day' in df_score.columns:
+        df_score = df_score[df_score['Day'] == sc_day]
+
+    # ── Category columns ─────────────────────────────────────────────
+    proj_col = 'Proj_Adults'   if sc_category == 'Adults' else \
+               'Proj_Kids'     if sc_category == 'Kids'   else 'Proj_Total'
+    act_col  = 'Actual_Adults' if sc_category == 'Adults' else \
+               'Actual_Kids'   if sc_category == 'Kids'   else 'Actual_Total'
+
+    df_score['Difference'] = df_score[act_col] - df_score[proj_col]
+    df_score['Diff %']     = (
+        df_score['Difference'] / df_score[proj_col].replace(0, 1) * 100
+    ).round(1)
+
+    display_cols = ['Campus', 'SvcLabel', proj_col, act_col, 'Difference', 'Diff %']
+    if 'Day' in df_score.columns:
+        display_cols = ['Campus', 'Day', 'SvcLabel', proj_col, act_col, 'Difference', 'Diff %']
+
+    df_display = df_score[display_cols].rename(columns={
+        'SvcLabel': 'Service',
+        proj_col:   'Projected (' + sc_category + ')',
+        act_col:    'Actual ('    + sc_category + ')',
+    })
+
+    # ── Summary stat bar ─────────────────────────────────────────────
+    t_proj   = int(df_score[proj_col].sum())
+    t_actual = int(df_score[act_col].sum())
+    t_diff   = t_actual - t_proj
+    s_diff_color = "#27ae60" if t_diff >= 0 else "#c0392b"
+    s_diff_icon  = "▲" if t_diff >= 0 else "▼"
+
+    sc_label = sc_category
+    if sc_campus != "All": sc_label += " - " + sc_campus
+    if sc_day    != "All": sc_label += " - " + sc_day
+
+    sc_cards = (
+        '<style>'
+        '.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;'
+        'box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}'
+        '.sc-stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}'
+        '.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}'
+        '@media(max-width:600px){'
+        '.sc-stat-item{min-width:50%;flex-basis:50%;}'
+        '.sc-stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}'
+        '.sc-stat-item:nth-child(4){border-top:1px solid #e8edf3;}'
+        '}'
+        '.sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}'
+        '.sc-num{font-size:1.6rem;font-weight:800;line-height:1.1;}'
+        '.sc-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}'
+        '</style>'
+        '<div class="sc-stat-bar">'
+        + '<div class="sc-stat-item"><div class="sc-label">Projected</div>'
+        + '<div class="sc-num" style="color:#2c3e50;">' + "{:,}".format(t_proj) + '</div>'
+        + '<div class="sc-sub">' + sc_label + '</div></div>'
+        + '<div class="sc-stat-item"><div class="sc-label">Actual</div>'
+        + '<div class="sc-num" style="color:#2c3e50;">' + "{:,}".format(t_actual) + '</div>'
+        + '<div class="sc-sub">' + sc_label + '</div></div>'
+        + '<div class="sc-stat-item"><div class="sc-label">Difference</div>'
+        + '<div class="sc-num" style="color:' + s_diff_color + ';">' + s_diff_icon + ' ' + "{:,}".format(abs(t_diff)) + '</div>'
+        + '<div class="sc-sub">vs Projection</div></div>'
+        + '<div class="sc-stat-item"><div class="sc-label">Services</div>'
+        + '<div class="sc-num" style="color:#2c3e50;">' + str(len(df_display)) + '</div>'
+        + '<div class="sc-sub">In current filter</div></div>'
+        + '</div>'
+    )
+    st.markdown(sc_cards, unsafe_allow_html=True)
+
+    # ── Scorecard table ──────────────────────────────────────────────
+    def style_scorecard(df):
+        headers   = "".join("<th>" + col + "</th>" for col in df.columns)
+        rows_html = ""
+        for i, (_, row) in enumerate(df.iterrows()):
+            row_class = "row-even" if i % 2 == 0 else "row-odd"
+            cells = ""
+            for col in df.columns:
+                val   = row[col]
+                align = "right" if isinstance(val, (int, float)) else "left"
+                color = ""
+                if col == "Difference":
+                    color = "color:#27ae60;font-weight:700;" if val > 0 else ("color:#c0392b;font-weight:700;" if val < 0 else "")
+                    val   = ("+" if val > 0 else "") + "{:,}".format(int(val))
+                elif col == "Diff %":
+                    color = "color:#27ae60;font-weight:700;" if val > 0 else ("color:#c0392b;font-weight:700;" if val < 0 else "")
+                    val   = ("+" if val > 0 else "") + "{:.1f}%".format(val)
+                elif isinstance(val, float) and val == int(val):
+                    val = "{:,}".format(int(val))
+                elif isinstance(val, (int,)):
+                    val = "{:,}".format(val)
+                cells += '<td style="text-align:' + align + ';' + color + '">' + str(val) + '</td>'
+            rows_html += '<tr class="' + row_class + '">' + cells + '</tr>'
+        return """
+        <style>
+            .sc-table-wrap {overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}
+            .sc-table {width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:0.875rem;}
+            .sc-table thead tr {background:#C0392B;color:white;text-align:left;letter-spacing:0.04em;font-size:0.8rem;text-transform:uppercase;}
+            .sc-table thead th {padding:12px 16px;font-weight:600;white-space:nowrap;}
+            .sc-table tbody tr.row-even {background-color:#ffffff;}
+            .sc-table tbody tr.row-odd  {background-color:#f4f7fb;}
+            .sc-table tbody tr:hover    {background-color:#fdecea;transition:background 0.15s ease;}
+            .sc-table td {padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}
+        </style>
+        <div class="sc-table-wrap">
+            <table class="sc-table">
+                <thead><tr>""" + headers + """</tr></thead>
+                <tbody>""" + rows_html + """</tbody>
+            </table>
+        </div>"""
+
+    st.markdown(style_scorecard(df_display), unsafe_allow_html=True)
+
+    # ── Download ─────────────────────────────────────────────────────
+    st.download_button(
+        label="Download Scorecard (CSV)",
+        data=df_display.to_csv(index=False),
+        file_name="Scorecard_" + sc_date_str.replace('-', '_') + ".csv",
+        mime="text/csv"
+    )
