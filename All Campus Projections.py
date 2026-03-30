@@ -269,16 +269,11 @@ def calculate_total_based_attendance(campus, service_time, coefficients, other_a
     return max(0, other_adult * m), max(0, other_kids * m)
 
 
-def style_table(df, hover_color="#fdecea", preview_rows=8):
-    import uuid
-    table_id  = "tbl_" + uuid.uuid4().hex[:8]
-    toggle_id = "tog_" + uuid.uuid4().hex[:8]
+def style_table(df, hover_color="#fdecea"):
     headers   = "".join("<th>" + col + "</th>" for col in df.columns)
     rows_html = ""
-    total     = len(df)
     for i, (_, row) in enumerate(df.iterrows()):
         row_class = "row-even" if i % 2 == 0 else "row-odd"
-        hidden    = ' class="extra-row" style="display:none;"' if i >= preview_rows else ' class="' + row_class + '"'
         cells = ""
         for col in df.columns:
             val   = row[col]
@@ -288,29 +283,7 @@ def style_table(df, hover_color="#fdecea", preview_rows=8):
             elif isinstance(val, (int, float)):
                 val = "{:,}".format(val)
             cells += '<td style="text-align:' + align + '">' + str(val) + '</td>'
-        rows_html += "<tr" + hidden + ">" + cells + "</tr>"
-
-    col_count  = len(df.columns)
-    remaining  = total - preview_rows
-    toggle_row = ""
-    if total > preview_rows:
-        toggle_row = (
-            '<tr id="' + toggle_id + '_row">'
-            + '<td colspan="' + str(col_count) + '" '
-            + 'style="text-align:center;padding:10px;cursor:pointer;'
-            + 'color:#C0392B;font-weight:600;font-size:0.82rem;'
-            + 'border-top:2px solid #e8edf3;background:#fff;"'
-            + ' onclick="'
-            + "var rows=document.querySelectorAll('#" + table_id + " .extra-row');"
-            + "var btn=document.getElementById('" + toggle_id + "_row').querySelector('td');"
-            + "var hidden=rows[0].style.display==='none';"
-            + "rows.forEach(function(r){r.style.display=hidden?'':'none';});"
-            + "btn.textContent=hidden?'▲ Show less':'▼ Show all " + str(remaining) + " more rows';"
-            + '">'
-            + '▼ Show all ' + str(remaining) + ' more rows'
-            + '</td></tr>'
-        )
-
+        rows_html += '<tr class="' + row_class + '">' + cells + '</tr>'
     return """
     <style>
         .modern-table-wrap {overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}
@@ -323,9 +296,9 @@ def style_table(df, hover_color="#fdecea", preview_rows=8):
         .modern-table td {padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}
     </style>
     <div class="modern-table-wrap">
-        <table class="modern-table" id=\"""" + table_id + """">
+        <table class="modern-table">
             <thead><tr>""" + headers + """</tr></thead>
-            <tbody>""" + rows_html + toggle_row + """</tbody>
+            <tbody>""" + rows_html + """</tbody>
         </table>
     </div>"""
 
@@ -515,7 +488,32 @@ with tab1:
 
         st.markdown(cards_html, unsafe_allow_html=True)
 
-        components.html(style_table(df_show), height=min(600, 60 + len(df_show.head(8)) * 45 + 50), scrolling=True)
+        if 'easter_expanded' not in st.session_state:
+            st.session_state.easter_expanded = False
+
+        preview_rows = 8
+        df_preview   = df_show if st.session_state.easter_expanded else df_show.head(preview_rows)
+        st.markdown(style_table(df_preview), unsafe_allow_html=True)
+
+        if len(df_show) > preview_rows:
+            remaining = len(df_show) - preview_rows
+            if st.session_state.easter_expanded:
+                btn_label = "▲ Show less"
+            else:
+                btn_label = "▼ Show all " + str(remaining) + " more rows"
+            st.markdown(
+                '<style>.expand-btn button {background:none!important;border:none!important;'
+                'color:#C0392B!important;font-weight:600!important;font-size:0.82rem!important;'
+                'padding:4px 0!important;cursor:pointer!important;box-shadow:none!important;}</style>',
+                unsafe_allow_html=True
+            )
+            with st.container():
+                st.markdown('<div class="expand-btn">', unsafe_allow_html=True)
+                if st.button(btn_label, key="easter_toggle"):
+                    st.session_state.easter_expanded = not st.session_state.easter_expanded
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
         st.write("")
 
         st.download_button(
