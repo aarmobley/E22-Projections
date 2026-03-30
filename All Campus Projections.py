@@ -270,19 +270,20 @@ def calculate_total_based_attendance(campus, service_time, coefficients, other_a
 
 
 def style_table(df, hover_color="#fdecea"):
-    headers   = "".join("<th>" + col + "</th>" for col in df.columns)
+    cols      = list(df.columns)
+    headers   = "".join("<th>" + col + "</th>" for col in cols)
     rows_html = ""
     for i, (_, row) in enumerate(df.iterrows()):
         row_class = "row-even" if i % 2 == 0 else "row-odd"
         cells = ""
-        for col in df.columns:
+        for col in cols:
             val   = row[col]
             align = "right" if isinstance(val, (int, float)) else "left"
             if isinstance(val, float) and val == int(val):
                 val = "{:,}".format(int(val))
             elif isinstance(val, (int, float)):
                 val = "{:,}".format(val)
-            cells += '<td style="text-align:' + align + '">' + str(val) + '</td>'
+            cells += '<td data-label="' + col + '" style="text-align:' + align + '">' + str(val) + '</td>'
         rows_html += '<tr class="' + row_class + '">' + cells + '</tr>'
     return """
     <style>
@@ -294,6 +295,37 @@ def style_table(df, hover_color="#fdecea"):
         .modern-table tbody tr.row-odd  {background-color:#f4f7fb;}
         .modern-table tbody tr:hover    {background-color:""" + hover_color + """;transition:background 0.15s ease;}
         .modern-table td {padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}
+        @media(max-width:640px){
+            .modern-table thead {display:none;}
+            .modern-table tbody tr {
+                display:block;
+                margin-bottom:12px;
+                border-radius:10px;
+                box-shadow:0 1px 4px rgba(0,0,0,0.07);
+                overflow:hidden;
+            }
+            .modern-table tbody tr.row-even {background:#ffffff;}
+            .modern-table tbody tr.row-odd  {background:#f4f7fb;}
+            .modern-table td {
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                padding:9px 14px;
+                border-bottom:1px solid #e8edf3;
+                white-space:normal;
+                font-size:0.82rem;
+            }
+            .modern-table td::before {
+                content:attr(data-label);
+                font-size:0.68rem;
+                font-weight:700;
+                text-transform:uppercase;
+                letter-spacing:0.06em;
+                color:#aaa;
+                flex-shrink:0;
+                margin-right:12px;
+            }
+        }
     </style>
     <div class="modern-table-wrap">
         <table class="modern-table">
