@@ -656,13 +656,14 @@ with tab2:
 
     EASTER_2026_DATE = "2026-04-05"
 
+    # Campus list from Easter Excel so Wildlight etc. are included
+    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
+
     # ── Filters ──────────────────────────────────────────────────────
-    sc1, sc2, sc3 = st.columns(3)
+    sc1, sc2 = st.columns(2)
     with sc1:
-        sc_campus = st.selectbox("Campus", ["All"] + sorted(campus_coefficients.keys()), key="sc_campus")
+        sc_campus = st.selectbox("Campus", ["All"] + sc_campus_list, key="sc_campus")
     with sc2:
-        sc_day = st.selectbox("Day", ["All", "Thu", "Sat", "Sun"], key="sc_day")
-    with sc3:
         sc_category = st.selectbox("Category", ["Total", "Adults", "Kids"], key="sc_category")
 
     # Easter week number and numerical date for projections
@@ -747,8 +748,6 @@ with tab2:
     # ── Apply filters ────────────────────────────────────────────────
     if sc_campus != "All":
         df_score = df_score[df_score['Campus'] == sc_campus]
-    if sc_day != "All" and 'Day' in df_score.columns:
-        df_score = df_score[df_score['Day'] == sc_day]
 
     # ── Category columns ─────────────────────────────────────────────
     proj_col = 'Proj_Adults'   if sc_category == 'Adults' else \
@@ -761,11 +760,8 @@ with tab2:
         df_score['Difference'] / df_score[proj_col].replace(0, 1) * 100
     ).round(1)
 
-    display_cols = ['Campus', 'SvcLabel', proj_col, act_col, 'Difference', 'Diff %']
-    if 'Day' in df_score.columns:
-        display_cols = ['Campus', 'Day', 'SvcLabel', proj_col, act_col, 'Difference', 'Diff %']
-
-    df_display = df_score[display_cols].rename(columns={
+    display_cols = ['Campus', 'Day', 'SvcLabel', proj_col, act_col, 'Difference', 'Diff %']
+    df_display = df_score[[c for c in display_cols if c in df_score.columns]].rename(columns={
         'SvcLabel': 'Service',
         proj_col:   'Projected (' + sc_category + ')',
         act_col:    'Actual ('    + sc_category + ')',
@@ -774,13 +770,12 @@ with tab2:
     # ── Summary stat bar ─────────────────────────────────────────────
     t_proj   = int(df_score[proj_col].sum())
     t_actual = int(df_score[act_col].sum())
-    t_diff   = t_actual - t_proj
-    s_diff_color = "#27ae60" if t_diff >= 0 else "#c0392b"
-    s_diff_icon  = "▲" if t_diff >= 0 else "▼"
+    t_pct    = round((t_actual - t_proj) / t_proj * 100, 1) if t_proj != 0 else 0
+    s_diff_color = "#27ae60" if t_pct >= 0 else "#c0392b"
+    s_diff_icon  = "▲" if t_pct >= 0 else "▼"
 
     sc_label = sc_category
     if sc_campus != "All": sc_label += " - " + sc_campus
-    if sc_day    != "All": sc_label += " - " + sc_day
 
     sc_cards = (
         '<style>'
@@ -790,8 +785,8 @@ with tab2:
         '.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}'
         '@media(max-width:600px){'
         '.sc-stat-item{min-width:50%;flex-basis:50%;}'
+        '.sc-stat-item:nth-child(2){border-top:none;}'
         '.sc-stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}'
-        '.sc-stat-item:nth-child(4){border-top:1px solid #e8edf3;}'
         '}'
         '.sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}'
         '.sc-num{font-size:1.6rem;font-weight:800;line-height:1.1;}'
@@ -804,12 +799,9 @@ with tab2:
         + '<div class="sc-stat-item"><div class="sc-label">Actual</div>'
         + '<div class="sc-num" style="color:#2c3e50;">' + "{:,}".format(t_actual) + '</div>'
         + '<div class="sc-sub">' + sc_label + '</div></div>'
-        + '<div class="sc-stat-item"><div class="sc-label">Difference</div>'
-        + '<div class="sc-num" style="color:' + s_diff_color + ';">' + s_diff_icon + ' ' + "{:,}".format(abs(t_diff)) + '</div>'
-        + '<div class="sc-sub">vs Projection</div></div>'
-        + '<div class="sc-stat-item"><div class="sc-label">Services</div>'
-        + '<div class="sc-num" style="color:#2c3e50;">' + str(len(df_display)) + '</div>'
-        + '<div class="sc-sub">In current filter</div></div>'
+        + '<div class="sc-stat-item"><div class="sc-label">vs Projection</div>'
+        + '<div class="sc-num" style="color:' + s_diff_color + ';">' + s_diff_icon + ' ' + str(abs(t_pct)) + '%</div>'
+        + '<div class="sc-sub">Percent difference</div></div>'
         + '</div>'
     )
     st.markdown(sc_cards, unsafe_allow_html=True)
