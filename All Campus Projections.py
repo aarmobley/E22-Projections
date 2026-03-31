@@ -368,7 +368,7 @@ except Exception as e:
     easter_load_error = str(e)
 
 # ── TABS ─────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
+tab1, tab2 = st.tabs(["📊 Projections", "📡 Live Attendance"])
 
 
 # =====================================================================
