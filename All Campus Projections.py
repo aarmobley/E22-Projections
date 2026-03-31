@@ -627,66 +627,93 @@ with tab2:
 
     st.divider()
 
-    # ── Service rows — tap to expand detail ──────────────────────────
-    if 'live_selected' not in st.session_state:
-        st.session_state.live_selected = None
+    # ── Campus accordion — click to expand services ───────────────────
+    if 'live_campus_open' not in st.session_state:
+        st.session_state.live_campus_open = None
 
-    DAY_ORDER       = {'Thu': 0, 'Sat': 1, 'Sun': 2}
+    DAY_ORDER = {'Thu': 0, 'Sat': 1, 'Sun': 2}
     df_score_sorted = df_score.sort_values(
         by=['Campus','Day','SvcLabel'],
         key=lambda col: col.map(DAY_ORDER) if col.name == 'Day' else col
     ).reset_index(drop=True)
 
-    for idx, row in df_score_sorted.iterrows():
-        proj_val   = int(row[proj_col])
-        actual_val = int(row[act_col])
-        diff_val   = actual_val - proj_val
-        pct_val    = round(diff_val / proj_val * 100, 1) if proj_val != 0 else 0
-        r_color    = "#27ae60" if diff_val >= 0 else "#c0392b"
-        r_icon     = "▲" if diff_val >= 0 else "▼"
-        is_open    = st.session_state.live_selected == idx
+    campus_list = df_score_sorted['Campus'].unique().tolist()
 
-        # Row summary card
+    for campus in campus_list:
+        df_campus  = df_score_sorted[df_score_sorted['Campus'] == campus]
+        c_proj     = int(df_campus[proj_col].sum())
+        c_actual   = int(df_campus[act_col].sum())
+        c_diff     = c_actual - c_proj
+        c_pct      = round(c_diff / c_proj * 100, 1) if c_proj != 0 else 0
+        c_color    = "#27ae60" if c_diff >= 0 else "#c0392b"
+        c_icon     = "▲" if c_diff >= 0 else "▼"
+        is_open    = st.session_state.live_campus_open == campus
+
+        # Campus header card
         st.markdown(
-            '<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);'
-            'padding:14px 16px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">'
-            + '<div>'
-            + '<div style="font-weight:700;font-size:0.92rem;color:#2c3e50;">' + str(row['Campus']) + '</div>'
-            + '<div style="font-size:0.75rem;color:#aaa;margin-top:2px;">' + str(row.get('Day','')) + ' · ' + str(row['SvcLabel']) + '</div>'
+            '<div style="background:#fff;border-radius:10px;'
+            'box-shadow:0 1px 5px rgba(0,0,0,0.07);'
+            'padding:16px 18px;margin-bottom:4px;'
+            'display:flex;align-items:center;justify-content:space-between;">'
+            + '<div style="font-weight:700;font-size:1rem;color:#2c3e50;">' + campus + '</div>'
+            + '<div style="display:flex;gap:20px;align-items:center;">'
+            + '<div style="text-align:right;">'
+            + '<div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">Actual</div>'
+            + '<div style="font-weight:800;font-size:1.05rem;color:#2c3e50;">' + "{:,}".format(c_actual) + '</div>'
             + '</div>'
             + '<div style="text-align:right;">'
-            + '<div style="font-size:0.72rem;color:#aaa;">Actual</div>'
-            + '<div style="font-weight:800;font-size:1.1rem;color:#2c3e50;">' + "{:,}".format(actual_val) + '</div>'
+            + '<div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">vs Proj</div>'
+            + '<div style="font-weight:800;font-size:1.05rem;color:' + c_color + ';">' + c_icon + ' ' + str(abs(c_pct)) + '%</div>'
+            + '</div>'
             + '</div>'
             + '</div>',
             unsafe_allow_html=True
         )
 
-        # Toggle button
-        if st.button("▲ Close" if is_open else "▼ View detail", key="live_row_" + str(idx)):
-            st.session_state.live_selected = None if is_open else idx
+        if st.button("▲ Collapse" if is_open else "▼ View services", key="campus_" + campus):
+            st.session_state.live_campus_open = None if is_open else campus
             st.rerun()
 
-        # Detail cards
+        # Expanded service rows
         if is_open:
-            st.markdown(
-                '<div style="display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 14px 0;">'
-                + '<div style="flex:1;min-width:90px;background:#f4f7fb;border-radius:10px;padding:14px;text-align:center;">'
-                + '<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;margin-bottom:4px;">Projected</div>'
-                + '<div style="font-size:1.4rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(proj_val) + '</div>'
-                + '</div>'
-                + '<div style="flex:1;min-width:90px;background:#f4f7fb;border-radius:10px;padding:14px;text-align:center;">'
-                + '<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;margin-bottom:4px;">Actual</div>'
-                + '<div style="font-size:1.4rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(actual_val) + '</div>'
-                + '</div>'
-                + '<div style="flex:1;min-width:90px;background:#f4f7fb;border-radius:10px;padding:14px;text-align:center;">'
-                + '<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;margin-bottom:4px;">Difference</div>'
-                + '<div style="font-size:1.4rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + "{:,}".format(abs(diff_val)) + '</div>'
-                + '</div>'
-                + '<div style="flex:1;min-width:90px;background:#f4f7fb;border-radius:10px;padding:14px;text-align:center;">'
-                + '<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;margin-bottom:4px;">Diff %</div>'
-                + '<div style="font-size:1.4rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + str(abs(pct_val)) + '%</div>'
-                + '</div>'
-                + '</div>',
-                unsafe_allow_html=True
-            )
+            for _, row in df_campus.iterrows():
+                proj_val   = int(row[proj_col])
+                actual_val = int(row[act_col])
+                diff_val   = actual_val - proj_val
+                pct_val    = round(diff_val / proj_val * 100, 1) if proj_val != 0 else 0
+                r_color    = "#27ae60" if diff_val >= 0 else "#c0392b"
+                r_icon     = "▲" if diff_val >= 0 else "▼"
+
+                st.markdown(
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;'
+                    'background:#f4f7fb;border-radius:10px;'
+                    'padding:12px 16px;margin:4px 0 4px 16px;'
+                    'align-items:center;">'
+                    # Day + time label
+                    + '<div style="min-width:100px;">'
+                    + '<div style="font-size:0.72rem;color:#aaa;">' + str(row.get('Day','')) + '</div>'
+                    + '<div style="font-weight:700;font-size:0.9rem;color:#2c3e50;">' + str(row['SvcLabel']) + '</div>'
+                    + '</div>'
+                    # Mini stat pills
+                    + '<div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">'
+                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Projected</div>'
+                    + '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(proj_val) + '</div>'
+                    + '</div>'
+                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Actual</div>'
+                    + '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(actual_val) + '</div>'
+                    + '</div>'
+                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff</div>'
+                    + '<div style="font-size:1.1rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + "{:,}".format(abs(diff_val)) + '</div>'
+                    + '</div>'
+                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff %</div>'
+                    + '<div style="font-size:1.1rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + str(abs(pct_val)) + '%</div>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>',
+                    unsafe_allow_html=True
+                )
+            st.write("")
