@@ -606,6 +606,7 @@ with tab2:
     st.markdown(
         '<style>'
         '.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;'
+        'border:1px solid #e0e4ea;'
         'box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}'
         '.sc-stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}'
         '.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}'
@@ -656,6 +657,7 @@ with tab2:
         # Campus header card
         st.markdown(
             '<div style="background:#fff;border-radius:10px;'
+            'border:1px solid #e0e4ea;'
             'box-shadow:0 1px 5px rgba(0,0,0,0.07);'
             'padding:16px 18px;margin-bottom:4px;'
             'display:flex;align-items:center;justify-content:space-between;">'
@@ -691,6 +693,7 @@ with tab2:
                 st.markdown(
                     '<div style="display:flex;gap:10px;flex-wrap:wrap;'
                     'background:#f4f7fb;border-radius:10px;'
+                    'border:1px solid #e0e4ea;'
                     'padding:12px 16px;margin:4px 0 4px 16px;'
                     'align-items:center;">'
                     # Day + time label
@@ -700,19 +703,19 @@ with tab2:
                     + '</div>'
                     # Mini stat pills
                     + '<div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">'
-                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
                     + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Projected</div>'
                     + '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(proj_val) + '</div>'
                     + '</div>'
-                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
                     + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Actual</div>'
                     + '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">' + "{:,}".format(actual_val) + '</div>'
                     + '</div>'
-                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
                     + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff</div>'
                     + '<div style="font-size:1.1rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + "{:,}".format(abs(diff_val)) + '</div>'
                     + '</div>'
-                    + '<div style="background:#fff;border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
+                    + '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
                     + '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff %</div>'
                     + '<div style="font-size:1.1rem;font-weight:800;color:' + r_color + ';">' + r_icon + ' ' + str(abs(pct_val)) + '%</div>'
                     + '</div>'
