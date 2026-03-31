@@ -357,7 +357,7 @@ except Exception as e:
     easter_load_error = str(e)
 
 # ── TABS ─────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
+tab1, tab2 = st.tabs(["📊 Projections", "🎯 Live Attendance"])
 
 
 # =====================================================================
@@ -684,7 +684,7 @@ with tab1:
 with tab2:
 # =====================================================================
 
-    st.subheader("🎯 Scorecard — Projected vs Actual")
+    st.subheader("🎯 Projected vs Actual")
 
     EASTER_2026_DATE = "2026-04-05"
 
