@@ -270,8 +270,16 @@ def calculate_total_based_attendance(campus, service_time, coefficients, other_a
 
 
 def style_table(df, hover_color="#fdecea"):
-    cols      = list(df.columns)
-    headers   = "".join("<th>" + col + "</th>" for col in cols)
+    # Columns to hide on mobile — keep Campus, Service, and value cols visible
+    MOBILE_HIDE = {'Day', 'KidsRatio', 'AdultCapacity', 'Adult_Capacity_Percent',
+                   'Kids_Capacity_Percent', 'Adult_Capacity_Limit', 'Kids_Capacity_Limit'}
+    cols = list(df.columns)
+
+    headers = ""
+    for col in cols:
+        hide = ' class="mob-hide"' if col in MOBILE_HIDE else ''
+        headers += "<th" + hide + ">" + col + "</th>"
+
     rows_html = ""
     for i, (_, row) in enumerate(df.iterrows()):
         row_class = "row-even" if i % 2 == 0 else "row-odd"
@@ -283,8 +291,10 @@ def style_table(df, hover_color="#fdecea"):
                 val = "{:,}".format(int(val))
             elif isinstance(val, (int, float)):
                 val = "{:,}".format(val)
-            cells += '<td data-label="' + col + '" style="text-align:' + align + '">' + str(val) + '</td>'
+            hide = ' mob-hide' if col in MOBILE_HIDE else ''
+            cells += '<td data-label="' + col + '" class="' + hide.strip() + '" style="text-align:' + align + '">' + str(val) + '</td>'
         rows_html += '<tr class="' + row_class + '">' + cells + '</tr>'
+
     return """
     <style>
         .modern-table-wrap {overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}
@@ -296,6 +306,7 @@ def style_table(df, hover_color="#fdecea"):
         .modern-table tbody tr:hover    {background-color:""" + hover_color + """;transition:background 0.15s ease;}
         .modern-table td {padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}
         @media(max-width:640px){
+            .mob-hide {display:none !important;}
             .modern-table thead {display:none;}
             .modern-table tbody tr {
                 display:block;
@@ -357,7 +368,7 @@ except Exception as e:
     easter_load_error = str(e)
 
 # ── TABS ─────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["📊 Projections", "🎯 Live Attendance"])
+tab1, tab2 = st.tabs(["📊 Projections", "🎯 Scorecard"])
 
 
 # =====================================================================
@@ -684,9 +695,19 @@ with tab1:
 with tab2:
 # =====================================================================
 
-    st.subheader("🎯 Projected vs Actual")
+    st.subheader("🎯 Scorecard — Projected vs Actual")
 
     EASTER_2026_DATE = "2026-04-05"
+
+    # ── DB Connection Test ───────────────────────────────────────────
+    if st.button("🔌 Test Database Connection", key="test_db"):
+        try:
+            conn = get_connection()
+            df_test = pd.read_sql("SELECT TOP 1 * FROM _com_CoE22_RockMetrics", conn)
+            st.success("✅ Connected! Sample row returned:")
+            st.dataframe(df_test)
+        except Exception as e:
+            st.error("❌ Connection failed: " + str(e))
 
     # Campus list from Easter Excel so Wildlight etc. are included
     sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
