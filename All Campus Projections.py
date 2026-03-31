@@ -701,6 +701,7 @@ with tab2:
 
     # ── DB Connection Test ───────────────────────────────────────────
     if st.button("🔌 Test Database Connection", key="test_db"):
+        st.cache_resource.clear()
         try:
             conn = get_connection()
             df_test = pd.read_sql("SELECT TOP 1 * FROM _com_CoE22_RockMetrics", conn)
