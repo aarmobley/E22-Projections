@@ -402,15 +402,19 @@ with tab2:
 
     sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
-    sc1,sc2,sc3 = st.columns(3)
+    sc1,sc2,sc3,sc4 = st.columns(4)
     with sc1: sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
     with sc2: sc_day      = st.selectbox("Day",      ["All","Thu","Sat","Sun"], key="sc_day")
-    with sc3: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
+    with sc3:
+        svc_options = ["All"] + sorted(df_score_all['SvcLabel'].dropna().unique().tolist())
+        sc_service  = st.selectbox("Service", svc_options, key="sc_service")
+    with sc4: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
 
     # Filter the pre-built score df — no recompute
     df_score = df_score_all.copy()
-    if sc_campus != "All": df_score = df_score[df_score['Campus']==sc_campus]
-    if sc_day    != "All": df_score = df_score[df_score['Day']==sc_day]
+    if sc_campus  != "All": df_score = df_score[df_score['Campus']   == sc_campus]
+    if sc_day     != "All": df_score = df_score[df_score['Day']      == sc_day]
+    if sc_service != "All": df_score = df_score[df_score['SvcLabel'] == sc_service]
 
     proj_col = 'Proj_Adults' if sc_category=='Adults' else 'Proj_Kids' if sc_category=='Kids' else 'Proj_Total'
     act_col  = 'Actual_Adults' if sc_category=='Adults' else 'Actual_Kids' if sc_category=='Kids' else 'Actual_Total'
