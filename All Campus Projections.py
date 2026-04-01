@@ -1,13 +1,9 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 from datetime import datetime, timedelta
 import pyodbc
 
-st.set_page_config(
-    page_title="CoE22 Projections",
-    layout="wide",
-    initial_sidebar_state="collapsed")
+st.set_page_config(page_title="CoE22 Projections", layout="wide", initial_sidebar_state="collapsed")
 
 @st.cache_resource
 def get_connection_string():
@@ -22,39 +18,15 @@ def get_connection_string():
 def get_connection():
     return pyodbc.connect(get_connection_string())
 
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    [data-testid="stSidebarCollapsedControl"] {display: none;}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div style="text-align: center; margin-bottom: 20px;">
-    <a href="https://e22projections.streamlit.app/"
-       target="_blank" rel="noopener noreferrer"
-       style="display:inline-block;background-color:#1f77b4;color:white;
-              padding:8px 16px;border-radius:6px;text-decoration:none;
-              font-size:14px;font-weight:500;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-        Open in New Window for Downloads
-    </a>
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<style>[data-testid="stSidebar"]{display:none;}[data-testid="stSidebarCollapsedControl"]{display:none;}</style>', unsafe_allow_html=True)
+st.markdown('<div style="text-align:center;margin-bottom:20px;"><a href="https://e22projections.streamlit.app/" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#1f77b4;color:white;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500;box-shadow:0 2px 4px rgba(0,0,0,0.1);">Open in New Window for Downloads</a></div>', unsafe_allow_html=True)
 
 query_params = st.query_params
-embedded = query_params.get('embedded', 'false') == 'true'
-if embedded:
-    st.markdown("""
-    <style>
-        .stApp > header {display: none;}
-        .stApp > div:first-child {display: none;}
-        .main .block-container {padding-top: 0.5rem;}
-    </style>
-    """, unsafe_allow_html=True)
+if query_params.get('embedded','false') == 'true':
+    st.markdown('<style>.stApp > header{display:none;}.stApp > div:first-child{display:none;}.main .block-container{padding-top:0.5rem;}</style>', unsafe_allow_html=True)
 
 st.image("https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png", width=90)
 
-# ── Campus coefficients ──────────────────────────────────────────────────
 campus_coefficients = {
     'San Pablo': {
         '7:22':  {'intercept':-142.667110,'sunday_date':0.009315,'week_number':-0.056675,'Easter':8.531395,'Promotion Week':1.680988,'Back to School':1.680988,'Saturated Sunday':13.262508,'kids_projection':.08,'kids_easter':.08,'Christmas':5.896587},
@@ -114,88 +86,72 @@ campus_capacities = {
 }
 
 num_week = [w for _ in range(3) for w in range(1,53)]
-if len(num_week) < 156:
-    num_week.append(53)
+if len(num_week) < 156: num_week.append(53)
 start_date        = datetime(2025,1,5)
 date_range        = [start_date + timedelta(weeks=i) for i in range(156)]
 epoch             = datetime(1970,1,1)
 date_mapping      = {d.strftime('%m-%d-%Y'):(d-epoch).days for d in date_range}
 date_week_options = [d.strftime('%m-%d-%Y')+" (Week "+str(w)+")" for d,w in zip(date_range,num_week)]
 
-def calculate_attendance(campus, service_time, coefficients, numerical_date, week_num, pastor, event):
-    weeknum_effect    = coefficients.get('week_number',0) * week_num
-    sundaydate_effect = coefficients.get('sunday_date',0) * numerical_date
-    pastor_effect, event_effect = 0, 0
+def calculate_attendance(campus, service_time, coeff, num_date, week_num, pastor, event):
+    we = coeff.get('week_number',0)*week_num
+    sd = coeff.get('sunday_date',0)*num_date
+    pe, ee = 0, 0
     if event != 'None':
-        for key in [event, event.replace(' ',''), event.replace(' ','to'), event.replace(' ','_')]:
-            if key in coefficients:
-                event_effect = coefficients[key]; break
+        for k in [event, event.replace(' ',''), event.replace(' ','to'), event.replace(' ','_')]:
+            if k in coeff: ee = coeff[k]; break
     else:
-        pastor_effect = coefficients.get(pastor,0)
-    new_building_effect = coefficients.get('New Building',0) if campus == 'St. Johns' else 0
-    intercept  = coefficients.get('intercept',0)
-    prediction = intercept + sundaydate_effect + weeknum_effect + pastor_effect + event_effect + new_building_effect
-    adult_att  = prediction if campus in ['St. Johns','North Jax'] else prediction**2
+        pe = coeff.get(pastor,0)
+    nb = coeff.get('New Building',0) if campus=='St. Johns' else 0
+    pred = coeff.get('intercept',0) + sd + we + pe + ee + nb
+    att  = pred if campus in ['St. Johns','North Jax'] else pred**2
     if event == 'Inclement Weather':
-        r = coefficients.get('Inclement Weather',0.15)
-        adult_att = adult_att*(1-r) if r < 1 else adult_att+r
-    kids_key  = 'kids_easter' if event == 'Easter' else 'kids_projection'
-    kids_mult = 0.2
-    for k in [kids_key, kids_key.replace('_',' ').title(), 'Kids Projection', 'Kids Easter']:
-        if k in coefficients:
-            kids_mult = coefficients[k]; break
-    return max(0, adult_att), max(0, adult_att*kids_mult)
+        r = coeff.get('Inclement Weather',0.15)
+        att = att*(1-r) if r < 1 else att+r
+    kk = 'kids_easter' if event=='Easter' else 'kids_projection'
+    km = 0.2
+    for k in [kk, kk.replace('_',' ').title(), 'Kids Projection','Kids Easter']:
+        if k in coeff: km = coeff[k]; break
+    return max(0,att), max(0,att*km)
 
-def calculate_total_based_attendance(campus, service_time, coefficients, other_adult, other_kids):
-    m = coefficients.get('Total Attendance',0)
-    return max(0, other_adult*m), max(0, other_kids*m)
+def calculate_total_based_attendance(campus, svc, coeff, oa, ok):
+    m = coeff.get('Total Attendance',0)
+    return max(0,oa*m), max(0,ok*m)
 
 def style_table(df, hover_color="#fdecea"):
-    MOBILE_HIDE = {'Day','KidsRatio','AdultCapacity','Adult_Capacity_Percent','Kids_Capacity_Percent','Adult_Capacity_Limit','Kids_Capacity_Limit'}
+    HIDE = {'Day','KidsRatio','AdultCapacity','Adult_Capacity_Percent','Kids_Capacity_Percent','Adult_Capacity_Limit','Kids_Capacity_Limit'}
     cols = list(df.columns)
-    headers = ""
-    for col in cols:
-        hide = ' class="mob-hide"' if col in MOBILE_HIDE else ''
-        headers += "<th" + hide + ">" + col + "</th>"
-    rows_html = ""
-    for i,(_, row) in enumerate(df.iterrows()):
-        row_class = "row-even" if i%2==0 else "row-odd"
+    hdr  = "".join("<th"+((' class="mob-hide"') if c in HIDE else "")+">"+c+"</th>" for c in cols)
+    rows = ""
+    for i,(_,row) in enumerate(df.iterrows()):
+        rc = "row-even" if i%2==0 else "row-odd"
         cells = ""
-        for col in cols:
-            val   = row[col]
-            align = "right" if isinstance(val,(int,float)) else "left"
-            if isinstance(val,float) and val==int(val): val = "{:,}".format(int(val))
-            elif isinstance(val,(int,float)): val = "{:,}".format(val)
-            hide  = 'mob-hide' if col in MOBILE_HIDE else ''
-            cells += '<td data-label="'+col+'" class="'+hide+'" style="text-align:'+align+'">'+str(val)+'</td>'
-        rows_html += '<tr class="'+row_class+'">'+cells+'</tr>'
+        for c in cols:
+            v = row[c]
+            a = "right" if isinstance(v,(int,float)) else "left"
+            if isinstance(v,float) and v==int(v): v="{:,}".format(int(v))
+            elif isinstance(v,(int,float)): v="{:,}".format(v)
+            hc = "mob-hide" if c in HIDE else ""
+            cells += '<td data-label="'+c+'" class="'+hc+'" style="text-align:'+a+'">'+str(v)+'</td>'
+        rows += '<tr class="'+rc+'">'+cells+'</tr>'
     return (
-        "<style>"
-        ".modern-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}"
+        "<style>.modern-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:1rem 0;}"
         ".modern-table{width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:0.875rem;}"
         ".modern-table thead tr{background:#C0392B;color:white;text-align:left;letter-spacing:0.04em;font-size:0.8rem;text-transform:uppercase;}"
         ".modern-table thead th{padding:12px 16px;font-weight:600;white-space:nowrap;}"
-        ".modern-table tbody tr.row-even{background-color:#ffffff;}"
-        ".modern-table tbody tr.row-odd{background-color:#f4f7fb;}"
+        ".modern-table tbody tr.row-even{background-color:#ffffff;}.modern-table tbody tr.row-odd{background-color:#f4f7fb;}"
         ".modern-table tbody tr:hover{background-color:"+hover_color+";transition:background 0.15s ease;}"
         ".modern-table td{padding:10px 16px;border-bottom:1px solid #e8edf3;white-space:nowrap;color:#2c3e50;}"
-        "@media(max-width:640px){"
-        ".mob-hide{display:none !important;}"
-        ".modern-table thead{display:none;}"
+        "@media(max-width:640px){.mob-hide{display:none !important;}.modern-table thead{display:none;}"
         ".modern-table tbody tr{display:block;margin-bottom:12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.07);overflow:hidden;}"
-        ".modern-table tbody tr.row-even{background:#ffffff;}"
-        ".modern-table tbody tr.row-odd{background:#f4f7fb;}"
+        ".modern-table tbody tr.row-even{background:#ffffff;}.modern-table tbody tr.row-odd{background:#f4f7fb;}"
         ".modern-table td{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid #e8edf3;white-space:normal;font-size:0.82rem;}"
-        ".modern-table td::before{content:attr(data-label);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;flex-shrink:0;margin-right:12px;}"
-        "}"
+        ".modern-table td::before{content:attr(data-label);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;flex-shrink:0;margin-right:12px;}}"
         "</style>"
-        '<div class="modern-table-wrap"><table class="modern-table">'
-        "<thead><tr>"+headers+"</tr></thead>"
-        "<tbody>"+rows_html+"</tbody>"
-        "</table></div>"
+        '<div class="modern-table-wrap"><table class="modern-table"><thead><tr>'+hdr+'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     )
 
-# ── Load Easter Excel once ───────────────────────────────────────────────
+# ── Load Easter Excel ────────────────────────────────────────────────────
 easter_url = "https://github.com/aarmobley/E22-Projections/raw/main/Updated%202026%20Easter%20Projections2.xlsx"
 try:
     df_easter = pd.read_excel(easter_url, engine="openpyxl")
@@ -203,20 +159,17 @@ try:
         cleaned = []
         for val in df_easter['Service']:
             try:
-                if hasattr(val,'strftime'):
-                    cleaned.append(val.strftime('%I:%M %p').lstrip('0'))
+                if hasattr(val,'strftime'): cleaned.append(val.strftime('%I:%M %p').lstrip('0'))
                 else:
                     s = str(val).strip().replace(':00 ',' ').replace(':00','')
                     cleaned.append(s)
-            except Exception:
-                cleaned.append(str(val))
+            except Exception: cleaned.append(str(val))
         df_easter['Service'] = cleaned
     easter_load_error = None
 except Exception as e:
     df_easter = pd.DataFrame()
     easter_load_error = str(e)
 
-# ── TABS ─────────────────────────────────────────────────────────────────
 tab1, tab2 = st.tabs(["📊 Projections", "📡 Live Attendance"])
 
 # =====================================================================
@@ -225,48 +178,21 @@ with tab1:
     st.subheader("Easter 2026 Projections")
 
     data_2025_rows = [
-        ('Arlington','Sun','Adults',682),('Arlington','Sun','Kids',148),
-        ('Arlington','Sun','Adults',556),('Arlington','Sun','Kids',90),
-        ('Arlington','Thu','Adults',217),('Arlington','Thu','Kids',41),
-        ('Baymeadows','Sun','Adults',410),('Baymeadows','Sun','Kids',95),
-        ('Baymeadows','Sun','Adults',294),('Baymeadows','Sun','Kids',42),
-        ('Baymeadows','Thu','Adults',267),('Baymeadows','Thu','Kids',20),
-        ('Fleming Island','Sat','Adults',479),('Fleming Island','Sat','Kids',110),
-        ('Fleming Island','Sat','Adults',609),('Fleming Island','Sat','Kids',157),
-        ('Fleming Island','Sun','Adults',802),('Fleming Island','Sun','Kids',166),
-        ('Fleming Island','Sun','Adults',694),('Fleming Island','Sun','Kids',135),
-        ('Fleming Island','Thu','Adults',626),('Fleming Island','Thu','Kids',84),
-        ('Jesup','Sun','Adults',270),('Jesup','Sun','Kids',52),
-        ('Jesup','Sun','Adults',139),('Jesup','Sun','Kids',43),
-        ('Jesup','Thu','Adults',101),('Jesup','Thu','Kids',21),
-        ('Mandarin','Sun','Adults',869),('Mandarin','Sun','Kids',224),
-        ('Mandarin','Sun','Adults',525),('Mandarin','Sun','Kids',80),
-        ('Mandarin','Thu','Adults',322),('Mandarin','Thu','Kids',50),
-        ('North Jax','Sat','Adults',394),('North Jax','Sat','Kids',71),
-        ('North Jax','Sun','Adults',566),('North Jax','Sun','Kids',149),
-        ('North Jax','Sun','Adults',589),('North Jax','Sun','Kids',122),
-        ('North Jax','Thu','Adults',252),('North Jax','Thu','Kids',48),
-        ('Orange Park','Sun','Adults',436),('Orange Park','Sun','Kids',100),
-        ('Orange Park','Sun','Adults',354),('Orange Park','Sun','Kids',114),
-        ('Orange Park','Thu','Adults',149),('Orange Park','Thu','Kids',60),
+        ('Arlington','Sun','Adults',682),('Arlington','Sun','Kids',148),('Arlington','Sun','Adults',556),('Arlington','Sun','Kids',90),('Arlington','Thu','Adults',217),('Arlington','Thu','Kids',41),
+        ('Baymeadows','Sun','Adults',410),('Baymeadows','Sun','Kids',95),('Baymeadows','Sun','Adults',294),('Baymeadows','Sun','Kids',42),('Baymeadows','Thu','Adults',267),('Baymeadows','Thu','Kids',20),
+        ('Fleming Island','Sat','Adults',479),('Fleming Island','Sat','Kids',110),('Fleming Island','Sat','Adults',609),('Fleming Island','Sat','Kids',157),
+        ('Fleming Island','Sun','Adults',802),('Fleming Island','Sun','Kids',166),('Fleming Island','Sun','Adults',694),('Fleming Island','Sun','Kids',135),('Fleming Island','Thu','Adults',626),('Fleming Island','Thu','Kids',84),
+        ('Jesup','Sun','Adults',270),('Jesup','Sun','Kids',52),('Jesup','Sun','Adults',139),('Jesup','Sun','Kids',43),('Jesup','Thu','Adults',101),('Jesup','Thu','Kids',21),
+        ('Mandarin','Sun','Adults',869),('Mandarin','Sun','Kids',224),('Mandarin','Sun','Adults',525),('Mandarin','Sun','Kids',80),('Mandarin','Thu','Adults',322),('Mandarin','Thu','Kids',50),
+        ('North Jax','Sat','Adults',394),('North Jax','Sat','Kids',71),('North Jax','Sun','Adults',566),('North Jax','Sun','Kids',149),('North Jax','Sun','Adults',589),('North Jax','Sun','Kids',122),('North Jax','Thu','Adults',252),('North Jax','Thu','Kids',48),
+        ('Orange Park','Sun','Adults',436),('Orange Park','Sun','Kids',100),('Orange Park','Sun','Adults',354),('Orange Park','Sun','Kids',114),('Orange Park','Thu','Adults',149),('Orange Park','Thu','Kids',60),
         ('Palatka','Sun','Adults',190),('Palatka','Sun','Kids',60),
-        ('Ponte Vedra','Sat','Adults',276),('Ponte Vedra','Sat','Kids',86),
-        ('Ponte Vedra','Sun','Adults',601),('Ponte Vedra','Sun','Kids',148),
-        ('Ponte Vedra','Sun','Adults',541),('Ponte Vedra','Sun','Kids',108),
-        ('San Pablo','Sat','Adults',2452),('San Pablo','Sat','Kids',384),
-        ('San Pablo','Sat','Adults',2459),('San Pablo','Sat','Kids',271),
-        ('San Pablo','Sun','Adults',913),('San Pablo','Sun','Kids',78),
-        ('San Pablo','Sun','Adults',3378),('San Pablo','Sun','Kids',359),
-        ('San Pablo','Sun','Adults',3121),('San Pablo','Sun','Kids',340),
-        ('San Pablo','Thu','Adults',3381),('San Pablo','Thu','Kids',259),
-        ('St. Augustine','Sun','Adults',350),('St. Augustine','Sun','Kids',0),
-        ('St. Augustine','Sun','Adults',180),('St. Augustine','Sun','Kids',0),
-        ('St. Johns','Sat','Adults',959),('St. Johns','Sat','Kids',246),
-        ('St. Johns','Sat','Adults',701),('St. Johns','Sat','Kids',152),
-        ('St. Johns','Sun','Adults',1320),('St. Johns','Sun','Kids',266),
-        ('St. Johns','Sun','Adults',1373),('St. Johns','Sun','Kids',272),
-        ('Wildlight','Sun','Adults',407),('Wildlight','Sun','Kids',82),
-        ('Wildlight','Sun','Adults',364),('Wildlight','Sun','Kids',62),
+        ('Ponte Vedra','Sat','Adults',276),('Ponte Vedra','Sat','Kids',86),('Ponte Vedra','Sun','Adults',601),('Ponte Vedra','Sun','Kids',148),('Ponte Vedra','Sun','Adults',541),('Ponte Vedra','Sun','Kids',108),
+        ('San Pablo','Sat','Adults',2452),('San Pablo','Sat','Kids',384),('San Pablo','Sat','Adults',2459),('San Pablo','Sat','Kids',271),
+        ('San Pablo','Sun','Adults',913),('San Pablo','Sun','Kids',78),('San Pablo','Sun','Adults',3378),('San Pablo','Sun','Kids',359),('San Pablo','Sun','Adults',3121),('San Pablo','Sun','Kids',340),('San Pablo','Thu','Adults',3381),('San Pablo','Thu','Kids',259),
+        ('St. Augustine','Sun','Adults',350),('St. Augustine','Sun','Kids',0),('St. Augustine','Sun','Adults',180),('St. Augustine','Sun','Kids',0),
+        ('St. Johns','Sat','Adults',959),('St. Johns','Sat','Kids',246),('St. Johns','Sat','Adults',701),('St. Johns','Sat','Kids',152),('St. Johns','Sun','Adults',1320),('St. Johns','Sun','Kids',266),('St. Johns','Sun','Adults',1373),('St. Johns','Sun','Kids',272),
+        ('Wildlight','Sun','Adults',407),('Wildlight','Sun','Kids',82),('Wildlight','Sun','Adults',364),('Wildlight','Sun','Kids',62),
     ]
     df_2025 = pd.DataFrame(data_2025_rows, columns=['Campus','Day','Category','Count'])
 
@@ -274,20 +200,13 @@ with tab1:
         if easter_load_error:
             raise Exception(easter_load_error)
 
-        dd1, dd2, dd3 = st.columns(3)
+        dd1,dd2,dd3 = st.columns(3)
         with dd1:
-            if 'Day' in df_easter.columns:
-                days = sorted(df_easter['Day'].dropna().unique().tolist(),
-                              key=lambda x: {'Thu':0,'Sat':1,'Sun':2}.get(str(x),3))
-                day_pick = st.selectbox("Filter by Day", ["All"]+days)
-            else:
-                day_pick = "All"
+            days = sorted(df_easter['Day'].dropna().unique().tolist(), key=lambda x:{'Thu':0,'Sat':1,'Sun':2}.get(str(x),3)) if 'Day' in df_easter.columns else []
+            day_pick = st.selectbox("Filter by Day", ["All"]+days)
         with dd2:
-            if 'Campus' in df_easter.columns:
-                campuses = sorted(df_easter['Campus'].dropna().unique().tolist())
-                campus_pick = st.selectbox("Filter by Campus", ["All"]+campuses)
-            else:
-                campus_pick = "All"
+            campuses = sorted(df_easter['Campus'].dropna().unique().tolist()) if 'Campus' in df_easter.columns else []
+            campus_pick = st.selectbox("Filter by Campus", ["All"]+campuses)
         with dd3:
             category_pick = st.selectbox("Filter by Category", ["Total","Adults","Kids"])
 
@@ -297,127 +216,98 @@ with tab1:
 
         base_cols = [c for c in df_show.columns if c not in ['Adults','Kids','Total','KidsRatio']]
         if category_pick == "Adults":
-            show_cols = base_cols + [c for c in ['Adults','AdultCapacity'] if c in df_show.columns]
-            att_col   = 'Adults'
+            show_cols = base_cols + [c for c in ['Adults','AdultCapacity'] if c in df_show.columns]; att_col = 'Adults'
         elif category_pick == "Kids":
-            show_cols = base_cols + [c for c in ['Kids'] if c in df_show.columns]
-            att_col   = 'Kids'
+            show_cols = base_cols + [c for c in ['Kids'] if c in df_show.columns]; att_col = 'Kids'
         else:
-            show_cols = base_cols + [c for c in ['Adults','Kids','Total'] if c in df_show.columns]
-            att_col   = 'Total'
-        if category_pick != "Adults":
-            show_cols = [c for c in show_cols if c != 'AdultCapacity']
+            show_cols = base_cols + [c for c in ['Adults','Kids','Total'] if c in df_show.columns]; att_col = 'Total'
+        if category_pick != "Adults": show_cols = [c for c in show_cols if c != 'AdultCapacity']
         df_show = df_show[[c for c in show_cols if c in df_show.columns]]
 
-        if att_col in df_show.columns:
-            the_sum = int(df_show[att_col].sum())
-        elif category_pick == "Total":
-            the_sum = (int(df_show['Adults'].sum()) if 'Adults' in df_show.columns else 0) + \
-                      (int(df_show['Kids'].sum())   if 'Kids'   in df_show.columns else 0)
-        else:
-            the_sum = 0
+        if att_col in df_show.columns: the_sum = int(df_show[att_col].sum())
+        elif category_pick == "Total": the_sum = (int(df_show['Adults'].sum()) if 'Adults' in df_show.columns else 0)+(int(df_show['Kids'].sum()) if 'Kids' in df_show.columns else 0)
+        else: the_sum = 0
         svc_count = len(df_show)
 
         df_2025f = df_2025.copy()
-        if campus_pick != "All": df_2025f = df_2025f[df_2025f['Campus'] == campus_pick]
-        if day_pick    != "All": df_2025f = df_2025f[df_2025f['Day']    == day_pick]
-        if category_pick == "Adults":   sum_2025 = int(df_2025f[df_2025f['Category']=='Adults']['Count'].sum())
-        elif category_pick == "Kids":   sum_2025 = int(df_2025f[df_2025f['Category']=='Kids']['Count'].sum())
-        else:                           sum_2025 = int(df_2025f['Count'].sum())
+        if campus_pick != "All": df_2025f = df_2025f[df_2025f['Campus']==campus_pick]
+        if day_pick    != "All": df_2025f = df_2025f[df_2025f['Day']==day_pick]
+        if category_pick=="Adults":   sum_2025 = int(df_2025f[df_2025f['Category']=='Adults']['Count'].sum())
+        elif category_pick=="Kids":   sum_2025 = int(df_2025f[df_2025f['Category']=='Kids']['Count'].sum())
+        else:                         sum_2025 = int(df_2025f['Count'].sum())
 
         label_parts = [category_pick]
         if day_pick    != "All": label_parts.append(day_pick)
         if campus_pick != "All": label_parts.append(campus_pick)
         label_base = " - ".join(label_parts)
         yoy_delta  = the_sum - sum_2025
-        diff_color = "#27ae60" if yoy_delta >= 0 else "#c0392b"
-        diff_icon  = "▲" if yoy_delta >= 0 else "▼"
+        dc = "#27ae60" if yoy_delta>=0 else "#c0392b"
+        di = "▲" if yoy_delta>=0 else "▼"
 
         st.markdown(
-            "<style>"
-            ".stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
-            ".stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}"
-            ".stat-item+.stat-item{border-left:1px solid #e8edf3;}"
+            "<style>.stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
+            ".stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}.stat-item+.stat-item{border-left:1px solid #e8edf3;}"
             "@media(max-width:600px){.stat-item{min-width:50%;flex-basis:50%;}.stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}.stat-item:nth-child(4){border-top:1px solid #e8edf3;}}"
             ".stat-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}"
-            ".stat-num{font-size:1.6rem;font-weight:800;line-height:1.1;}"
-            ".stat-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}"
-            "</style>"
+            ".stat-num{font-size:1.6rem;font-weight:800;line-height:1.1;}.stat-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}</style>"
             '<div class="stat-bar">'
             '<div class="stat-item"><div class="stat-label">2026 Projection</div><div class="stat-num" style="color:#2c3e50;">'+"{:,}".format(the_sum)+'</div><div class="stat-sub">'+label_base+'</div></div>'
             '<div class="stat-item"><div class="stat-label">2025 Actual</div><div class="stat-num" style="color:#2c3e50;">'+"{:,}".format(sum_2025)+'</div><div class="stat-sub">'+label_base+'</div></div>'
-            '<div class="stat-item"><div class="stat-label">YoY Difference</div><div class="stat-num" style="color:'+diff_color+';">'+diff_icon+' '+"{:,}".format(abs(yoy_delta))+'</div><div class="stat-sub">vs Last Year</div></div>'
+            '<div class="stat-item"><div class="stat-label">YoY Difference</div><div class="stat-num" style="color:'+dc+';">'+di+' '+"{:,}".format(abs(yoy_delta))+'</div><div class="stat-sub">vs Last Year</div></div>'
             '<div class="stat-item"><div class="stat-label">Services Shown</div><div class="stat-num" style="color:#2c3e50;">'+str(svc_count)+'</div><div class="stat-sub">In current filter</div></div>'
-            '</div>',
-            unsafe_allow_html=True
-        )
+            '</div>', unsafe_allow_html=True)
 
-        if 'easter_expanded' not in st.session_state:
-            st.session_state.easter_expanded = False
-        preview_rows = 8
-        df_preview   = df_show if st.session_state.easter_expanded else df_show.head(preview_rows)
+        if 'easter_expanded' not in st.session_state: st.session_state.easter_expanded = False
+        df_preview = df_show if st.session_state.easter_expanded else df_show.head(8)
         st.markdown(style_table(df_preview), unsafe_allow_html=True)
-
-        if len(df_show) > preview_rows:
-            remaining = len(df_show) - preview_rows
-            btn_label = "▲ Show less" if st.session_state.easter_expanded else "▼ Show all "+str(remaining)+" more rows"
+        if len(df_show) > 8:
+            remaining = len(df_show)-8
+            btn_lbl = "▲ Show less" if st.session_state.easter_expanded else "▼ Show all "+str(remaining)+" more rows"
             st.markdown('<style>.expand-btn button{background:none!important;border:none!important;color:#C0392B!important;font-weight:600!important;font-size:0.82rem!important;padding:4px 0!important;cursor:pointer!important;box-shadow:none!important;}</style>', unsafe_allow_html=True)
-            with st.container():
-                st.markdown('<div class="expand-btn">', unsafe_allow_html=True)
-                if st.button(btn_label, key="easter_toggle"):
-                    st.session_state.easter_expanded = not st.session_state.easter_expanded
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
+            st.markdown('<div class="expand-btn">', unsafe_allow_html=True)
+            if st.button(btn_lbl, key="easter_toggle"):
+                st.session_state.easter_expanded = not st.session_state.easter_expanded
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         st.write("")
-        st.download_button(label="Download Easter Projections (CSV)", data=df_show.to_csv(index=False), file_name="Easter_2026_Projections.csv", mime="text/csv")
+        st.download_button("Download Easter Projections (CSV)", df_show.to_csv(index=False), "Easter_2026_Projections.csv", "text/csv")
 
     except Exception as e:
         st.error("Could not load Easter projections file: " + str(e))
-        st.info("Make sure the Excel file is uploaded to the GitHub repo.")
 
     st.divider()
 
-    # ── Weekly Projections ───────────────────────────────────────────
     date_options      = st.selectbox("Select Sunday Date", date_week_options)
     selected_date_str = date_options.split(' ')[0]
     select_week       = int(date_options.split('Week ')[-1].strip(')'))
     select_pastor     = st.selectbox("Select a Pastor", ['Pastor Joby','Guest Pastor','Executive Pastor'])
     select_event      = st.selectbox("Select Event", ['None','Easter','Promotion Week','Saturated Sunday','Christmas','Back to School','Inclement Weather'])
-
     st.divider()
 
     if st.button("Generate All Campus Projections"):
-        numerical_date  = date_mapping[selected_date_str]
-        all_campus_data = []
-        for campus_name, campus_services in campus_coefficients.items():
-            std_adult, std_kids = 0, 0
-            for svc_time, svc_coeff in campus_services.items():
-                if 'Total Attendance' in svc_coeff or 'intercept' not in svc_coeff:
-                    continue
-                adult_att, kids_att = calculate_attendance(campus_name, svc_time, svc_coeff, numerical_date, select_week, select_pastor, select_event)
-                cap = campus_capacities.get(campus_name, {'adult':1000,'kids':250})
-                std_adult += adult_att
-                std_kids  += kids_att
-                all_campus_data.append({'Campus':campus_name,'Service_Time':svc_time,'Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(adult_att),'Kids_Attendance':round(kids_att),'Adult_Capacity_Percent':round((adult_att/cap['adult'])*100,1),'Kids_Capacity_Percent':round((kids_att/cap['kids'])*100,1),'Adult_Capacity_Limit':cap['adult'],'Kids_Capacity_Limit':cap['kids']})
-            for svc_time, svc_coeff in campus_services.items():
-                if 'Total Attendance' not in svc_coeff:
-                    continue
-                adult_att, kids_att = calculate_total_based_attendance(campus_name, svc_time, svc_coeff, std_adult, std_kids)
-                cap = campus_capacities.get(campus_name, {'adult':1000,'kids':250})
-                all_campus_data.append({'Campus':campus_name,'Service_Time':svc_time,'Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(adult_att),'Kids_Attendance':round(kids_att),'Adult_Capacity_Percent':round((adult_att/cap['adult'])*100,1),'Kids_Capacity_Percent':round((kids_att/cap['kids'])*100,1),'Adult_Capacity_Limit':cap['adult'],'Kids_Capacity_Limit':cap['kids']})
-            total_adults = std_adult + sum(r['Adult_Attendance'] for r in all_campus_data if r['Campus']==campus_name and 'Total Attendance' in campus_services.get(r['Service_Time'],{}))
-            total_kids   = std_kids  + sum(r['Kids_Attendance']  for r in all_campus_data if r['Campus']==campus_name and 'Total Attendance' in campus_services.get(r['Service_Time'],{}))
-            all_campus_data.append({'Campus':campus_name+" - TOTAL",'Service_Time':'ALL','Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(total_adults),'Kids_Attendance':round(total_kids),'Adult_Capacity_Percent':'N/A','Kids_Capacity_Percent':'N/A','Adult_Capacity_Limit':'N/A','Kids_Capacity_Limit':'N/A'})
-
-        df_all = pd.DataFrame(all_campus_data)
+        nd  = date_mapping[selected_date_str]
+        acd = []
+        for cn, cs in campus_coefficients.items():
+            sa, sk = 0, 0
+            for st_, sc_ in cs.items():
+                if 'Total Attendance' in sc_ or 'intercept' not in sc_: continue
+                aa, ka = calculate_attendance(cn,st_,sc_,nd,select_week,select_pastor,select_event)
+                cap = campus_capacities.get(cn,{'adult':1000,'kids':250})
+                sa += aa; sk += ka
+                acd.append({'Campus':cn,'Service_Time':st_,'Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(aa),'Kids_Attendance':round(ka),'Adult_Capacity_Percent':round((aa/cap['adult'])*100,1),'Kids_Capacity_Percent':round((ka/cap['kids'])*100,1),'Adult_Capacity_Limit':cap['adult'],'Kids_Capacity_Limit':cap['kids']})
+            for st_, sc_ in cs.items():
+                if 'Total Attendance' not in sc_: continue
+                aa, ka = calculate_total_based_attendance(cn,st_,sc_,sa,sk)
+                cap = campus_capacities.get(cn,{'adult':1000,'kids':250})
+                acd.append({'Campus':cn,'Service_Time':st_,'Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(aa),'Kids_Attendance':round(ka),'Adult_Capacity_Percent':round((aa/cap['adult'])*100,1),'Kids_Capacity_Percent':round((ka/cap['kids'])*100,1),'Adult_Capacity_Limit':cap['adult'],'Kids_Capacity_Limit':cap['kids']})
+            ta = sa+sum(r['Adult_Attendance'] for r in acd if r['Campus']==cn and 'Total Attendance' in cs.get(r['Service_Time'],{}))
+            tk = sk+sum(r['Kids_Attendance']  for r in acd if r['Campus']==cn and 'Total Attendance' in cs.get(r['Service_Time'],{}))
+            acd.append({'Campus':cn+" - TOTAL",'Service_Time':'ALL','Date':selected_date_str,'Week':select_week,'Pastor':select_pastor,'Event':select_event,'Adult_Attendance':round(ta),'Kids_Attendance':round(tk),'Adult_Capacity_Percent':'N/A','Kids_Capacity_Percent':'N/A','Adult_Capacity_Limit':'N/A','Kids_Capacity_Limit':'N/A'})
+        df_all = pd.DataFrame(acd)
         st.subheader("Preview of Projections")
         st.dataframe(df_all.head(40))
-        csv_data  = "# All Campus Attendance Projections\n"
-        csv_data += "# Generated: " + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + "\n"
-        csv_data += "# Parameters: Date="+selected_date_str+", Week="+str(select_week)+", Pastor="+select_pastor+", Event="+select_event+"\n\n"
-        csv_data += df_all.to_csv(index=False)
-        st.download_button(label="Download All Campus Projections (CSV)", data=csv_data, file_name="All_Campus_Projections_"+selected_date_str.replace('-','_')+".csv", mime="text/csv")
+        csv = "# All Campus Attendance Projections\n# Generated: "+datetime.now().strftime('%Y-%m-%d %H:%M:%S')+"\n# Parameters: Date="+selected_date_str+", Week="+str(select_week)+", Pastor="+select_pastor+", Event="+select_event+"\n\n"+df_all.to_csv(index=False)
+        st.download_button("Download All Campus Projections (CSV)", csv, "All_Campus_Projections_"+selected_date_str.replace('-','_')+".csv", "text/csv")
 
 
 # =====================================================================
@@ -426,18 +316,13 @@ with tab2:
     st.subheader("📡 Live Attendance — Easter 2026")
 
     EASTER_2026_DATE = "2026-04-05"
+    sc_campus_list   = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
-    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
+    sc1,sc2,sc3 = st.columns(3)
+    with sc1: sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
+    with sc2: sc_day      = st.selectbox("Day",      ["All","Thu","Sat","Sun"], key="sc_day")
+    with sc3: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
 
-    sc1, sc2, sc3 = st.columns(3)
-    with sc1:
-        sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
-    with sc2:
-        sc_day      = st.selectbox("Day",      ["All","Thu","Sat","Sun"], key="sc_day")
-    with sc3:
-        sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
-
-    # ── Pull actuals from DB ─────────────────────────────────────────
     QUERY = """
         SELECT Campus, ServiceTime, MetricName, Value
         FROM _com_CoE22_RockMetrics
@@ -451,38 +336,17 @@ with tab2:
         st.warning("Could not load actuals: " + str(e))
         df_raw = pd.DataFrame(columns=['Campus','ServiceTime','MetricName','Value'])
 
-    # ── Normalise ServiceTime ────────────────────────────────────────
     DAY_FROM_TIME  = {'07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun','15:00:00':'Sat','17:22:00':'Sat','19:22:00':'Thu'}
     TIME_LABEL_MAP = {'07:00:00':'7:22','09:22:00':'9:00','11:22:00':'11:22','15:00:00':'9:00','17:22:00':'11:22','19:22:00':'7:22'}
 
     def normalise_time(val):
-        if val is None:
-            return ''
+        if val is None: return ''
         s = str(val).strip().lower()
-        if len(s) == 8 and s[2] == ':' and s[5] == ':':
-            return s
+        if len(s)==8 and s[2]==':' and s[5]==':': return s
         for fmt in ['%I:%M %p','%H:%M:%S','%H:%M']:
-            try:
-                return datetime.strptime(s, fmt).strftime('%H:%M:%S')
-            except ValueError:
-                continue
+            try: return datetime.strptime(s,fmt).strftime('%H:%M:%S')
+            except ValueError: continue
         return s
-
-    # ── Debug expander ───────────────────────────────────────────────
-    with st.expander("🔍 Debug — remove when done"):
-        st.write("**Raw ServiceTimes from DB:**", df_raw['ServiceTime'].unique().tolist() if not df_raw.empty else "empty")
-        if not df_raw.empty:
-            df_debug = df_raw.copy()
-            df_debug['Normalised'] = df_debug['ServiceTime'].apply(normalise_time)
-            df_debug['Day_mapped'] = df_debug['Normalised'].map(DAY_FROM_TIME)
-            df_debug['Svc_mapped'] = df_debug['Normalised'].map(TIME_LABEL_MAP)
-            st.dataframe(df_debug[['Campus','ServiceTime','Normalised','Day_mapped','Svc_mapped','MetricName','Value']].head(30))
-        st.write("**Excel df_proj — Arlington rows:**")
-        st.dataframe(df_proj[df_proj['Campus']=='Arlington'] if not df_proj.empty else "empty")
-        st.write("**df_pivot — Arlington rows:**")
-        st.dataframe(df_pivot[df_pivot['Campus']=='Arlington'] if not df_pivot.empty else "empty")
-        st.write("**df_score — Arlington rows:**")
-        st.dataframe(df_score[df_score['Campus']=='Arlington'] if not df_score.empty else "empty")
 
     if not df_raw.empty:
         df_raw['ServiceTime'] = df_raw['ServiceTime'].apply(normalise_time)
@@ -497,12 +361,11 @@ with tab2:
     else:
         df_pivot = pd.DataFrame(columns=['Campus','Day','SvcLabel','Actual_Adults','Actual_Kids','Actual_Total'])
 
-    # ── Easter projections from Excel ────────────────────────────────
     if not df_easter.empty:
         df_proj = df_easter.rename(columns={'Service':'SvcLabel','Adults':'Proj_Adults','Kids':'Proj_Kids','Total':'Proj_Total'})
         if 'Proj_Adults' not in df_proj.columns: df_proj['Proj_Adults'] = 0
         if 'Proj_Kids'   not in df_proj.columns: df_proj['Proj_Kids']   = 0
-        if 'Proj_Total'  not in df_proj.columns: df_proj['Proj_Total']  = df_proj['Proj_Adults'] + df_proj['Proj_Kids']
+        if 'Proj_Total'  not in df_proj.columns: df_proj['Proj_Total']  = df_proj['Proj_Adults']+df_proj['Proj_Kids']
         df_proj = df_proj[['Campus','Day','SvcLabel','Proj_Adults','Proj_Kids','Proj_Total']]
     else:
         df_proj = pd.DataFrame(columns=['Campus','Day','SvcLabel','Proj_Adults','Proj_Kids','Proj_Total'])
@@ -512,115 +375,81 @@ with tab2:
         if c not in df_score.columns: df_score[c] = 0
         df_score[c] = df_score[c].fillna(0).astype(int)
 
+    # ── Debug expander ───────────────────────────────────────────────
     with st.expander("🔍 Debug — remove when done"):
-        st.write("**Excel df_proj — Arlington rows:**")
-        st.dataframe(df_proj[df_proj['Campus']=='Arlington'])
-        st.write("**df_pivot — Arlington rows:**")
+        st.write("**df_proj Arlington:**")
+        st.dataframe(df_proj[df_proj['Campus']=='Arlington'] if not df_proj.empty else pd.DataFrame())
+        st.write("**df_pivot Arlington:**")
         st.dataframe(df_pivot[df_pivot['Campus']=='Arlington'] if not df_pivot.empty else pd.DataFrame())
-        st.write("**df_score — Arlington rows:**")
+        st.write("**df_score Arlington:**")
         st.dataframe(df_score[df_score['Campus']=='Arlington'])
 
-    if sc_campus != "All": df_score = df_score[df_score['Campus'] == sc_campus]
-    if sc_day    != "All": df_score = df_score[df_score['Day']    == sc_day]
+    if sc_campus != "All": df_score = df_score[df_score['Campus']==sc_campus]
+    if sc_day    != "All": df_score = df_score[df_score['Day']==sc_day]
 
-    proj_col = 'Proj_Adults'   if sc_category=='Adults' else 'Proj_Kids'   if sc_category=='Kids' else 'Proj_Total'
+    proj_col = 'Proj_Adults' if sc_category=='Adults' else 'Proj_Kids' if sc_category=='Kids' else 'Proj_Total'
     act_col  = 'Actual_Adults' if sc_category=='Adults' else 'Actual_Kids' if sc_category=='Kids' else 'Actual_Total'
 
-    t_proj    = int(df_score[proj_col].sum())
-    t_actual  = int(df_score[act_col].sum())
-    t_pct     = round((t_actual-t_proj)/t_proj*100,1) if t_proj != 0 else 0
-    pct_color = "#27ae60" if t_pct >= 0 else "#c0392b"
-    pct_icon  = "▲" if t_pct >= 0 else "▼"
-    sc_label  = sc_category + (" - "+sc_campus if sc_campus != "All" else "")
+    t_proj   = int(df_score[proj_col].sum())
+    t_actual = int(df_score[act_col].sum())
+    t_pct    = round((t_actual-t_proj)/t_proj*100,1) if t_proj!=0 else 0
+    pc = "#27ae60" if t_pct>=0 else "#c0392b"
+    pi = "▲" if t_pct>=0 else "▼"
+    sc_label = sc_category+(" - "+sc_campus if sc_campus!="All" else "")
 
     st.markdown(
-        "<style>"
-        ".sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
-        ".sc-stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}"
-        ".sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}"
+        "<style>.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
+        ".sc-stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}"
         "@media(max-width:600px){.sc-stat-item{min-width:50%;flex-basis:50%;}.sc-stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}}"
         ".sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}"
-        ".sc-num{font-size:1.6rem;font-weight:800;line-height:1.1;}"
-        ".sc-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}"
-        "</style>"
+        ".sc-num{font-size:1.6rem;font-weight:800;line-height:1.1;}.sc-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}</style>"
         '<div class="sc-stat-bar">'
         '<div class="sc-stat-item"><div class="sc-label">Projected</div><div class="sc-num" style="color:#2c3e50;">'+"{:,}".format(t_proj)+'</div><div class="sc-sub">'+sc_label+'</div></div>'
         '<div class="sc-stat-item"><div class="sc-label">Actual</div><div class="sc-num" style="color:#2c3e50;">'+"{:,}".format(t_actual)+'</div><div class="sc-sub">'+sc_label+'</div></div>'
-        '<div class="sc-stat-item"><div class="sc-label">vs Projection</div><div class="sc-num" style="color:'+pct_color+';">'+pct_icon+' '+str(abs(t_pct))+'%</div><div class="sc-sub">Percent difference</div></div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
+        '<div class="sc-stat-item"><div class="sc-label">vs Projection</div><div class="sc-num" style="color:'+pc+';">'+pi+' '+str(abs(t_pct))+'%</div><div class="sc-sub">Percent difference</div></div>'
+        '</div>', unsafe_allow_html=True)
 
     st.divider()
 
-    # ── Campus accordion ─────────────────────────────────────────────
-    if 'live_campus_open' not in st.session_state:
-        st.session_state.live_campus_open = None
-
+    if 'live_campus_open' not in st.session_state: st.session_state.live_campus_open = None
     DAY_ORDER = {'Thu':0,'Sat':1,'Sun':2}
-    df_score_sorted = df_score.sort_values(
-        by=['Campus','Day','SvcLabel'],
-        key=lambda col: col.map(DAY_ORDER) if col.name=='Day' else col
-    ).reset_index(drop=True)
+    df_score_sorted = df_score.sort_values(by=['Campus','Day','SvcLabel'], key=lambda col: col.map(DAY_ORDER) if col.name=='Day' else col).reset_index(drop=True)
 
     for campus in df_score_sorted['Campus'].unique().tolist():
-        df_campus  = df_score_sorted[df_score_sorted['Campus']==campus]
-        c_proj     = int(df_campus[proj_col].sum())
-        c_actual   = int(df_campus[act_col].sum())
-        c_diff     = c_actual - c_proj
-        c_pct      = round(c_diff/c_proj*100,1) if c_proj != 0 else 0
-        c_color    = "#27ae60" if c_diff >= 0 else "#c0392b"
-        c_icon     = "▲" if c_diff >= 0 else "▼"
-        is_open    = st.session_state.live_campus_open == campus
+        df_c     = df_score_sorted[df_score_sorted['Campus']==campus]
+        c_proj   = int(df_c[proj_col].sum())
+        c_actual = int(df_c[act_col].sum())
+        c_diff   = c_actual-c_proj
+        c_pct    = round(c_diff/c_proj*100,1) if c_proj!=0 else 0
+        cc       = "#27ae60" if c_diff>=0 else "#c0392b"
+        ci       = "▲" if c_diff>=0 else "▼"
+        is_open  = st.session_state.live_campus_open == campus
 
         st.markdown(
-            '<div style="background:#fff;border-radius:10px;border:1px solid #e0e4ea;'
-            'box-shadow:0 1px 5px rgba(0,0,0,0.07);padding:16px 18px;margin-bottom:4px;'
-            'display:flex;align-items:center;justify-content:space-between;">'
+            '<div style="background:#fff;border-radius:10px;border:1px solid #e0e4ea;box-shadow:0 1px 5px rgba(0,0,0,0.07);padding:16px 18px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">'
             '<div style="font-weight:700;font-size:1rem;color:#2c3e50;">'+campus+'</div>'
             '<div style="display:flex;gap:20px;align-items:center;">'
-            '<div style="text-align:right;"><div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">Actual</div>'
-            '<div style="font-weight:800;font-size:1.05rem;color:#2c3e50;">'+"{:,}".format(c_actual)+'</div></div>'
-            '<div style="text-align:right;"><div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">vs Proj</div>'
-            '<div style="font-weight:800;font-size:1.05rem;color:'+c_color+';">'+c_icon+' '+str(abs(c_pct))+'%</div></div>'
-            '</div></div>',
-            unsafe_allow_html=True
-        )
+            '<div style="text-align:right;"><div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">Actual</div><div style="font-weight:800;font-size:1.05rem;color:#2c3e50;">'+"{:,}".format(c_actual)+'</div></div>'
+            '<div style="text-align:right;"><div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">vs Proj</div><div style="font-weight:800;font-size:1.05rem;color:'+cc+';">'+ci+' '+str(abs(c_pct))+'%</div></div>'
+            '</div></div>', unsafe_allow_html=True)
 
         if st.button("▲ Collapse" if is_open else "▼ View services", key="campus_"+campus):
             st.session_state.live_campus_open = None if is_open else campus
             st.rerun()
 
         if is_open:
-            for _, row in df_campus.iterrows():
-                proj_val   = int(row[proj_col])
-                actual_val = int(row[act_col])
-                diff_val   = actual_val - proj_val
-                pct_val    = round(diff_val/proj_val*100,1) if proj_val != 0 else 0
-                r_color    = "#27ae60" if diff_val >= 0 else "#c0392b"
-                r_icon     = "▲" if diff_val >= 0 else "▼"
-
+            for _,row in df_c.iterrows():
+                pv  = int(row[proj_col]); av = int(row[act_col])
+                dv  = av-pv; pctv = round(dv/pv*100,1) if pv!=0 else 0
+                rc  = "#27ae60" if dv>=0 else "#c0392b"
+                ri  = "▲" if dv>=0 else "▼"
                 st.markdown(
-                    '<div style="display:flex;gap:10px;flex-wrap:wrap;background:#f4f7fb;border-radius:10px;'
-                    'border:1px solid #e0e4ea;padding:12px 16px;margin:4px 0 4px 16px;align-items:center;">'
-                    '<div style="min-width:100px;">'
-                    '<div style="font-size:0.72rem;color:#aaa;">'+str(row.get('Day',''))+'</div>'
-                    '<div style="font-weight:700;font-size:0.9rem;color:#2c3e50;">'+str(row['SvcLabel'])+'</div>'
-                    '</div>'
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;background:#f4f7fb;border-radius:10px;border:1px solid #e0e4ea;padding:12px 16px;margin:4px 0 4px 16px;align-items:center;">'
+                    '<div style="min-width:100px;"><div style="font-size:0.72rem;color:#aaa;">'+str(row.get('Day',''))+'</div><div style="font-weight:700;font-size:0.9rem;color:#2c3e50;">'+str(row['SvcLabel'])+'</div></div>'
                     '<div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">'
-                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
-                    '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Projected</div>'
-                    '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">'+"{:,}".format(proj_val)+'</div></div>'
-                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
-                    '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Actual</div>'
-                    '<div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">'+"{:,}".format(actual_val)+'</div></div>'
-                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
-                    '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff</div>'
-                    '<div style="font-size:1.1rem;font-weight:800;color:'+r_color+';">'+r_icon+' '+"{:,}".format(abs(diff_val))+'</div></div>'
-                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;">'
-                    '<div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff %</div>'
-                    '<div style="font-size:1.1rem;font-weight:800;color:'+r_color+';">'+r_icon+' '+str(abs(pct_val))+'%</div></div>'
-                    '</div></div>',
-                    unsafe_allow_html=True
-                )
+                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;"><div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Projected</div><div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">'+"{:,}".format(pv)+'</div></div>'
+                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;"><div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Actual</div><div style="font-size:1.1rem;font-weight:800;color:#2c3e50;">'+"{:,}".format(av)+'</div></div>'
+                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;"><div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff</div><div style="font-size:1.1rem;font-weight:800;color:'+rc+';">'+ri+' '+"{:,}".format(abs(dv))+'</div></div>'
+                    '<div style="background:#fff;border-radius:8px;border:1px solid #e0e4ea;padding:8px 12px;text-align:center;flex:1;min-width:70px;"><div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:2px;">Diff %</div><div style="font-size:1.1rem;font-weight:800;color:'+rc+';">'+ri+' '+str(abs(pctv))+'%</div></div>'
+                    '</div></div>', unsafe_allow_html=True)
             st.write("")
