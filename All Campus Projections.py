@@ -324,7 +324,7 @@ with tab2:
     with sc3: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
 
     QUERY = """
-        SELECT Campus, ServiceTime, MetricName, Value
+        SELECT Campus, ServiceTime, ServiceDay, MetricName, Value
         FROM _com_CoE22_RockMetrics
         WHERE SundayDate = ?
         AND MetricName IN ('Attendance - Adults', 'Attendance - Kids')
@@ -334,24 +334,27 @@ with tab2:
         df_raw = pd.read_sql(QUERY, conn, params=[EASTER_2026_DATE])
     except Exception as e:
         st.warning("Could not load actuals: " + str(e))
-        df_raw = pd.DataFrame(columns=['Campus','ServiceTime','MetricName','Value'])
+        df_raw = pd.DataFrame(columns=['Campus','ServiceTime','ServiceDay','MetricName','Value'])
 
-    DAY_FROM_TIME  = {'07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun','15:00:00':'Sat','17:22:00':'Sat','19:22:00':'Thu'}
-    TIME_LABEL_MAP = {'07:00:00':'7:22','09:22:00':'9:00','11:22:00':'11:22','15:00:00':'9:00','17:22:00':'11:22','19:22:00':'7:22'}
+    # Map full day name to abbreviation
+    DAY_ABBREV = {'Sunday':'Sun','Saturday':'Sat','Thursday':'Thu','Tuesday':'Tue','Wednesday':'Wed'}
 
     def normalise_time(val):
+        """Convert any time format to 12-hour label matching the Excel e.g. '5:22 PM'"""
         if val is None: return ''
         s = str(val).strip().lower()
-        if len(s)==8 and s[2]==':' and s[5]==':': return s
         for fmt in ['%I:%M %p','%H:%M:%S','%H:%M']:
-            try: return datetime.strptime(s,fmt).strftime('%H:%M:%S')
-            except ValueError: continue
-        return s
+            try:
+                t = datetime.strptime(s, fmt)
+                # Format as "5:22 PM" — strip leading zero
+                return t.strftime('%I:%M %p').lstrip('0')
+            except ValueError:
+                continue
+        return str(val).strip()
 
     if not df_raw.empty:
-        df_raw['ServiceTime'] = df_raw['ServiceTime'].apply(normalise_time)
-        df_raw['Day']         = df_raw['ServiceTime'].map(DAY_FROM_TIME).fillna('Sun')
-        df_raw['SvcLabel']    = df_raw['ServiceTime'].map(TIME_LABEL_MAP).fillna(df_raw['ServiceTime'])
+        df_raw['SvcLabel'] = df_raw['ServiceTime'].apply(normalise_time)
+        df_raw['Day']      = df_raw['ServiceDay'].map(DAY_ABBREV).fillna(df_raw['ServiceDay'])
         df_pivot = df_raw.pivot_table(index=['Campus','Day','SvcLabel'], columns='MetricName', values='Value', aggfunc='sum').reset_index()
         df_pivot.columns.name = None
         df_pivot = df_pivot.rename(columns={'Attendance - Adults':'Actual_Adults','Attendance - Kids':'Actual_Kids'})
