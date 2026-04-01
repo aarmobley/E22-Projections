@@ -327,7 +327,7 @@ with tab1:
         di = "▲" if yoy_delta>=0 else "▼"
 
         st.markdown(
-            "<style>.stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
+            "<style>.stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem auto 1.5rem auto;overflow:hidden;max-width:700px;}"
             ".stat-item{flex:1;min-width:140px;text-align:center;padding:12px 16px;box-sizing:border-box;}.stat-item+.stat-item{border-left:1px solid #e8edf3;}"
             "@media(max-width:600px){.stat-item{min-width:50%;flex-basis:50%;}.stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}.stat-item:nth-child(4){border-top:1px solid #e8edf3;}}"
             ".stat-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:2px;}"
@@ -423,7 +423,7 @@ with tab2:
     sc_label = sc_category+(" - "+sc_campus if sc_campus!="All" else "")
 
     st.markdown(
-        "<style>.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
+        "<style>.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem auto 1.5rem auto;overflow:hidden;max-width:700px;}"
         ".sc-stat-item{flex:1;min-width:140px;text-align:center;padding:12px 16px;box-sizing:border-box;}.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}"
         "@media(max-width:600px){.sc-stat-item{min-width:50%;flex-basis:50%;}.sc-stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}}"
         ".sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:2px;}"
