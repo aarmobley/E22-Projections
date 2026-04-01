@@ -512,6 +512,14 @@ with tab2:
         if c not in df_score.columns: df_score[c] = 0
         df_score[c] = df_score[c].fillna(0).astype(int)
 
+    with st.expander("🔍 Debug — remove when done"):
+        st.write("**Excel df_proj — Arlington rows:**")
+        st.dataframe(df_proj[df_proj['Campus']=='Arlington'])
+        st.write("**df_pivot — Arlington rows:**")
+        st.dataframe(df_pivot[df_pivot['Campus']=='Arlington'] if not df_pivot.empty else pd.DataFrame())
+        st.write("**df_score — Arlington rows:**")
+        st.dataframe(df_score[df_score['Campus']=='Arlington'])
+
     if sc_campus != "All": df_score = df_score[df_score['Campus'] == sc_campus]
     if sc_day    != "All": df_score = df_score[df_score['Day']    == sc_day]
 
