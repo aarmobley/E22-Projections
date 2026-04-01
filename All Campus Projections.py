@@ -560,16 +560,8 @@ with tab2:
     with st.expander("🔍 Debug — raw DB values (remove when done)"):
         if not df_raw.empty:
             st.write("**Raw ServiceTimes from DB:**", df_raw['ServiceTime'].unique().tolist())
-            st.write("**After normalise — Day + SvcLabel:**")
-            st.dataframe(df_raw[['Campus','ServiceTime','Day','SvcLabel','MetricName','Value']].head(30))
         else:
             st.write("df_raw is empty")
-        st.write("**df_pivot (after pivot):**")
-        st.dataframe(df_pivot.head(20))
-        st.write("**df_proj (from Excel):**")
-        st.dataframe(df_proj.head(20))
-        st.write("**df_score (after merge):**")
-        st.dataframe(df_score.head(20))
 
     DAY_FROM_TIME  = {
         '07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun',
@@ -581,14 +573,11 @@ with tab2:
     }
 
     def normalise_time(val):
-        """Convert any time format to HH:MM:SS string for mapping."""
         if val is None:
             return ''
         s = str(val).strip().lower()
-        # Already HH:MM:SS
         if len(s) == 8 and s[2] == ':' and s[5] == ':':
             return s
-        # Parse 12-hour format like "5:22 pm" or "9:22 am"
         try:
             t = datetime.strptime(s, '%I:%M %p')
             return t.strftime('%H:%M:%S')
@@ -605,6 +594,12 @@ with tab2:
         df_raw['ServiceTime'] = df_raw['ServiceTime'].apply(normalise_time)
         df_raw['Day']         = df_raw['ServiceTime'].map(DAY_FROM_TIME).fillna('Sun')
         df_raw['SvcLabel']    = df_raw['ServiceTime'].map(TIME_LABEL_MAP).fillna(df_raw['ServiceTime'])
+
+    with st.expander("🔍 Debug — after normalise (remove when done)"):
+        st.write("**Normalised ServiceTime + Day + SvcLabel:**")
+        st.dataframe(df_raw[['Campus','ServiceTime','Day','SvcLabel','MetricName','Value']].head(30) if not df_raw.empty else "empty")
+        st.write("**df_proj (from Excel) — Campus / Day / SvcLabel:**")
+        st.dataframe(df_proj[['Campus','Day','SvcLabel']].head(20) if not df_proj.empty else "empty")
         df_pivot = df_raw.pivot_table(
             index=['Campus','Day','SvcLabel'], columns='MetricName',
             values='Value', aggfunc='sum').reset_index()
