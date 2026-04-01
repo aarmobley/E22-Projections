@@ -313,7 +313,7 @@ with tab1:
 # =====================================================================
 with tab2:
 # =====================================================================
-    st.subheader("📡 Live Attendance — Easter 2026")
+    st.subheader("Live Attendance  Easter 2026")
 
     EASTER_2026_DATE = "2026-04-05"
     sc_campus_list   = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
