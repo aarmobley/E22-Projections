@@ -559,11 +559,17 @@ with tab2:
 
     with st.expander("🔍 Debug — raw DB values (remove when done)"):
         if not df_raw.empty:
-            st.write("ServiceTime dtype:", df_raw['ServiceTime'].dtype)
-            st.write("Unique ServiceTimes:", df_raw['ServiceTime'].unique().tolist())
-            st.dataframe(df_raw.head(20))
+            st.write("**Raw ServiceTimes from DB:**", df_raw['ServiceTime'].unique().tolist())
+            st.write("**After normalise — Day + SvcLabel:**")
+            st.dataframe(df_raw[['Campus','ServiceTime','Day','SvcLabel','MetricName','Value']].head(30))
         else:
             st.write("df_raw is empty")
+        st.write("**df_pivot (after pivot):**")
+        st.dataframe(df_pivot.head(20))
+        st.write("**df_proj (from Excel):**")
+        st.dataframe(df_proj.head(20))
+        st.write("**df_score (after merge):**")
+        st.dataframe(df_score.head(20))
 
     DAY_FROM_TIME  = {
         '07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun',
