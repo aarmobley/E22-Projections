@@ -202,13 +202,13 @@ with tab1:
 
         dd1,dd2,dd3 = st.columns(3)
         with dd1:
-            days = sorted(df_easter['Day'].dropna().unique().tolist(), key=lambda x:{'Thu':0,'Sat':1,'Sun':2}.get(str(x),3)) if 'Day' in df_easter.columns else []
-            day_pick = st.selectbox("Filter by Day", ["All"]+days)
-        with dd2:
             campuses = sorted(df_easter['Campus'].dropna().unique().tolist()) if 'Campus' in df_easter.columns else []
-            campus_pick = st.selectbox("Filter by Campus", ["All"]+campuses)
+            campus_pick = st.selectbox("Campus", ["All"]+campuses)
+        with dd2:
+            days = sorted(df_easter['Day'].dropna().unique().tolist(), key=lambda x:{'Thu':0,'Sat':1,'Sun':2}.get(str(x),3)) if 'Day' in df_easter.columns else []
+            day_pick = st.selectbox("Day", ["All"]+days)
         with dd3:
-            category_pick = st.selectbox("Filter by Category", ["Total","Adults","Kids"])
+            category_pick = st.selectbox("Category", ["Total","Adults","Kids"])
 
         df_show = df_easter.copy()
         if day_pick    != "All": df_show = df_show[df_show['Day']    == day_pick]
@@ -313,7 +313,7 @@ with tab1:
 # =====================================================================
 with tab2:
 # =====================================================================
-    st.subheader("Live Attendance  Easter 2026")
+    st.subheader("📡 Live Attendance — Easter 2026")
 
     EASTER_2026_DATE = "2026-04-05"
     sc_campus_list   = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
