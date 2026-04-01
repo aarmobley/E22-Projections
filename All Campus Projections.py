@@ -328,10 +328,10 @@ with tab1:
 
         st.markdown(
             "<style>.stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
-            ".stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}.stat-item+.stat-item{border-left:1px solid #e8edf3;}"
+            ".stat-item{flex:1;min-width:140px;text-align:center;padding:12px 16px;box-sizing:border-box;}.stat-item+.stat-item{border-left:1px solid #e8edf3;}"
             "@media(max-width:600px){.stat-item{min-width:50%;flex-basis:50%;}.stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}.stat-item:nth-child(4){border-top:1px solid #e8edf3;}}"
-            ".stat-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}"
-            ".stat-num{font-size:1.6rem;font-weight:800;line-height:1.1;}.stat-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}</style>"
+            ".stat-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:2px;}"
+            ".stat-num{font-size:1.4rem;font-weight:800;line-height:1.1;}.stat-sub{font-size:0.68rem;color:#bbb;margin-top:2px;}</style>"
             '<div class="stat-bar">'
             '<div class="stat-item"><div class="stat-label">2026 Projection</div><div class="stat-num" style="color:#2c3e50;">'+"{:,}".format(the_sum)+'</div><div class="stat-sub">'+label_base+'</div></div>'
             '<div class="stat-item"><div class="stat-label">2025 Actual</div><div class="stat-num" style="color:#2c3e50;">'+"{:,}".format(sum_2025)+'</div><div class="stat-sub">'+label_base+'</div></div>'
@@ -424,10 +424,10 @@ with tab2:
 
     st.markdown(
         "<style>.sc-stat-bar{display:flex;flex-wrap:wrap;background:#fff;border-radius:12px;border:1px solid #e0e4ea;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin:1rem 0 1.5rem 0;overflow:hidden;}"
-        ".sc-stat-item{flex:1;min-width:140px;text-align:center;padding:18px 16px;box-sizing:border-box;}.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}"
+        ".sc-stat-item{flex:1;min-width:140px;text-align:center;padding:12px 16px;box-sizing:border-box;}.sc-stat-item+.sc-stat-item{border-left:1px solid #e8edf3;}"
         "@media(max-width:600px){.sc-stat-item{min-width:50%;flex-basis:50%;}.sc-stat-item:nth-child(3){border-left:none;border-top:1px solid #e8edf3;}}"
-        ".sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:6px;}"
-        ".sc-num{font-size:1.6rem;font-weight:800;line-height:1.1;}.sc-sub{font-size:0.72rem;color:#bbb;margin-top:3px;}</style>"
+        ".sc-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:2px;}"
+        ".sc-num{font-size:1.4rem;font-weight:800;line-height:1.1;}.sc-sub{font-size:0.68rem;color:#bbb;margin-top:2px;}</style>"
         '<div class="sc-stat-bar">'
         '<div class="sc-stat-item"><div class="sc-label">Projected</div><div class="sc-num" style="color:#2c3e50;">'+"{:,}".format(t_proj)+'</div><div class="sc-sub">'+sc_label+'</div></div>'
         '<div class="sc-stat-item"><div class="sc-label">Actual</div><div class="sc-num" style="color:#2c3e50;">'+"{:,}".format(t_actual)+'</div><div class="sc-sub">'+sc_label+'</div></div>'
