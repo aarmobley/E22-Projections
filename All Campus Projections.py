@@ -534,7 +534,7 @@ with tab2:
     QUERY = """
         SELECT Campus, ServiceTime, MetricName, Value
         FROM _com_CoE22_RockMetrics
-        WHERE SundayDate = ?
+        WHERE SundayDate = '2026-04-05'
         AND MetricName IN ('Attendance - Adults', 'Attendance - Kids')
     """
     try:
