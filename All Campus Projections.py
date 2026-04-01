@@ -175,7 +175,7 @@ tab1, tab2 = st.tabs(["📊 Projections", "📡 Live Attendance"])
 # =====================================================================
 with tab1:
 # =====================================================================
-    st.subheader("Easter 2026 Projections")
+    st.subheader("Easter Projections 2026")
 
     data_2025_rows = [
         ('Arlington','Sun','Adults',682),('Arlington','Sun','Kids',148),('Arlington','Sun','Adults',556),('Arlington','Sun','Kids',90),('Arlington','Thu','Adults',217),('Arlington','Thu','Kids',41),
@@ -313,7 +313,7 @@ with tab1:
 # =====================================================================
 with tab2:
 # =====================================================================
-    st.subheader("📡 Live Attendance — Easter 2026")
+    st.subheader("Easter Live Attendance 2026")
 
     EASTER_2026_DATE = "2026-04-05"
     sc_campus_list   = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
