@@ -565,12 +565,40 @@ with tab2:
         else:
             st.write("df_raw is empty")
 
-    DAY_FROM_TIME  = {'07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun','15:00:00':'Sat','17:22:00':'Sat','19:22:00':'Thu'}
-    TIME_LABEL_MAP = {'07:00:00':'7:22','09:22:00':'9:00','11:22:00':'11:22','15:00:00':'9:00','17:22:00':'11:22','19:22:00':'7:22'}
+    DAY_FROM_TIME  = {
+        '07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun',
+        '15:00:00':'Sat','17:22:00':'Sat','19:22:00':'Thu'
+    }
+    TIME_LABEL_MAP = {
+        '07:00:00':'7:22','09:22:00':'9:00','11:22:00':'11:22',
+        '15:00:00':'9:00','17:22:00':'11:22','19:22:00':'7:22'
+    }
+
+    def normalise_time(val):
+        """Convert any time format to HH:MM:SS string for mapping."""
+        if val is None:
+            return ''
+        s = str(val).strip().lower()
+        # Already HH:MM:SS
+        if len(s) == 8 and s[2] == ':' and s[5] == ':':
+            return s
+        # Parse 12-hour format like "5:22 pm" or "9:22 am"
+        try:
+            t = datetime.strptime(s, '%I:%M %p')
+            return t.strftime('%H:%M:%S')
+        except ValueError:
+            pass
+        try:
+            t = datetime.strptime(s, '%H:%M')
+            return t.strftime('%H:%M:%S')
+        except ValueError:
+            pass
+        return s
 
     if not df_raw.empty:
-        df_raw['Day']      = df_raw['ServiceTime'].map(DAY_FROM_TIME).fillna('Sun')
-        df_raw['SvcLabel'] = df_raw['ServiceTime'].map(TIME_LABEL_MAP).fillna(df_raw['ServiceTime'])
+        df_raw['ServiceTime'] = df_raw['ServiceTime'].apply(normalise_time)
+        df_raw['Day']         = df_raw['ServiceTime'].map(DAY_FROM_TIME).fillna('Sun')
+        df_raw['SvcLabel']    = df_raw['ServiceTime'].map(TIME_LABEL_MAP).fillna(df_raw['ServiceTime'])
         df_pivot = df_raw.pivot_table(
             index=['Campus','Day','SvcLabel'], columns='MetricName',
             values='Value', aggfunc='sum').reset_index()
