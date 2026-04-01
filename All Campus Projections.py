@@ -412,9 +412,8 @@ with tab2:
 
     # Filter the pre-built score df — no recompute
     df_score = df_score_all.copy()
-    if sc_campus  != "All": df_score = df_score[df_score['Campus']   == sc_campus]
-    if sc_day     != "All": df_score = df_score[df_score['Day']      == sc_day]
-    if sc_service != "All": df_score = df_score[df_score['SvcLabel'] == sc_service]
+    if sc_campus != "All": df_score = df_score[df_score['Campus']==sc_campus]
+    if sc_day    != "All": df_score = df_score[df_score['Day']==sc_day]
 
     proj_col = 'Proj_Adults' if sc_category=='Adults' else 'Proj_Kids' if sc_category=='Kids' else 'Proj_Total'
     act_col  = 'Actual_Adults' if sc_category=='Adults' else 'Actual_Kids' if sc_category=='Kids' else 'Actual_Total'
