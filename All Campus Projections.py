@@ -175,7 +175,7 @@ tab1, tab2 = st.tabs(["📊 Projections", "📡 Live Attendance"])
 # =====================================================================
 with tab1:
 # =====================================================================
-    st.subheader("Easter Projections 2026")
+    st.subheader("Easter 2026 Projections")
 
     data_2025_rows = [
         ('Arlington','Sun','Adults',682),('Arlington','Sun','Kids',148),('Arlington','Sun','Adults',556),('Arlington','Sun','Kids',90),('Arlington','Thu','Adults',217),('Arlington','Thu','Kids',41),
@@ -313,7 +313,7 @@ with tab1:
 # =====================================================================
 with tab2:
 # =====================================================================
-    st.subheader("Live Attendance Easter 2026")
+    st.subheader("📡 Live Attendance — Easter 2026")
 
     EASTER_2026_DATE = "2026-04-05"
     sc_campus_list   = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
@@ -416,7 +416,7 @@ with tab2:
         c_proj   = int(df_c[proj_col].sum())
         c_actual = int(df_c[act_col].sum())
         c_diff   = c_actual-c_proj
-        c_pct    = round(c_diff/c_proj*100,1) if c_proj!=0 else 0
+        c_pct    = int(round(c_diff/c_proj*100,1)) if c_proj!=0 and round(c_diff/c_proj*100,1)==int(round(c_diff/c_proj*100,1)) else (round(c_diff/c_proj*100,1) if c_proj!=0 else 0)
         cc       = "#27ae60" if c_diff>=0 else "#c0392b"
         ci       = "▲" if c_diff>=0 else "▼"
         is_open  = st.session_state.get('live_campus_open') == campus
@@ -436,7 +436,9 @@ with tab2:
         if is_open:
             for _,row in df_c.iterrows():
                 pv  = int(row[proj_col]); av = int(row[act_col])
-                dv  = av-pv; pctv = round(dv/pv*100,1) if pv!=0 else 0
+                dv  = av-pv
+                raw_pct = round(dv/pv*100,1) if pv!=0 else 0
+                pctv = int(raw_pct) if raw_pct == int(raw_pct) else raw_pct
                 rc  = "#27ae60" if dv>=0 else "#c0392b"
                 ri  = "▲" if dv>=0 else "▼"
                 st.markdown(
