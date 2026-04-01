@@ -477,6 +477,12 @@ with tab2:
             df_debug['Day_mapped'] = df_debug['Normalised'].map(DAY_FROM_TIME)
             df_debug['Svc_mapped'] = df_debug['Normalised'].map(TIME_LABEL_MAP)
             st.dataframe(df_debug[['Campus','ServiceTime','Normalised','Day_mapped','Svc_mapped','MetricName','Value']].head(30))
+        st.write("**Excel df_proj — Arlington rows:**")
+        st.dataframe(df_proj[df_proj['Campus']=='Arlington'] if not df_proj.empty else "empty")
+        st.write("**df_pivot — Arlington rows:**")
+        st.dataframe(df_pivot[df_pivot['Campus']=='Arlington'] if not df_pivot.empty else "empty")
+        st.write("**df_score — Arlington rows:**")
+        st.dataframe(df_score[df_score['Campus']=='Arlington'] if not df_score.empty else "empty")
 
     if not df_raw.empty:
         df_raw['ServiceTime'] = df_raw['ServiceTime'].apply(normalise_time)
