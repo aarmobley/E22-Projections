@@ -457,7 +457,7 @@ with tab2:
         is_open  = st.session_state.get('live_campus_open') == campus
 
         st.markdown(
-            '<div style="background:#fff;border-radius:10px;border:1px solid #e0e4ea;box-shadow:0 1px 5px rgba(0,0,0,0.07);padding:16px 18px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">'
+            '<div style="background:#fdf4f4;border-radius:10px;border:1px solid #e8c8c8;box-shadow:0 1px 5px rgba(0,0,0,0.07);padding:16px 18px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">'
             '<div style="font-weight:700;font-size:1rem;color:#2c3e50;">'+campus+'</div>'
             '<div style="display:flex;gap:20px;align-items:center;">'
             '<div style="text-align:right;"><div style="font-size:0.68rem;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;">Actual</div><div style="font-weight:800;font-size:1.05rem;color:#2c3e50;">'+"{:,}".format(c_actual)+'</div></div>'
