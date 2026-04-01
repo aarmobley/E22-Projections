@@ -419,7 +419,7 @@ with tab2:
         c_pct    = round(c_diff/c_proj*100,1) if c_proj!=0 else 0
         cc       = "#27ae60" if c_diff>=0 else "#c0392b"
         ci       = "▲" if c_diff>=0 else "▼"
-        is_open  = st.session_state.live_campus_open == campus
+        is_open  = st.session_state.get('live_campus_open') == campus
 
         st.markdown(
             '<div style="background:#fff;border-radius:10px;border:1px solid #e0e4ea;box-shadow:0 1px 5px rgba(0,0,0,0.07);padding:16px 18px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">'
