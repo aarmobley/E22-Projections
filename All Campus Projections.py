@@ -557,6 +557,14 @@ with tab2:
         st.warning("Could not load actuals: " + str(e))
         df_raw = pd.DataFrame(columns=['Campus','ServiceTime','MetricName','Value'])
 
+    with st.expander("🔍 Debug — raw DB values (remove when done)"):
+        if not df_raw.empty:
+            st.write("ServiceTime dtype:", df_raw['ServiceTime'].dtype)
+            st.write("Unique ServiceTimes:", df_raw['ServiceTime'].unique().tolist())
+            st.dataframe(df_raw.head(20))
+        else:
+            st.write("df_raw is empty")
+
     DAY_FROM_TIME  = {'07:00:00':'Sun','09:22:00':'Sun','11:22:00':'Sun','15:00:00':'Sat','17:22:00':'Sat','19:22:00':'Thu'}
     TIME_LABEL_MAP = {'07:00:00':'7:22','09:22:00':'9:00','11:22:00':'11:22','15:00:00':'9:00','17:22:00':'11:22','19:22:00':'7:22'}
 
