@@ -397,18 +397,21 @@ with tab2:
 # =====================================================================
     st.subheader("📡 Live Attendance — Easter 2026")
 
+    MAINTENANCE_MODE = True  # Set to False to go live
+
+    if MAINTENANCE_MODE:
+        st.info("🔧 This page is currently under maintenance. Please check back soon.")
+        st.stop()
+
     if db_error:
         st.warning("Could not load actuals: " + db_error)
 
     sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
-    sc1,sc2,sc3,sc4 = st.columns(4)
+    sc1,sc2,sc3 = st.columns(3)
     with sc1: sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
     with sc2: sc_day      = st.selectbox("Day",      ["All","Thu","Sat","Sun"], key="sc_day")
-    with sc3:
-        svc_options = ["All"] + sorted(df_score_all['SvcLabel'].dropna().unique().tolist())
-        sc_service  = st.selectbox("Service", svc_options, key="sc_service")
-    with sc4: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
+    with sc3: sc_category = st.selectbox("Category", ["Total","Adults","Kids"], key="sc_category")
 
     # Filter the pre-built score df — no recompute
     df_score = df_score_all.copy()
