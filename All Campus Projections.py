@@ -397,7 +397,7 @@ with tab2:
 # =====================================================================
     st.subheader("📡 Live Attendance — Easter 2026")
 
-    MAINTENANCE_MODE = False  # Set to False to go live
+    MAINTENANCE_MODE = True  # Set to False to go live
 
     if MAINTENANCE_MODE:
         st.info("🔧 This page is currently under maintenance. Please check back soon.")
