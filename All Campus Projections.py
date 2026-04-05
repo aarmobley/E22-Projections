@@ -20,7 +20,7 @@ def get_connection():
     return pyodbc.connect(get_connection_string())
 
 # Cache DB query for 5 minutes so repeated interactions don't re-hit the DB
-#@st.cache_data(ttl=60)
+@st.cache_data(ttl=60)
 def load_actuals(easter_date):
     try:
         conn = get_connection()
