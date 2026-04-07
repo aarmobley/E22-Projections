@@ -200,23 +200,56 @@ df_easter, easter_load_error = load_easter_excel()
 def build_pivot(df_raw):
     if df_raw.empty:
         return pd.DataFrame(columns=['Campus','Day','SvcLabel','Actual_Adults','Actual_Kids','Actual_Total'])
-    DAY_ABBREV = {'Sunday':'Sun','Saturday':'Sat','Thursday':'Thu','Tuesday':'Tue','Wednesday':'Wed'}
+
+    # Ensure correct columns — handle 4 or 5 column CSVs
+    if df_raw.shape[1] == 5:
+        df_raw.columns = ['Campus','ServiceTime','ServiceDay','MetricName','Value']
+    elif df_raw.shape[1] == 4:
+        df_raw.columns = ['Campus','ServiceTime','ServiceDay','Value']
+        df_raw['MetricName'] = 'Attendance - Adults'
+
+    # Only keep standard service days
+    VALID_DAYS = {'Thursday','Saturday','Sunday','Friday'}
+    df_raw = df_raw[df_raw['ServiceDay'].isin(VALID_DAYS)].copy()
+
+    # Only keep attendance metrics
+    df_raw = df_raw[df_raw['MetricName'].isin(['Attendance - Adults','Attendance - Kids'])].copy()
+
+    DAY_ABBREV = {'Sunday':'Sun','Saturday':'Sat','Thursday':'Thu','Friday':'Fri'}
+
     def norm(val):
         if val is None: return ''
-        s = str(val).strip().lower()
-        for fmt in ['%I:%M %p','%H:%M:%S','%H:%M']:
-            try: return datetime.strptime(s,fmt).strftime('%I:%M %p').lstrip('0')
+        s = str(val).strip()
+        sl = s.lower()
+        # Already has am/pm
+        for fmt in ['%I:%M %p','%I:%M%p']:
+            try: return datetime.strptime(sl, fmt).strftime('%I:%M %p').lstrip('0')
             except ValueError: continue
-        return str(val).strip()
-    df = df_raw.copy()
-    df['SvcLabel'] = df['ServiceTime'].apply(norm)
-    df['Day']      = df['ServiceDay'].map(DAY_ABBREV).fillna(df['ServiceDay'])
-    piv = df.pivot_table(index=['Campus','Day','SvcLabel'], columns='MetricName', values='Value', aggfunc='sum').reset_index()
+        # No am/pm — infer: hours 1-11 without indicator assume PM for church services
+        for fmt in ['%H:%M:%S','%H:%M','%I:%M']:
+            try:
+                t = datetime.strptime(sl, fmt)
+                # If hour is 1-11 with no am/pm indicator, assume PM
+                if t.hour < 12:
+                    t = t.replace(hour=t.hour+12)
+                return t.strftime('%I:%M %p').lstrip('0')
+            except ValueError: continue
+        return s
+
+    df_raw['SvcLabel'] = df_raw['ServiceTime'].apply(norm)
+    df_raw['Day']      = df_raw['ServiceDay'].map(DAY_ABBREV).fillna(df_raw['ServiceDay'])
+
+    piv = df_raw.pivot_table(
+        index=['Campus','Day','SvcLabel'],
+        columns='MetricName', values='Value', aggfunc='sum'
+    ).reset_index()
     piv.columns.name = None
     piv = piv.rename(columns={'Attendance - Adults':'Actual_Adults','Attendance - Kids':'Actual_Kids'})
     for c in ['Actual_Adults','Actual_Kids']:
         if c not in piv.columns: piv[c] = 0
-    piv['Actual_Total'] = piv['Actual_Adults'] + piv['Actual_Kids']
+    piv['Actual_Adults'] = piv['Actual_Adults'].fillna(0).astype(int)
+    piv['Actual_Kids']   = piv['Actual_Kids'].fillna(0).astype(int)
+    piv['Actual_Total']  = piv['Actual_Adults'] + piv['Actual_Kids']
     return piv
 
 @st.cache_data
@@ -376,7 +409,10 @@ with tab2:
 
     uploaded = st.file_uploader("Upload Easter Attendance CSV", type="csv", key="attendance_csv")
     if uploaded is not None:
-        df_raw_actuals = pd.read_csv(uploaded)
+        try:
+            df_raw_actuals = pd.read_csv(uploaded, sep=None, engine='python')
+        except Exception:
+            df_raw_actuals = pd.read_csv(uploaded)
     else:
         st.info("Upload the Easter attendance CSV to see live results.")
         st.stop()
