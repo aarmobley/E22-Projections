@@ -535,6 +535,10 @@ with tab2:
     ]
     df_raw_actuals = pd.DataFrame(actuals_2026, columns=['Campus','ServiceTime','ServiceDay','MetricName','Value'])
 
+    df_pivot     = build_pivot(df_raw_actuals)
+    df_proj      = build_proj(df_easter)
+    df_score_all = build_score(df_proj, df_pivot)
+
     sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
     sc1,sc2,sc3 = st.columns(3)
