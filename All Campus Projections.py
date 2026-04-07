@@ -417,10 +417,7 @@ with tab2:
         st.info("Upload the Easter attendance CSV to see live results.")
         st.stop()
 
-    if db_error:
-        st.warning("Could not load actuals: " + db_error)
-
-    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys()) = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
+    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
     sc1,sc2,sc3 = st.columns(3)
     with sc1: sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
