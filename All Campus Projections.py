@@ -1,38 +1,11 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
-import pyodbc
 
 st.set_page_config(page_title="CoE22 Projections", layout="wide", initial_sidebar_state="collapsed")
 
 # ── DB helpers ───────────────────────────────────────────────────────────
-@st.cache_resource
-def get_connection_string():
-    return (
-        "DRIVER={ODBC Driver 17 for SQL Server};"
-        "SERVER=" + st.secrets['db']['server'] + ";"
-        "DATABASE=" + st.secrets['db']['database'] + ";"
-        "UID=" + st.secrets['db']['username'] + ";"
-        "PWD=" + st.secrets['db']['password'] + ";"
-    )
-
-def get_connection():
-    return pyodbc.connect(get_connection_string())
-
-# Cache DB query for 5 minutes so repeated interactions don't re-hit the DB
-@st.cache_data(ttl=60)
-def load_actuals(easter_date):
-    try:
-        conn = get_connection()
-        df = pd.read_sql("""
-            SELECT Campus, ServiceTime, ServiceDay, MetricName, Value
-            FROM _com_CoE22_RockMetrics
-            WHERE SundayDate = ?
-            AND MetricName IN ('Attendance - Adults', 'Attendance - Kids')
-        """, conn, params=[easter_date])
-        return df, None
-    except Exception as e:
-        return pd.DataFrame(columns=['Campus','ServiceTime','ServiceDay','MetricName','Value']), str(e)
+# (No longer needed — using CSV upload instead)
 
 # Cache Easter Excel — only re-downloads if cache expires (1 hour)
 @st.cache_data(ttl=3600)
@@ -220,11 +193,9 @@ def style_table(df, hover_color="#fdecea"):
         '<div class="modern-table-wrap"><table class="modern-table"><thead><tr>'+hdr+'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     )
 
-# ── Load data (cached) ───────────────────────────────────────────────────
+# ── Load Easter Excel ────────────────────────────────────────────────────
 df_easter, easter_load_error = load_easter_excel()
-df_raw_actuals, db_error     = load_actuals("2026-04-05")
 
-# Pre-process actuals once (not per rerun)
 @st.cache_data
 def build_pivot(df_raw):
     if df_raw.empty:
@@ -266,9 +237,9 @@ def build_score(df_proj, df_pivot):
         df[c] = df[c].fillna(0).astype(int)
     return df
 
-df_pivot    = build_pivot(df_raw_actuals)
-df_proj     = build_proj(df_easter)
-df_score_all = build_score(df_proj, df_pivot)
+    df_pivot    = build_pivot(df_raw_actuals)
+    df_proj     = build_proj(df_easter)
+    df_score_all = build_score(df_proj, df_pivot)
 
 # ── TABS ─────────────────────────────────────────────────────────────────
 tab1, tab2 = st.tabs(["📊 Projections", "📡 Live Attendance"])
@@ -397,16 +368,23 @@ with tab2:
 # =====================================================================
     st.subheader("📡 Live Attendance — Easter 2026")
 
-    MAINTENANCE_MODE = False  # Set to False to go live
+    MAINTENANCE_MODE = False
 
     if MAINTENANCE_MODE:
         st.info("🔧 This page is currently under maintenance. Please check back soon.")
         st.stop()
 
+    uploaded = st.file_uploader("Upload Easter Attendance CSV", type="csv", key="attendance_csv")
+    if uploaded is not None:
+        df_raw_actuals = pd.read_csv(uploaded)
+    else:
+        st.info("Upload the Easter attendance CSV to see live results.")
+        st.stop()
+
     if db_error:
         st.warning("Could not load actuals: " + db_error)
 
-    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
+    sc_campus_list = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys()) = sorted(df_easter['Campus'].dropna().unique().tolist()) if not df_easter.empty else sorted(campus_coefficients.keys())
 
     sc1,sc2,sc3 = st.columns(3)
     with sc1: sc_campus   = st.selectbox("Campus",   ["All"]+sc_campus_list, key="sc_campus")
