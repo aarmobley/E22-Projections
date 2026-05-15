@@ -7,6 +7,17 @@ st.markdown("""
 <style>
     [data-testid="stSidebar"]{display:none;}
     [data-testid="stSidebarCollapsedControl"]{display:none;}
+    /* Force dropdowns to open downward */
+    [data-baseweb="popover"] {
+        margin-top: 0 !important;
+    }
+    [data-baseweb="menu"] {
+        max-height: 300px !important;
+    }
+    /* Add breathing room below dropdowns */
+    [data-testid="stSelectbox"] {
+        margin-bottom: 16px !important;
+    }
     /* Dialog: large on desktop, full screen on mobile */
     [data-testid="stDialog"] > div {
         min-width: 750px !important;
@@ -144,6 +155,9 @@ with d2:
     campus_sel = st.selectbox("Select Campus", ["—"] + campus_list,
                               help="Choose a campus to view service breakdown")
 
+st.write("")
+st.write("")
+
 # Grand total
 df_totals = df_date.groupby('Campus').agg(
     Projected=('service_attendance', 'sum'),
@@ -186,3 +200,4 @@ st.download_button(
 # Trigger dialog when campus is selected
 if campus_sel != "—":
     show_campus(campus_sel, df_date)
+    
