@@ -10,8 +10,24 @@ st.markdown("""
     [data-testid="stSidebar"]{display:none;}
     [data-testid="stSidebarCollapsedControl"]{display:none;}
     button[data-baseweb="tab"]{font-size:1rem !important;font-weight:700 !important;}
-    [data-testid="stPopover"] > div {min-width: 600px !important; max-width: 800px !important;}
+    /* Dialog sizing — large on desktop, full width on mobile */
     [data-testid="stDialog"] > div {min-width: 700px !important; max-width: 900px !important;}
+    @media (max-width: 640px) {
+        [data-testid="stDialog"] > div {
+            min-width: 95vw !important;
+            max-width: 98vw !important;
+            margin: 0 auto !important;
+            padding: 12px !important;
+        }
+        /* Stack metric columns vertically on mobile */
+        [data-testid="stDialog"] [data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+        }
+        [data-testid="stDialog"] [data-testid="stHorizontalBlock"] > div {
+            flex-basis: 33% !important;
+            min-width: 0 !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -324,6 +340,8 @@ with tab2:
             df_campus = df_full[(df_full['Campus'] == campus_name) & (df_full['Service'] != 'TOTAL')].copy()
             df_total_row = df_full[(df_full['Campus'] == campus_name) & (df_full['Service'] == 'TOTAL')].iloc[0]
 
+            st.markdown(f"### {campus_name}")
+
             t1, t2, t3 = st.columns(3)
             with t1:
                 st.metric("Adults", f"{int(df_total_row['Adults']):,}")
@@ -332,9 +350,34 @@ with tab2:
             with t3:
                 st.metric("Total", f"{int(df_total_row['Total']):,}")
 
-            st.dataframe(
-                df_campus[['Service', 'Adults', 'Kids', 'Total', 'Adult %', 'Kids %']],
-                use_container_width=True, hide_index=True
+            # Build HTML table for better mobile rendering
+            rows_html = ""
+            for _, row in df_campus.iterrows():
+                rows_html += (
+                    f'<tr>'
+                    f'<td style="font-weight:600;">{row["Service"]}</td>'
+                    f'<td style="text-align:right;">{int(row["Adults"]):,}</td>'
+                    f'<td style="text-align:right;">{int(row["Kids"]):,}</td>'
+                    f'<td style="text-align:right;font-weight:700;">{int(row["Total"]):,}</td>'
+                    f'<td style="text-align:right;color:#888;">{row["Adult %"]}</td>'
+                    f'<td style="text-align:right;color:#888;">{row["Kids %"]}</td>'
+                    f'</tr>'
+                )
+
+            st.markdown(
+                '<div style="overflow-x:auto;">'
+                '<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">'
+                '<thead><tr style="border-bottom:2px solid #C0392B;">'
+                '<th style="text-align:left;padding:8px 12px;">Service</th>'
+                '<th style="text-align:right;padding:8px 12px;">Adults</th>'
+                '<th style="text-align:right;padding:8px 12px;">Kids</th>'
+                '<th style="text-align:right;padding:8px 12px;">Total</th>'
+                '<th style="text-align:right;padding:8px 12px;">Adult %</th>'
+                '<th style="text-align:right;padding:8px 12px;">Kids %</th>'
+                '</tr></thead>'
+                '<tbody style="font-size:0.85rem;">' + rows_html + '</tbody>'
+                '</table></div>',
+                unsafe_allow_html=True
             )
 
         for campus_name in campus_list:
@@ -343,19 +386,20 @@ with tab2:
             c_kids = int(campus_total_row['Kids'])
             c_total = int(campus_total_row['Total'])
 
-            col_name, col_adults, col_kids, col_total, col_detail = st.columns([3, 1.5, 1.5, 1.5, 1.5])
-
-            with col_name:
-                st.markdown(f"**{campus_name}**")
-            with col_adults:
-                st.markdown(f"Adults: **{c_adults:,}**")
-            with col_kids:
-                st.markdown(f"Kids: **{c_kids:,}**")
-            with col_total:
-                st.markdown(f"Total: **{c_total:,}**")
-            with col_detail:
-                if st.button("View Services", key=f"detail_{campus_name}"):
-                    show_campus_detail(campus_name, df_proj)
+            st.markdown(
+                f'<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
+                f'background:#fff;border:1px solid #e0e4ea;border-radius:10px;padding:12px 16px;margin-bottom:8px;'
+                f'box-shadow:0 1px 4px rgba(0,0,0,0.06);">'
+                f'<div style="font-weight:700;font-size:1rem;color:#2c3e50;min-width:140px;">{campus_name}</div>'
+                f'<div style="display:flex;gap:16px;flex-wrap:wrap;">'
+                f'<div style="text-align:center;"><div style="font-size:0.65rem;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;">Adults</div><div style="font-weight:700;">{c_adults:,}</div></div>'
+                f'<div style="text-align:center;"><div style="font-size:0.65rem;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;">Kids</div><div style="font-weight:700;">{c_kids:,}</div></div>'
+                f'<div style="text-align:center;"><div style="font-size:0.65rem;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;">Total</div><div style="font-weight:800;color:#C0392B;">{c_total:,}</div></div>'
+                f'</div></div>',
+                unsafe_allow_html=True
+            )
+            if st.button("View Services", key=f"detail_{campus_name}"):
+                show_campus_detail(campus_name, df_proj)
 
         st.divider()
 
