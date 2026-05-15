@@ -11,6 +11,7 @@ st.markdown("""
     [data-testid="stSidebarCollapsedControl"]{display:none;}
     button[data-baseweb="tab"]{font-size:1rem !important;font-weight:700 !important;}
     [data-testid="stPopover"] > div {min-width: 600px !important; max-width: 800px !important;}
+    [data-testid="stDialog"] > div {min-width: 700px !important; max-width: 900px !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -315,8 +316,26 @@ with tab2:
 
         st.divider()
 
-        # --- Campus cards with popover ---
+        # --- Campus cards with dialog ---
         campus_list = sorted(df_totals['Campus'].unique().tolist())
+
+        @st.dialog("Campus Service Breakdown", width="large")
+        def show_campus_detail(campus_name, df_full):
+            df_campus = df_full[(df_full['Campus'] == campus_name) & (df_full['Service'] != 'TOTAL')].copy()
+            df_total_row = df_full[(df_full['Campus'] == campus_name) & (df_full['Service'] == 'TOTAL')].iloc[0]
+
+            t1, t2, t3 = st.columns(3)
+            with t1:
+                st.metric("Adults", f"{int(df_total_row['Adults']):,}")
+            with t2:
+                st.metric("Kids", f"{int(df_total_row['Kids']):,}")
+            with t3:
+                st.metric("Total", f"{int(df_total_row['Total']):,}")
+
+            st.dataframe(
+                df_campus[['Service', 'Adults', 'Kids', 'Total', 'Adult %', 'Kids %']],
+                use_container_width=True, hide_index=True
+            )
 
         for campus_name in campus_list:
             campus_total_row = df_totals[df_totals['Campus'] == campus_name].iloc[0]
@@ -335,13 +354,8 @@ with tab2:
             with col_total:
                 st.markdown(f"Total: **{c_total:,}**")
             with col_detail:
-                with st.popover("View Services"):
-                    df_campus = df_proj[(df_proj['Campus'] == campus_name) & (df_proj['Service'] != 'TOTAL')].copy()
-                    st.markdown(f"### {campus_name}")
-                    st.dataframe(
-                        df_campus[['Service', 'Adults', 'Kids', 'Total', 'Adult %', 'Kids %']],
-                        use_container_width=True, hide_index=True
-                    )
+                if st.button("View Services", key=f"detail_{campus_name}"):
+                    show_campus_detail(campus_name, df_proj)
 
         st.divider()
 
