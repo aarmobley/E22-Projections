@@ -7,18 +7,6 @@ st.markdown("""
 <style>
     [data-testid="stSidebar"]{display:none;}
     [data-testid="stSidebarCollapsedControl"]{display:none;}
-    /* Force dropdowns to open downward */
-    [data-baseweb="popover"] {
-        margin-top: 0 !important;
-    }
-    [data-baseweb="menu"] {
-        max-height: 300px !important;
-    }
-    /* Add breathing room below dropdowns */
-    [data-testid="stSelectbox"] {
-        margin-bottom: 16px !important;
-    }
-    /* Dialog: large on desktop, full screen on mobile */
     [data-testid="stDialog"] > div {
         min-width: 750px !important;
         max-width: 950px !important;
@@ -31,6 +19,19 @@ st.markdown("""
             margin: 0 auto !important;
             padding: 10px !important;
         }
+    }
+    /* Hide default button styling for campus cards */
+    .campus-btn button {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: -8px 0 !important;
+        width: 100% !important;
+        box-shadow: none !important;
+    }
+    .campus-btn button:hover {
+        background: none !important;
+        border: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -48,7 +49,6 @@ def load_projections():
     try:
         df = pd.read_csv(url)
         df['SundayDate'] = pd.to_datetime(df['SundayDate'])
-
         cleaned = []
         for val in df['ServiceDateTime']:
             try:
@@ -64,61 +64,77 @@ def load_projections():
             except Exception:
                 cleaned.append(str(val))
         df['Service'] = cleaned
-
         return df, None
     except Exception as e:
         return pd.DataFrame(), str(e)
 
 
 df_all, load_error = load_projections()
-
 if load_error:
     st.error(f"Could not load projections: {load_error}")
     st.stop()
 
+dates_sorted = sorted(df_all['SundayDate'].unique())
+
+
+# ── Session state for date index ─────────────────────────────────────────
+if 'date_idx' not in st.session_state:
+    # Default to this coming Sunday or first available
+    import datetime
+    today = pd.Timestamp.now().normalize()
+    default_idx = 0
+    for i, d in enumerate(dates_sorted):
+        if pd.Timestamp(d) >= today:
+            default_idx = i
+            break
+    st.session_state.date_idx = default_idx
+
 
 # ── Dialog ───────────────────────────────────────────────────────────────
-@st.dialog("Campus Projections", width="large")
+@st.dialog("Service Breakdown", width="large")
 def show_campus(campus_name, df):
-    df_campus = df[df['Campus'] == campus_name].copy()
-    campus_total = int(df_campus['service_attendance'].sum())
+    df_c = df[df['Campus'] == campus_name].copy()
+    total = int(df_c['service_attendance'].sum())
 
-    st.markdown(f"### {campus_name}")
-    st.metric("Projected Attendance", f"{campus_total:,}")
+    st.markdown(
+        f'<div style="text-align:center;margin-bottom:16px;">'
+        f'<div style="font-size:1.4rem;font-weight:800;color:#2c3e50;">{campus_name}</div>'
+        f'<div style="font-size:2rem;font-weight:800;color:#C0392B;margin-top:4px;">{total:,}</div>'
+        f'<div style="font-size:0.7rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Projected Attendance</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
 
     rows_html = ""
-    for _, row in df_campus.iterrows():
+    for _, row in df_c.iterrows():
         att = int(row['service_attendance'])
         cap = int(row['AdultCapacity'])
         util = round(att / cap * 100) if cap > 0 else 0
-
         if util > 100:
-            uc = "#dc2626"
+            uc, ubg = "#dc2626", "#fef2f2"
         elif util > 80:
-            uc = "#d97706"
+            uc, ubg = "#d97706", "#fffbeb"
         else:
-            uc = "#059669"
+            uc, ubg = "#059669", "#f0fdf4"
 
         rows_html += (
-            f'<tr style="border-bottom:1px solid #eee;">'
-            f'<td style="padding:12px 14px;font-weight:600;">{row["Service"]}</td>'
-            f'<td style="padding:12px 14px;text-align:right;font-weight:700;font-size:1.05rem;">{att:,}</td>'
-            f'<td style="padding:12px 14px;text-align:right;color:#888;">{cap:,}</td>'
-            f'<td style="padding:12px 14px;text-align:right;">'
-            f'<span style="font-weight:600;color:{uc};">{util}%</span></td>'
-            f'<td style="padding:12px 14px;text-align:right;color:#888;">{round(row["NormShare"] * 100, 1)}%</td>'
+            f'<tr style="border-bottom:1px solid #f0f0f0;">'
+            f'<td style="padding:14px;font-weight:600;">{row["Service"]}</td>'
+            f'<td style="padding:14px;text-align:right;font-weight:700;font-size:1.05rem;">{att:,}</td>'
+            f'<td style="padding:14px;text-align:right;">'
+            f'<span style="padding:3px 10px;border-radius:6px;font-weight:600;font-size:0.82rem;color:{uc};background:{ubg};">{util}%</span></td>'
+            f'<td style="padding:14px;text-align:right;color:#999;">{round(row["NormShare"] * 100, 1)}%</td>'
             f'</tr>'
         )
 
     st.markdown(
-        '<div style="overflow-x:auto;margin-top:12px;">'
+        '<div style="overflow-x:auto;">'
         '<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">'
-        '<thead><tr style="border-bottom:2px solid #C0392B;background:#fafafa;">'
-        '<th style="text-align:left;padding:12px 14px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Service</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Projected</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Capacity</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Utilization</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Share</th>'
+        '<thead><tr style="border-bottom:2px solid #C0392B;">'
+        '<th style="text-align:left;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Service</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Projected</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Utilization</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Share</th>'
         '</tr></thead>'
         '<tbody>' + rows_html + '</tbody>'
         '</table></div>',
@@ -126,78 +142,92 @@ def show_campus(campus_name, df):
     )
 
     st.write("")
-    csv_out = df_campus[['Campus', 'SundayDate', 'Service', 'service_attendance', 'AdultCapacity']].copy()
+    csv_out = df_c[['Campus', 'SundayDate', 'Service', 'service_attendance', 'AdultCapacity']].copy()
     csv_out['SundayDate'] = csv_out['SundayDate'].dt.strftime('%m-%d-%Y')
     st.download_button(
-        f"Download {campus_name} (CSV)",
+        f"Export {campus_name}",
         csv_out.to_csv(index=False),
         f"{campus_name.replace(' ', '_')}_Projections.csv",
         "text/csv"
     )
 
 
-# ── Page ─────────────────────────────────────────────────────────────────
-st.subheader("Weekly Service Projections")
+# ── Date navigator ───────────────────────────────────────────────────────
+idx = st.session_state.date_idx
+sel_date = pd.Timestamp(dates_sorted[idx])
 
-# Dropdowns
-d1, d2 = st.columns(2)
+col_prev, col_date, col_next = st.columns([1, 4, 1])
+with col_prev:
+    if st.button("◀", key="prev", disabled=(idx == 0)):
+        st.session_state.date_idx = max(0, idx - 1)
+        st.rerun()
+with col_date:
+    st.markdown(
+        f'<div style="text-align:center;">'
+        f'<div style="font-size:1.5rem;font-weight:800;color:#2c3e50;">{sel_date.strftime("%B %d, %Y")}</div>'
+        f'<div style="font-size:0.75rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Week {sel_date.isocalendar()[1]}</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+with col_next:
+    if st.button("▶", key="next", disabled=(idx >= len(dates_sorted) - 1)):
+        st.session_state.date_idx = min(len(dates_sorted) - 1, idx + 1)
+        st.rerun()
 
-with d1:
-    dates_sorted = sorted(df_all['SundayDate'].unique())
-    date_labels = [d.strftime('%m-%d-%Y') for d in pd.to_datetime(dates_sorted)]
-    date_sel = st.selectbox("Select Sunday Date", date_labels)
 
-sel_date = pd.to_datetime(date_sel, format='%m-%d-%Y')
+# ── Grand total ──────────────────────────────────────────────────────────
 df_date = df_all[df_all['SundayDate'] == sel_date].copy()
-
-with d2:
-    campus_list = sorted(df_date['Campus'].unique().tolist())
-    campus_sel = st.selectbox("Select Campus", ["—"] + campus_list,
-                              help="Choose a campus to view service breakdown")
-
-st.write("")
-st.write("")
-
-# Grand total
 df_totals = df_date.groupby('Campus').agg(
     Projected=('service_attendance', 'sum'),
     Services=('Service', 'count')
-).reset_index().sort_values('Campus')
+).reset_index().sort_values('Projected', ascending=False)
 
 grand_total = int(df_totals['Projected'].sum())
-st.metric("All Campuses — Projected Attendance", f"{grand_total:,}")
+
+st.markdown(
+    f'<div style="text-align:center;margin:20px 0;">'
+    f'<div style="font-size:2.2rem;font-weight:800;color:#C0392B;">{grand_total:,}</div>'
+    f'<div style="font-size:0.72rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Total Projected Attendance</div>'
+    f'</div>',
+    unsafe_allow_html=True
+)
 
 st.divider()
 
-# Campus summary cards
+
+# ── Campus cards — tap to open dialog ────────────────────────────────────
 for _, row in df_totals.iterrows():
+    campus_name = row['Campus']
+    c_total = int(row['Projected'])
+    c_svcs = int(row['Services'])
+    pct_of_total = round(c_total / grand_total * 100, 1) if grand_total > 0 else 0
+
     st.markdown(
         f'<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
-        f'background:#fff;border:1px solid #e0e4ea;border-radius:10px;padding:12px 16px;margin-bottom:8px;'
-        f'box-shadow:0 1px 4px rgba(0,0,0,0.06);">'
-        f'<div style="font-weight:700;font-size:1rem;color:#2c3e50;min-width:140px;">{row["Campus"]}</div>'
-        f'<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">'
-        f'<div style="text-align:center;"><div style="font-size:0.65rem;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;">Projected</div>'
-        f'<div style="font-weight:800;font-size:1.1rem;color:#C0392B;">{int(row["Projected"]):,}</div></div>'
-        f'<div style="text-align:center;"><div style="font-size:0.65rem;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;">Services</div>'
-        f'<div style="font-weight:700;">{int(row["Services"])}</div></div>'
-        f'</div></div>',
+        f'background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:14px 18px;margin-bottom:4px;'
+        f'box-shadow:0 1px 4px rgba(0,0,0,0.05);cursor:pointer;">'
+        f'<div>'
+        f'<div style="font-weight:700;font-size:1rem;color:#2c3e50;">{campus_name}</div>'
+        f'<div style="font-size:0.7rem;color:#bbb;">{c_svcs} services · {pct_of_total}% of total</div>'
+        f'</div>'
+        f'<div style="font-weight:800;font-size:1.2rem;color:#C0392B;">{c_total:,}</div>'
+        f'</div>',
         unsafe_allow_html=True
     )
 
+    st.markdown('<div class="campus-btn">', unsafe_allow_html=True)
+    if st.button(f"View {campus_name}", key=f"btn_{campus_name}"):
+        show_campus(campus_name, df_date)
+    st.markdown('</div>', unsafe_allow_html=True)
+
 st.divider()
 
-# Download all
+# ── Export all ───────────────────────────────────────────────────────────
 csv_all = df_date[['Campus', 'SundayDate', 'Service', 'service_attendance', 'AdultCapacity']].copy()
 csv_all['SundayDate'] = csv_all['SundayDate'].dt.strftime('%m-%d-%Y')
 st.download_button(
-    "Download All Campuses (CSV)",
+    "Export All Campuses (CSV)",
     csv_all.to_csv(index=False),
-    f"All_Projections_{date_sel.replace('-', '_')}.csv",
+    f"All_Projections_{sel_date.strftime('%m-%d-%Y').replace('-', '_')}.csv",
     "text/csv"
 )
-
-# Trigger dialog when campus is selected
-if campus_sel != "—":
-    show_campus(campus_sel, df_date)
-    
