@@ -10,6 +10,7 @@ st.markdown("""
     [data-testid="stSidebar"]{display:none;}
     [data-testid="stSidebarCollapsedControl"]{display:none;}
     button[data-baseweb="tab"]{font-size:1rem !important;font-weight:700 !important;}
+    [data-testid="stPopover"] > div {min-width: 600px !important; max-width: 800px !important;}
 </style>
 """, unsafe_allow_html=True)
 
