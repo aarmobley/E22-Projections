@@ -21,6 +21,28 @@ st.markdown("""
         flex-direction: column !important;
         justify-content: space-between !important;
     }
+    .campus-card * {
+        color: #2c3e50 !important;
+    }
+    .campus-card .card-label {
+        color: #888 !important;
+        font-size: 0.58rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+    .campus-card .card-total {
+        color: #C0392B !important;
+        font-weight: 800 !important;
+    }
+    .campus-card .card-num {
+        font-weight: 800 !important;
+        font-size: 1rem !important;
+        color: #2c3e50 !important;
+    }
+    .campus-card .card-svc {
+        color: #999 !important;
+        font-size: 0.68rem !important;
+    }
     @media (max-width: 640px) {
         [data-testid="stDialog"] > div {
             min-width: 96vw !important;
