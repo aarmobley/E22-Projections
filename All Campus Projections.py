@@ -207,27 +207,19 @@ def show_campus(campus_name, df):
 st.subheader("Weekly Service Projections")
 
 
-# ── Date navigator ───────────────────────────────────────────────────────
-idx = st.session_state.date_idx
-sel_date = pd.Timestamp(dates_sorted[idx])
+# ── Date selector ─────────────────────────────────────────────────────
+date_labels = [pd.Timestamp(d).strftime('%B %d, %Y') for d in dates_sorted]
 
-col_prev, col_date, col_next = st.columns([1, 4, 1])
-with col_prev:
-    if st.button("◀", key="prev", disabled=(idx == 0)):
-        st.session_state.date_idx = max(0, idx - 1)
-        st.rerun()
-with col_date:
-    st.markdown(
-        f'<div style="text-align:center;">'
-        f'<div style="font-size:1.5rem;font-weight:800;color:#2c3e50;">{sel_date.strftime("%B %d, %Y")}</div>'
-        f'<div style="font-size:0.75rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Week {sel_date.isocalendar()[1]}</div>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
-with col_next:
-    if st.button("▶", key="next", disabled=(idx >= len(dates_sorted) - 1)):
-        st.session_state.date_idx = min(len(dates_sorted) - 1, idx + 1)
-        st.rerun()
+# Default to upcoming Sunday
+today = pd.Timestamp.now().normalize()
+default_idx = 0
+for i, d in enumerate(dates_sorted):
+    if pd.Timestamp(d) >= today:
+        default_idx = i
+        break
+
+date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx)
+sel_date = pd.Timestamp(dates_sorted[date_labels.index(date_pick)])
 
 
 # ── Grand total ──────────────────────────────────────────────────────────
