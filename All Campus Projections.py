@@ -20,7 +20,6 @@ st.markdown("""
             padding: 10px !important;
         }
     }
-    /* Hide default button styling for campus cards */
     .campus-btn button {
         background: none !important;
         border: none !important;
@@ -46,9 +45,12 @@ st.image("https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 @st.cache_data(ttl=3600)
 def load_projections():
     url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
+    kids_url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
     try:
         df = pd.read_csv(url)
         df['SundayDate'] = pd.to_datetime(df['SundayDate'])
+
+        # Clean ServiceDateTime to readable format
         cleaned = []
         for val in df['ServiceDateTime']:
             try:
@@ -64,6 +66,21 @@ def load_projections():
             except Exception:
                 cleaned.append(str(val))
         df['Service'] = cleaned
+
+        # Load kids ratios and join
+        kids_df = pd.read_csv(kids_url)
+        kids_df.columns = kids_df.columns.str.strip()
+        ratio_col = [c for c in kids_df.columns if 'Kids to Adults' in c]
+        if ratio_col:
+            kids_df['KidsRatio'] = kids_df[ratio_col[0]].astype(str).str.replace('%', '').astype(float) / 100
+        else:
+            kids_df['KidsRatio'] = 0.20
+
+        df = df.merge(kids_df[['Campus', 'KidsRatio']], on='Campus', how='left')
+        df['KidsRatio'] = df['KidsRatio'].fillna(0.20)
+        df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
+        df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
+
         return df, None
     except Exception as e:
         return pd.DataFrame(), str(e)
@@ -79,8 +96,6 @@ dates_sorted = sorted(df_all['SundayDate'].unique())
 
 # ── Session state for date index ─────────────────────────────────────────
 if 'date_idx' not in st.session_state:
-    # Default to this coming Sunday or first available
-    import datetime
     today = pd.Timestamp.now().normalize()
     default_idx = 0
     for i, d in enumerate(dates_sorted):
@@ -94,20 +109,30 @@ if 'date_idx' not in st.session_state:
 @st.dialog("Service Breakdown", width="large")
 def show_campus(campus_name, df):
     df_c = df[df['Campus'] == campus_name].copy()
-    total = int(df_c['service_attendance'].sum())
+    total_adults = int(df_c['service_attendance'].sum())
+    total_kids = int(df_c['kids_attendance'].sum())
+    total_all = int(df_c['total_attendance'].sum())
 
     st.markdown(
         f'<div style="text-align:center;margin-bottom:16px;">'
         f'<div style="font-size:1.4rem;font-weight:800;color:#2c3e50;">{campus_name}</div>'
-        f'<div style="font-size:2rem;font-weight:800;color:#C0392B;margin-top:4px;">{total:,}</div>'
-        f'<div style="font-size:0.7rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Projected Attendance</div>'
         f'</div>',
         unsafe_allow_html=True
     )
 
+    t1, t2, t3 = st.columns(3)
+    with t1:
+        st.metric("Adults", f"{total_adults:,}")
+    with t2:
+        st.metric("Kids", f"{total_kids:,}")
+    with t3:
+        st.metric("Total", f"{total_all:,}")
+
     rows_html = ""
     for _, row in df_c.iterrows():
         att = int(row['service_attendance'])
+        kids = int(row['kids_attendance'])
+        total = int(row['total_attendance'])
         cap = int(row['AdultCapacity'])
         util = round(att / cap * 100) if cap > 0 else 0
         if util > 100:
@@ -120,10 +145,11 @@ def show_campus(campus_name, df):
         rows_html += (
             f'<tr style="border-bottom:1px solid #f0f0f0;">'
             f'<td style="padding:14px;font-weight:600;">{row["Service"]}</td>'
-            f'<td style="padding:14px;text-align:right;font-weight:700;font-size:1.05rem;">{att:,}</td>'
+            f'<td style="padding:14px;text-align:right;font-weight:700;">{att:,}</td>'
+            f'<td style="padding:14px;text-align:right;">{kids:,}</td>'
+            f'<td style="padding:14px;text-align:right;font-weight:700;">{total:,}</td>'
             f'<td style="padding:14px;text-align:right;">'
             f'<span style="padding:3px 10px;border-radius:6px;font-weight:600;font-size:0.82rem;color:{uc};background:{ubg};">{util}%</span></td>'
-            f'<td style="padding:14px;text-align:right;color:#999;">{round(row["NormShare"] * 100, 1)}%</td>'
             f'</tr>'
         )
 
@@ -132,9 +158,10 @@ def show_campus(campus_name, df):
         '<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">'
         '<thead><tr style="border-bottom:2px solid #C0392B;">'
         '<th style="text-align:left;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Service</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Projected</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Adults</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Kids</th>'
+        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Total</th>'
         '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Utilization</th>'
-        '<th style="text-align:right;padding:12px 14px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;">Share</th>'
         '</tr></thead>'
         '<tbody>' + rows_html + '</tbody>'
         '</table></div>',
@@ -142,7 +169,8 @@ def show_campus(campus_name, df):
     )
 
     st.write("")
-    csv_out = df_c[['Campus', 'SundayDate', 'Service', 'service_attendance', 'AdultCapacity']].copy()
+    csv_out = df_c[['Campus', 'SundayDate', 'Service', 'service_attendance', 'kids_attendance', 'total_attendance', 'AdultCapacity']].copy()
+    csv_out.columns = ['Campus', 'SundayDate', 'Service', 'Adults', 'Kids', 'Total', 'AdultCapacity']
     csv_out['SundayDate'] = csv_out['SundayDate'].dt.strftime('%m-%d-%Y')
     st.download_button(
         f"Export {campus_name}",
@@ -150,6 +178,10 @@ def show_campus(campus_name, df):
         f"{campus_name.replace(' ', '_')}_Projections.csv",
         "text/csv"
     )
+
+
+# ── Page ─────────────────────────────────────────────────────────────────
+st.subheader("Weekly Service Projections")
 
 
 # ── Date navigator ───────────────────────────────────────────────────────
@@ -178,16 +210,21 @@ with col_next:
 # ── Grand total ──────────────────────────────────────────────────────────
 df_date = df_all[df_all['SundayDate'] == sel_date].copy()
 df_totals = df_date.groupby('Campus').agg(
-    Projected=('service_attendance', 'sum'),
+    Adults=('service_attendance', 'sum'),
+    Kids=('kids_attendance', 'sum'),
+    Total=('total_attendance', 'sum'),
     Services=('Service', 'count')
-).reset_index().sort_values('Projected', ascending=False)
+).reset_index().sort_values('Total', ascending=False)
 
-grand_total = int(df_totals['Projected'].sum())
+grand_adults = int(df_totals['Adults'].sum())
+grand_kids = int(df_totals['Kids'].sum())
+grand_total = int(df_totals['Total'].sum())
 
 st.markdown(
     f'<div style="text-align:center;margin:20px 0;">'
     f'<div style="font-size:2.2rem;font-weight:800;color:#C0392B;">{grand_total:,}</div>'
     f'<div style="font-size:0.72rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Total Projected Attendance</div>'
+    f'<div style="font-size:0.85rem;color:#888;margin-top:4px;">Adults: {grand_adults:,} &nbsp;·&nbsp; Kids: {grand_kids:,}</div>'
     f'</div>',
     unsafe_allow_html=True
 )
@@ -195,23 +232,27 @@ st.markdown(
 st.divider()
 
 
-# ── Campus cards — tap to open dialog ────────────────────────────────────
+# ── Campus cards ─────────────────────────────────────────────────────────
 for _, row in df_totals.iterrows():
     campus_name = row['Campus']
-    c_total = int(row['Projected'])
+    c_adults = int(row['Adults'])
+    c_kids = int(row['Kids'])
+    c_total = int(row['Total'])
     c_svcs = int(row['Services'])
-    pct_of_total = round(c_total / grand_total * 100, 1) if grand_total > 0 else 0
 
     st.markdown(
         f'<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
         f'background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:14px 18px;margin-bottom:4px;'
-        f'box-shadow:0 1px 4px rgba(0,0,0,0.05);cursor:pointer;">'
+        f'box-shadow:0 1px 4px rgba(0,0,0,0.05);">'
         f'<div>'
         f'<div style="font-weight:700;font-size:1rem;color:#2c3e50;">{campus_name}</div>'
-        f'<div style="font-size:0.7rem;color:#bbb;">{c_svcs} services · {pct_of_total}% of total</div>'
+        f'<div style="font-size:0.7rem;color:#bbb;">{c_svcs} services</div>'
         f'</div>'
-        f'<div style="font-weight:800;font-size:1.2rem;color:#C0392B;">{c_total:,}</div>'
-        f'</div>',
+        f'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Adults</div><div style="font-weight:700;">{c_adults:,}</div></div>'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Kids</div><div style="font-weight:700;">{c_kids:,}</div></div>'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Total</div><div style="font-weight:800;color:#C0392B;">{c_total:,}</div></div>'
+        f'</div></div>',
         unsafe_allow_html=True
     )
 
@@ -222,8 +263,10 @@ for _, row in df_totals.iterrows():
 
 st.divider()
 
+
 # ── Export all ───────────────────────────────────────────────────────────
-csv_all = df_date[['Campus', 'SundayDate', 'Service', 'service_attendance', 'AdultCapacity']].copy()
+csv_all = df_date[['Campus', 'SundayDate', 'Service', 'service_attendance', 'kids_attendance', 'total_attendance', 'AdultCapacity']].copy()
+csv_all.columns = ['Campus', 'SundayDate', 'Service', 'Adults', 'Kids', 'Total', 'AdultCapacity']
 csv_all['SundayDate'] = csv_all['SundayDate'].dt.strftime('%m-%d-%Y')
 st.download_button(
     "Export All Campuses (CSV)",
