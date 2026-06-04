@@ -11,6 +11,16 @@ st.markdown("""
         min-width: 750px !important;
         max-width: 950px !important;
     }
+    .campus-card {
+        background: #FDF6EE !important;
+        border: 1px solid #E8DDD0 !important;
+        border-radius: 12px !important;
+        padding: 18px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
     @media (max-width: 640px) {
         [data-testid="stDialog"] > div {
             min-width: 96vw !important;
