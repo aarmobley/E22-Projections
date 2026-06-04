@@ -67,17 +67,40 @@ def load_projections():
                 cleaned.append(str(val))
         df['Service'] = cleaned
 
-        # Load kids ratios and join
+        # Load kids ratios — service-level join
         kids_df = pd.read_csv(kids_url)
         kids_df.columns = kids_df.columns.str.strip()
+
+        # Extract just the time from ServiceDateTime (strip the 1899 date prefix)
+        kids_df['ServiceTime'] = kids_df['ServiceDateTime'].astype(str).str.extract(r'(\d{2}:\d{2}:\d{2})')[0]
+
+        # Parse the percentage column
         ratio_col = [c for c in kids_df.columns if 'Kids to Adults' in c]
         if ratio_col:
-            kids_df['KidsRatio'] = kids_df[ratio_col[0]].astype(str).str.replace('%', '').astype(float) / 100
+            kids_df['KidsRatio'] = pd.to_numeric(
+                kids_df[ratio_col[0]].astype(str).str.replace('%', ''), errors='coerce'
+            ) / 100
         else:
             kids_df['KidsRatio'] = 0.20
+        kids_df['KidsRatio'] = kids_df['KidsRatio'].fillna(0)
 
-        df = df.merge(kids_df[['Campus', 'KidsRatio']], on='Campus', how='left')
-        df['KidsRatio'] = df['KidsRatio'].fillna(0.20)
+        # Build campus-level fallback (average across services)
+        campus_fallback = kids_df.groupby('Campus')['KidsRatio'].mean().reset_index()
+        campus_fallback.columns = ['Campus', 'FallbackRatio']
+
+        # Join on Campus + ServiceDateTime
+        df = df.merge(
+            kids_df[['Campus', 'ServiceTime', 'KidsRatio']],
+            left_on=['Campus', 'ServiceDateTime'],
+            right_on=['Campus', 'ServiceTime'],
+            how='left'
+        )
+
+        # Fill missing with campus fallback
+        df = df.merge(campus_fallback, on='Campus', how='left')
+        df['KidsRatio'] = df['KidsRatio'].fillna(df['FallbackRatio']).fillna(0.20)
+        df.drop(columns=['ServiceTime', 'FallbackRatio'], inplace=True, errors='ignore')
+
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
 
