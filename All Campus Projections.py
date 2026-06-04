@@ -231,7 +231,7 @@ df_totals = df_date.groupby('Campus').agg(
     Kids=('kids_attendance', 'sum'),
     Total=('total_attendance', 'sum'),
     Services=('Service', 'count')
-).reset_index().sort_values('Total', ascending=False)
+).reset_index().sort_values('Campus')
 
 grand_adults = int(df_totals['Adults'].sum())
 grand_kids = int(df_totals['Kids'].sum())
