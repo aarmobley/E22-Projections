@@ -42,7 +42,7 @@ st.image("https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png"
 
 
 # ── Load CSV ─────────────────────────────────────────────────────────────
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=60)
 def load_projections():
     url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
     kids_url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
