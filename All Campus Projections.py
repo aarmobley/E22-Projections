@@ -22,25 +22,26 @@ st.markdown("""
         justify-content: space-between !important;
     }
     .campus-card * {
-        color: #2c3e50 !important;
+        color: #000000 !important;
     }
     .campus-card .card-label {
-        color: #888 !important;
-        font-size: 0.58rem !important;
+        color: #666666 !important;
+        font-size: 0.6rem !important;
         text-transform: uppercase !important;
         letter-spacing: 0.05em !important;
     }
     .campus-card .card-total {
         color: #C0392B !important;
         font-weight: 800 !important;
+        font-size: 1.1rem !important;
     }
     .campus-card .card-num {
         font-weight: 800 !important;
-        font-size: 1rem !important;
-        color: #2c3e50 !important;
+        font-size: 1.1rem !important;
+        color: #000000 !important;
     }
     .campus-card .card-svc {
-        color: #999 !important;
+        color: #666666 !important;
         font-size: 0.68rem !important;
     }
     @media (max-width: 640px) {
