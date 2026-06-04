@@ -104,6 +104,20 @@ def load_projections():
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
 
+        # Remove services that don't actually exist at certain campuses
+        bad_services = [
+            ('Arlington', '07:22:00'),
+            ('Baymeadows', '07:22:00'),
+            ('Wildlight', '07:22:00'),
+        ]
+        for campus, svc in bad_services:
+            df = df[~((df['Campus'] == campus) & (df['ServiceDateTime'] == svc))]
+
+        # Add 5% to kids projection for Promotion Week (Aug 9, 2026)
+        promo_mask = df['SundayDate'] == pd.Timestamp('2026-08-09')
+        df.loc[promo_mask, 'kids_attendance'] = (df.loc[promo_mask, 'service_attendance'] * (df.loc[promo_mask, 'KidsRatio'] + 0.05)).round().astype(int)
+        df.loc[promo_mask, 'total_attendance'] = df.loc[promo_mask, 'service_attendance'] + df.loc[promo_mask, 'kids_attendance']
+
         return df, None
     except Exception as e:
         return pd.DataFrame(), str(e)
