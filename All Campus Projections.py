@@ -308,9 +308,9 @@ for _, row in df_totals.iterrows():
         f'<div style="font-size:0.7rem;color:#bbb;">{c_svcs} services</div>'
         f'</div>'
         f'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Adults</div><div style="font-weight:700;">{c_adults:,}</div></div>'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Kids</div><div style="font-weight:700;">{c_kids:,}</div></div>'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#aaa;text-transform:uppercase;">Total</div><div style="font-weight:800;color:#C0392B;">{c_total:,}</div></div>'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Adults</div><div style="font-weight:700;color:#2c3e50;">{c_adults:,}</div></div>'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Kids</div><div style="font-weight:700;color:#2c3e50;">{c_kids:,}</div></div>'
+        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Total</div><div style="font-weight:800;color:#C0392B;">{c_total:,}</div></div>'
         f'</div></div>',
         unsafe_allow_html=True
     )
