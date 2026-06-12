@@ -11,39 +11,6 @@ st.markdown("""
         min-width: 750px !important;
         max-width: 950px !important;
     }
-    .campus-card {
-        background: #FDF6EE !important;
-        border: 1px solid #E8DDD0 !important;
-        border-radius: 12px !important;
-        padding: 18px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-    }
-    .campus-card * {
-        color: #000000 !important;
-    }
-    .campus-card .card-label {
-        color: #666666 !important;
-        font-size: 0.6rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-    }
-    .campus-card .card-total {
-        color: #C0392B !important;
-        font-weight: 800 !important;
-        font-size: 1.1rem !important;
-    }
-    .campus-card .card-num {
-        font-weight: 800 !important;
-        font-size: 1.1rem !important;
-        color: #000000 !important;
-    }
-    .campus-card .card-svc {
-        color: #666666 !important;
-        font-size: 0.68rem !important;
-    }
     @media (max-width: 640px) {
         [data-testid="stDialog"] > div {
             min-width: 96vw !important;
@@ -52,18 +19,6 @@ st.markdown("""
             margin: 0 auto !important;
             padding: 10px !important;
         }
-    }
-    .campus-btn button {
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: -8px 0 !important;
-        width: 100% !important;
-        box-shadow: none !important;
-    }
-    .campus-btn button:hover {
-        background: none !important;
-        border: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -159,7 +114,7 @@ if load_error:
 dates_sorted = sorted(df_all['SundayDate'].unique())
 
 
-# ── Session state for date index ─────────────────────────────────────────
+# ── Session state ────────────────────────────────────────────────────────
 if 'date_idx' not in st.session_state:
     today = pd.Timestamp.now().normalize()
     default_idx = 0
@@ -169,10 +124,14 @@ if 'date_idx' not in st.session_state:
             break
     st.session_state.date_idx = default_idx
 
+if 'picker_open' not in st.session_state:
+    st.session_state.picker_open = False
+if 'picker_campus' not in st.session_state:
+    st.session_state.picker_campus = None
 
-# ── Dialog ───────────────────────────────────────────────────────────────
-@st.dialog("Service Breakdown", width="large")
-def show_campus(campus_name, df):
+
+# ── Campus breakdown (rendered INSIDE the dialog) ────────────────────────
+def render_campus_breakdown(campus_name, df):
     df_c = df[df['Campus'] == campus_name].copy()
     total_adults = int(df_c['service_attendance'].sum())
     total_kids = int(df_c['kids_attendance'].sum())
@@ -209,10 +168,10 @@ def show_campus(campus_name, df):
 
         rows_html += (
             f'<tr style="border-bottom:1px solid #f0f0f0;">'
-            f'<td style="padding:14px;font-weight:600;">{row["Service"]}</td>'
-            f'<td style="padding:14px;text-align:right;font-weight:700;">{att:,}</td>'
-            f'<td style="padding:14px;text-align:right;">{kids:,}</td>'
-            f'<td style="padding:14px;text-align:right;font-weight:700;">{total:,}</td>'
+            f'<td style="padding:14px;font-weight:600;color:#2c3e50;">{row["Service"]}</td>'
+            f'<td style="padding:14px;text-align:right;font-weight:700;color:#2c3e50;">{att:,}</td>'
+            f'<td style="padding:14px;text-align:right;color:#2c3e50;">{kids:,}</td>'
+            f'<td style="padding:14px;text-align:right;font-weight:700;color:#2c3e50;">{total:,}</td>'
             f'<td style="padding:14px;text-align:right;">'
             f'<span style="padding:3px 10px;border-radius:6px;font-weight:600;font-size:0.82rem;color:{uc};background:{ubg};">{util}%</span></td>'
             f'</tr>'
@@ -241,18 +200,53 @@ def show_campus(campus_name, df):
         f"Export {campus_name}",
         csv_out.to_csv(index=False),
         f"{campus_name.replace(' ', '_')}_Projections.csv",
-        "text/csv"
+        "text/csv",
+        key=f"dl_{campus_name}"
     )
+
+
+# ── Campus list (rendered INSIDE the dialog) ─────────────────────────────
+def render_campus_list(df):
+    df_totals = df.groupby('Campus').agg(
+        Adults=('service_attendance', 'sum'),
+        Kids=('kids_attendance', 'sum'),
+        Total=('total_attendance', 'sum'),
+        Services=('Service', 'count')
+    ).reset_index().sort_values('Campus')
+
+    st.markdown(
+        '<div style="font-size:0.8rem;color:#888;margin-bottom:10px;">'
+        'Select a campus to see its service-level breakdown.</div>',
+        unsafe_allow_html=True
+    )
+
+    cols = st.columns(2)
+    for i, (_, row) in enumerate(df_totals.iterrows()):
+        with cols[i % 2]:
+            label = f"{row['Campus']}  ·  {int(row['Total']):,}"
+            if st.button(label, key=f"pick_{row['Campus']}", use_container_width=True):
+                st.session_state.picker_campus = row['Campus']
+                st.rerun()
+
+
+# ── The single "wizard" dialog ───────────────────────────────────────────
+@st.dialog("Campus Projections", width="large")
+def campus_explorer(df):
+    if st.session_state.picker_campus is None:
+        render_campus_list(df)
+    else:
+        if st.button("← All campuses", key="back_to_list"):
+            st.session_state.picker_campus = None
+            st.rerun()
+        render_campus_breakdown(st.session_state.picker_campus, df)
 
 
 # ── Page ─────────────────────────────────────────────────────────────────
 st.subheader("Weekly Service Projections")
 
-
 # ── Date selector ─────────────────────────────────────────────────────
 date_labels = [pd.Timestamp(d).strftime('%B %d, %Y') for d in dates_sorted]
 
-# Default to upcoming Sunday
 today = pd.Timestamp.now().normalize()
 default_idx = 0
 for i, d in enumerate(dates_sorted):
@@ -291,34 +285,15 @@ st.markdown(
 st.divider()
 
 
-# ── Campus cards ─────────────────────────────────────────────────────────
-for _, row in df_totals.iterrows():
-    campus_name = row['Campus']
-    c_adults = int(row['Adults'])
-    c_kids = int(row['Kids'])
-    c_total = int(row['Total'])
-    c_svcs = int(row['Services'])
+# ── Single "View Campuses" button → opens the wizard dialog ──────────────
+col_l, col_c, col_r = st.columns([2, 3, 2])
+with col_c:
+    if st.button("View Campuses", type="primary", use_container_width=True):
+        st.session_state.picker_campus = None
+        st.session_state.picker_open = True
 
-    st.markdown(
-        f'<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
-        f'background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:14px 18px;margin-bottom:4px;'
-        f'box-shadow:0 1px 4px rgba(0,0,0,0.05);">'
-        f'<div>'
-        f'<div style="font-weight:700;font-size:1rem;color:#2c3e50;">{campus_name}</div>'
-        f'<div style="font-size:0.7rem;color:#bbb;">{c_svcs} services</div>'
-        f'</div>'
-        f'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Adults</div><div style="font-weight:700;color:#2c3e50;">{c_adults:,}</div></div>'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Kids</div><div style="font-weight:700;color:#2c3e50;">{c_kids:,}</div></div>'
-        f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#888;text-transform:uppercase;">Total</div><div style="font-weight:800;color:#C0392B;">{c_total:,}</div></div>'
-        f'</div></div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown('<div class="campus-btn">', unsafe_allow_html=True)
-    if st.button(f"View {campus_name}", key=f"btn_{campus_name}"):
-        show_campus(campus_name, df_date)
-    st.markdown('</div>', unsafe_allow_html=True)
+if st.session_state.picker_open:
+    campus_explorer(df_date)
 
 st.divider()
 
