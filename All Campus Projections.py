@@ -26,7 +26,13 @@ st.markdown("""
 if st.query_params.get('embedded', 'false') == 'true':
     st.markdown('<style>.stApp > header{display:none;}.stApp > div:first-child{display:none;}.main .block-container{padding-top:0.5rem;}</style>', unsafe_allow_html=True)
 
-st.image("https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png", width=130)
+st.markdown(
+    '<div style="text-align:center;margin:0 auto 8px;">'
+    '<img src="https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png" '
+    'style="width:150px;max-width:60%;height:auto;display:inline-block;">'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 
 # ── Load CSV ─────────────────────────────────────────────────────────────
