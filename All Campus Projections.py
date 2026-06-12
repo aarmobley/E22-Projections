@@ -248,7 +248,11 @@ def campus_explorer(df):
 
 
 # ── Page ─────────────────────────────────────────────────────────────────
-st.subheader("Weekly Service Projections")
+st.markdown(
+    '<div style="text-align:center;font-size:1.5rem;font-weight:600;color:#2c3e50;margin:4px 0 8px;">'
+    'Weekly Service Projections</div>',
+    unsafe_allow_html=True
+)
 
 # ── Date selector ─────────────────────────────────────────────────────
 date_labels = [pd.Timestamp(d).strftime('%B %d, %Y') for d in dates_sorted]
