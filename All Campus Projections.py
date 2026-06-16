@@ -289,8 +289,8 @@ grand_total = int(df_totals['Total'].sum())
 st.markdown(
     f'<div style="text-align:center;margin:20px 0;">'
     f'<div style="font-size:2.2rem;font-weight:800;color:#C0392B;">{grand_total:,}</div>'
-    f'<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;opacity:0.5;">Total Projected Attendance</div>'
-    f'<div style="font-size:0.85rem;margin-top:4px;opacity:0.7;">Adults: {grand_adults:,} &nbsp;·&nbsp; Kids: {grand_kids:,}</div>'
+    f'<div style="font-size:0.72rem;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;">Total Projected Attendance</div>'
+    f'<div style="font-size:0.85rem;color:#888;margin-top:4px;">Adults: {grand_adults:,} &nbsp;·&nbsp; Kids: {grand_kids:,}</div>'
     f'</div>',
     unsafe_allow_html=True
 )
