@@ -42,7 +42,7 @@ if st.query_params.get('embedded', 'false') == 'true':
 
 st.markdown(
     '<div style="text-align:center;margin:0 auto 8px;">'
-    '<img src="https://github.com/aarmobley/E22-Projections/blob/main/e22_logo_rounded_card.png" '
+    '<img src="https://raw.githubusercontent.com/aarmobley/E22-Projections/main/e22_logo_rounded_card.png" '
     'style="width:260px;max-width:75%;height:auto;display:inline-block;">'
     '</div>',
     unsafe_allow_html=True
