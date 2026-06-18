@@ -3,6 +3,20 @@ import pandas as pd
 
 st.set_page_config(page_title="CoE22 Projections", layout="wide", initial_sidebar_state="collapsed")
 
+
+# ── Notification banner ───────────────────────────────────────────────
+st.markdown(
+    '<div style="display:flex;align-items:center;gap:10px;justify-content:center;'
+    'max-width:560px;margin:0 auto 14px;padding:10px 16px;'
+    'background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.25);'
+    'border-left:4px solid #C0392B;border-radius:10px;">'
+    '<span style="font-size:1rem;">🔔</span>'
+    '<span style="font-size:0.9rem;font-weight:600;color:#C0392B;">'
+    'Saturated Projections coming week of 6/22</span>'
+    '</div>',
+    unsafe_allow_html=True
+)
+
 st.markdown("""
 <style>
     [data-testid="stSidebar"]{display:none;}
