@@ -270,7 +270,8 @@ for i, d in enumerate(dates_sorted):
 
 col_spacer1, col_date, col_spacer2 = st.columns([2, 3, 2])
 with col_date:
-    date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx)
+    with col_date:
+    date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx, label_visibility="collapsed")
 sel_date = pd.Timestamp(dates_sorted[date_labels.index(date_pick)])
 
 
