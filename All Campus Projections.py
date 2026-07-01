@@ -96,6 +96,14 @@ def load_projections():
         df.drop(columns=['ServiceTime', 'FallbackRatio'], inplace=True, errors='ignore')
 
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
+
+        # ── Saturated outreach weekend (08/09/2026): +1% kids attendance ──
+        boost_date = pd.Timestamp('2026-08-09')
+        boost_mask = df['SundayDate'] == boost_date
+        df.loc[boost_mask, 'kids_attendance'] = (
+            df.loc[boost_mask, 'kids_attendance'] * 1.01
+        ).round().astype(int)
+
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
 
         # Remove services that don't actually exist at certain campuses
