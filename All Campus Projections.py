@@ -3,45 +3,6 @@ import pandas as pd
 
 st.set_page_config(page_title="CoE22 Projections", layout="wide", initial_sidebar_state="collapsed")
 
-# ── Data sources ─────────────────────────────────────────────────────────
-PROJ_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
-KIDS_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
-
-# Optional Saturated overlay. Point this at the manual-bump CSV once it's in the
-# repo (same schema/columns as Service_Projections.csv, just the 9/20 rows).
-# Rows here REPLACE matching (CampusId, SundayDate, ServiceDateTime) rows in the
-# main file. Leave as None to run off the main file only — a missing/empty file
-# is a safe no-op.
-SATURATED_URL = None
-# e.g. SATURATED_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Saturated_Projections.csv"
-
-# Dated kids-ratio bumps: add N percentage points to KidsRatio on specific
-# Sundays (families skew higher on certain weekends). 0.01 = +1 point, so a
-# service normally at 32% kids becomes 33%. Adults are unchanged — this only
-# nudges the kids/total split. Add more dates here as needed.
-KIDS_RATIO_BUMPS = {
-    "2026-08-09": 0.01,   # Back to School
-    # "2026-04-05": 0.02, # Easter (example)
-    # "2026-12-24": 0.02, # Christmas Eve (example)
-}
-
-# Important dates surfaced in the "Important Dates" drop-down (display only —
-# these don't affect the numbers). Key = Sunday (YYYY-MM-DD), value = label.
-IMPORTANT_DATES = {
-    "2026-08-09": "Promotion Week",
-}
-
-
-def pad_time(series):
-    """Zero-pad H:MM:SS -> HH:MM:SS. write.csv on the R side drops the leading
-    zero (7:22:00 instead of 07:22:00), which breaks the kids join and the
-    bad_services filter (both expect padded times). This is the durable fix."""
-    return series.astype(str).str.strip().str.replace(r'^(\d):', r'0\1:', regex=True)
-
-
-# ── Notification banner ───────────────────────────────────────────────
-
-
 st.markdown("""
 <style>
     [data-testid="stSidebar"]{display:none;}
@@ -67,48 +28,21 @@ if st.query_params.get('embedded', 'false') == 'true':
 
 st.markdown(
     '<div style="text-align:center;margin:0 auto 8px;">'
-    '<img src="https://raw.githubusercontent.com/aarmobley/E22-Projections/main/e22_logo_rounded_card.png" '
-    'style="width:260px;max-width:75%;height:auto;display:inline-block;">'
+    '<img src="https://raw.githubusercontent.com/aarmobley/CoE22/main/E22%20Logo.png" '
+    'style="width:150px;max-width:60%;height:auto;display:inline-block;">'
     '</div>',
     unsafe_allow_html=True
 )
 
 
 # ── Load CSV ─────────────────────────────────────────────────────────────
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=60)
 def load_projections():
+    url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
+    kids_url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
     try:
-        df = pd.read_csv(PROJ_URL)
-
-        # Zero-pad ServiceDateTime immediately after read (durable time fix).
-        # Do this BEFORE the Service label, the kids join, and bad_services.
-        df['ServiceDateTime'] = pad_time(df['ServiceDateTime'])
-
-        # Optional Saturated overlay: replace matching rows, append the rest.
-        # (Tolerant of a Quarter column and any extra columns — same schema.)
-        if SATURATED_URL:
-            try:
-                sat = pd.read_csv(SATURATED_URL)
-                if not sat.empty:
-                    sat['ServiceDateTime'] = pad_time(sat['ServiceDateTime'])
-                    sat['SundayDate'] = pd.to_datetime(sat['SundayDate'])
-                    df['SundayDate'] = pd.to_datetime(df['SundayDate'])
-                    keys = ['CampusId', 'SundayDate', 'ServiceDateTime']
-                    overlay_keys = sat[keys].drop_duplicates()
-                    df = df.merge(overlay_keys.assign(_ov=1), on=keys, how='left')
-                    df = df[df['_ov'].isna()].drop(columns='_ov')
-                    df = pd.concat([df, sat], ignore_index=True)
-            except Exception:
-                pass  # missing/malformed overlay → fall back to main file
-
+        df = pd.read_csv(url)
         df['SundayDate'] = pd.to_datetime(df['SundayDate'])
-
-        # AdultCapacity dedupe guard — redundant now that duplicates are resolved
-        # at source (St. Johns 2200, Orange Park 750), but safe to keep. Keeps the
-        # larger capacity if a campus/date/service ever reappears twice.
-        df = (df.sort_values('AdultCapacity', ascending=False)
-                .drop_duplicates(subset=['CampusId', 'SundayDate', 'ServiceDateTime'], keep='first')
-                .reset_index(drop=True))
 
         # Clean ServiceDateTime to readable format
         cleaned = []
@@ -128,7 +62,7 @@ def load_projections():
         df['Service'] = cleaned
 
         # Load kids ratios — service-level join
-        kids_df = pd.read_csv(KIDS_URL)
+        kids_df = pd.read_csv(kids_url)
         kids_df.columns = kids_df.columns.str.strip()
 
         # Extract just the time from ServiceDateTime (strip the 1899 date prefix)
@@ -148,10 +82,9 @@ def load_projections():
         campus_fallback = kids_df.groupby('Campus')['KidsRatio'].mean().reset_index()
         campus_fallback.columns = ['Campus', 'FallbackRatio']
 
-        # Join on Campus + ServiceDateTime (both padded, so 7:22/9:22 line up)
-        kids_join = kids_df[['Campus', 'ServiceTime', 'KidsRatio']].drop_duplicates(subset=['Campus', 'ServiceTime'])
+        # Join on Campus + ServiceDateTime
         df = df.merge(
-            kids_join,
+            kids_df[['Campus', 'ServiceTime', 'KidsRatio']],
             left_on=['Campus', 'ServiceDateTime'],
             right_on=['Campus', 'ServiceTime'],
             how='left'
@@ -161,11 +94,6 @@ def load_projections():
         df = df.merge(campus_fallback, on='Campus', how='left')
         df['KidsRatio'] = df['KidsRatio'].fillna(df['FallbackRatio']).fillna(0.20)
         df.drop(columns=['ServiceTime', 'FallbackRatio'], inplace=True, errors='ignore')
-
-        # Dated kids-ratio bumps (e.g. Back to School) — applied before the
-        # multiply so kids_attendance and total_attendance recompute cleanly.
-        for bump_date, bump in KIDS_RATIO_BUMPS.items():
-            df.loc[df['SundayDate'] == pd.Timestamp(bump_date), 'KidsRatio'] += bump
 
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
@@ -338,18 +266,8 @@ for i, d in enumerate(dates_sorted):
 
 col_spacer1, col_date, col_spacer2 = st.columns([2, 3, 2])
 with col_date:
-    date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx, label_visibility="collapsed")
+    date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx)
 sel_date = pd.Timestamp(dates_sorted[date_labels.index(date_pick)])
-
-# Inline badge when the selected Sunday is a key date
-_sel_key = sel_date.strftime('%Y-%m-%d')
-if _sel_key in IMPORTANT_DATES:
-    st.markdown(
-        f'<div style="text-align:center;margin:6px 0 0;">'
-        f'<span style="background:#fef2f2;color:#C0392B;font-weight:600;font-size:0.8rem;'
-        f'padding:4px 12px;border-radius:999px;">{IMPORTANT_DATES[_sel_key]}</span></div>',
-        unsafe_allow_html=True
-    )
 
 
 # ── Grand total ──────────────────────────────────────────────────────────
