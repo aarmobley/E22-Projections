@@ -15,6 +15,16 @@ KIDS_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kid
 SATURATED_URL = None
 # e.g. SATURATED_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Saturated_Projections.csv"
 
+# Dated kids-ratio bumps: add N percentage points to KidsRatio on specific
+# Sundays (families skew higher on certain weekends). 0.01 = +1 point, so a
+# service normally at 32% kids becomes 33%. Adults are unchanged — this only
+# nudges the kids/total split. Add more dates here as needed.
+KIDS_RATIO_BUMPS = {
+    "2026-08-09": 0.01,   # Back to School
+    # "2026-04-05": 0.02, # Easter (example)
+    # "2026-12-24": 0.02, # Christmas Eve (example)
+}
+
 
 def pad_time(series):
     """Zero-pad H:MM:SS -> HH:MM:SS. write.csv on the R side drops the leading
@@ -145,6 +155,11 @@ def load_projections():
         df = df.merge(campus_fallback, on='Campus', how='left')
         df['KidsRatio'] = df['KidsRatio'].fillna(df['FallbackRatio']).fillna(0.20)
         df.drop(columns=['ServiceTime', 'FallbackRatio'], inplace=True, errors='ignore')
+
+        # Dated kids-ratio bumps (e.g. Back to School) — applied before the
+        # multiply so kids_attendance and total_attendance recompute cleanly.
+        for bump_date, bump in KIDS_RATIO_BUMPS.items():
+            df.loc[df['SundayDate'] == pd.Timestamp(bump_date), 'KidsRatio'] += bump
 
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
