@@ -341,23 +341,6 @@ with col_date:
     date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx, label_visibility="collapsed")
 sel_date = pd.Timestamp(dates_sorted[date_labels.index(date_pick)])
 
-# ── Important dates drop-down ─────────────────────────────────────────
-_spc1, _mid, _spc2 = st.columns([2, 3, 2])
-with _mid:
-    with st.expander("📅 Important Dates"):
-        if IMPORTANT_DATES:
-            for d, label in sorted(IMPORTANT_DATES.items()):
-                st.markdown(
-                    f'<div style="display:flex;justify-content:space-between;'
-                    f'padding:6px 2px;border-bottom:1px solid #f0f0f0;">'
-                    f'<span style="font-weight:600;color:#2c3e50;">{label}</span>'
-                    f'<span style="color:#888;">{pd.Timestamp(d).strftime("%m/%d/%Y")}</span>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-        else:
-            st.markdown('<div style="color:#888;">No important dates set.</div>', unsafe_allow_html=True)
-
 # Inline badge when the selected Sunday is a key date
 _sel_key = sel_date.strftime('%Y-%m-%d')
 if _sel_key in IMPORTANT_DATES:
