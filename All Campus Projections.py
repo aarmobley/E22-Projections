@@ -230,7 +230,7 @@ def render_campus_list(df):
 
     st.markdown(
         '<div style="font-size:0.8rem;color:#888;margin-bottom:10px;">'
-        'Select a campus to see its service-level breakdown.</div>',
+        'Select a campus to see its service-level breakdown - Adults and Kids.</div>',
         unsafe_allow_html=True
     )
 
