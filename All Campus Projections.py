@@ -109,7 +109,8 @@ def load_projections():
         # All campuses: adults +2%, kids recomputed off the boosted adult
         # number using each campus/service-time's actual Kids-to-Adults %
         # from the CSV (e.g. San Pablo 9:22 -> 20.5%).
-        # St. Augustine only: adults +10% and kids +10% instead.
+        # St. Augustine only: adults +10%; kids +10% then an additional
+        # +10% on top (compounds to ~+21% vs. baseline).
         boost_date = pd.Timestamp('2026-08-09')
         boost_mask = df['SundayDate'] == boost_date
         sa_mask = boost_mask & (df['Campus'] == 'St. Augustine')
@@ -125,6 +126,10 @@ def load_projections():
         df.loc[sa_mask, 'service_attendance'] = (
             df.loc[sa_mask, 'service_attendance'] * 1.10
         ).round().astype(int)
+        df.loc[sa_mask, 'kids_attendance'] = (
+            df.loc[sa_mask, 'kids_attendance'] * 1.10
+        ).round().astype(int)
+        # Additional +10% on top of the above, kids only, St. Augustine only
         df.loc[sa_mask, 'kids_attendance'] = (
             df.loc[sa_mask, 'kids_attendance'] * 1.10
         ).round().astype(int)
