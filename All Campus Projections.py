@@ -98,7 +98,7 @@ def load_projections():
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
 
         # ── Saturated outreach weekend (08/09/2026): attendance boost ──
-        # Adults +2%, Kids +5% — both additive, so the grand total grows
+        # Adults +2%, Kids +10% — both additive, so the grand total grows
         # by the combination of the two rather than one offsetting the other.
         boost_date = pd.Timestamp('2026-08-09')
         boost_mask = df['SundayDate'] == boost_date
@@ -107,7 +107,7 @@ def load_projections():
             df.loc[boost_mask, 'service_attendance'] * 1.02
         ).round().astype(int)
         df.loc[boost_mask, 'kids_attendance'] = (
-            df.loc[boost_mask, 'kids_attendance'] * 1.05
+            df.loc[boost_mask, 'kids_attendance'] * 1.10
         ).round().astype(int)
 
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
