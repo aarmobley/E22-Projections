@@ -106,18 +106,27 @@ def load_projections():
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
 
         # ── Saturated outreach weekend (08/09/2026): attendance boost ──
-        # Adults +2%. Kids are then recomputed off the boosted adult
+        # All campuses: adults +2%, kids recomputed off the boosted adult
         # number using each campus/service-time's actual Kids-to-Adults %
-        # from the CSV (e.g. San Pablo 9:22 -> 20.5%), rather than a flat
-        # percentage bump.
+        # from the CSV (e.g. San Pablo 9:22 -> 20.5%).
+        # St. Augustine only: adults +10% and kids +10% instead.
         boost_date = pd.Timestamp('2026-08-09')
         boost_mask = df['SundayDate'] == boost_date
+        sa_mask = boost_mask & (df['Campus'] == 'St. Augustine')
+        other_mask = boost_mask & (df['Campus'] != 'St. Augustine')
 
-        df.loc[boost_mask, 'service_attendance'] = (
-            df.loc[boost_mask, 'service_attendance'] * 1.02
+        df.loc[other_mask, 'service_attendance'] = (
+            df.loc[other_mask, 'service_attendance'] * 1.02
         ).round().astype(int)
-        df.loc[boost_mask, 'kids_attendance'] = (
-            df.loc[boost_mask, 'service_attendance'] * df.loc[boost_mask, 'KidsRatio']
+        df.loc[other_mask, 'kids_attendance'] = (
+            df.loc[other_mask, 'service_attendance'] * df.loc[other_mask, 'KidsRatio']
+        ).round().astype(int)
+
+        df.loc[sa_mask, 'service_attendance'] = (
+            df.loc[sa_mask, 'service_attendance'] * 1.10
+        ).round().astype(int)
+        df.loc[sa_mask, 'kids_attendance'] = (
+            df.loc[sa_mask, 'kids_attendance'] * 1.10
         ).round().astype(int)
 
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
