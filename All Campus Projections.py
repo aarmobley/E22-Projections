@@ -44,6 +44,14 @@ def load_projections():
         df = pd.read_csv(url)
         df['SundayDate'] = pd.to_datetime(df['SundayDate'])
 
+        # Normalize ServiceDateTime to a consistent zero-padded HH:MM:SS key.
+        # The source CSV mixes "9:22:00" and "09:22:00" style formats, which
+        # otherwise breaks the exact-match join against the Kids-to-Adults
+        # ratio CSV for any single-digit-hour service (7am/9am).
+        df['ServiceTimeKey'] = pd.to_datetime(
+            df['ServiceDateTime'], format='%H:%M:%S'
+        ).dt.strftime('%H:%M:%S')
+
         # Clean ServiceDateTime to readable format
         cleaned = []
         for val in df['ServiceDateTime']:
@@ -82,10 +90,10 @@ def load_projections():
         campus_fallback = kids_df.groupby('Campus')['KidsRatio'].mean().reset_index()
         campus_fallback.columns = ['Campus', 'FallbackRatio']
 
-        # Join on Campus + ServiceDateTime
+        # Join on Campus + normalized service time
         df = df.merge(
             kids_df[['Campus', 'ServiceTime', 'KidsRatio']],
-            left_on=['Campus', 'ServiceDateTime'],
+            left_on=['Campus', 'ServiceTimeKey'],
             right_on=['Campus', 'ServiceTime'],
             how='left'
         )
@@ -121,7 +129,9 @@ def load_projections():
             ('Wildlight', '07:22:00'),
         ]
         for campus, svc in bad_services:
-            df = df[~((df['Campus'] == campus) & (df['ServiceDateTime'] == svc))]
+            df = df[~((df['Campus'] == campus) & (df['ServiceTimeKey'] == svc))]
+
+        df.drop(columns=['ServiceTimeKey'], inplace=True, errors='ignore')
 
         return df, None
     except Exception as e:
