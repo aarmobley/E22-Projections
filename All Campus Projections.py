@@ -99,17 +99,10 @@ def load_projections():
 
         # ── Saturated outreach weekend (08/09/2026): kids attendance boost ──
         boost_date = pd.Timestamp('2026-08-09')
-        high_boost_campuses = ['St. Augustine', 'San Pablo', 'North Jax', 'St. Johns']
-
         boost_mask = df['SundayDate'] == boost_date
-        high_boost_mask = boost_mask & df['Campus'].isin(high_boost_campuses)
-        standard_boost_mask = boost_mask & ~df['Campus'].isin(high_boost_campuses)
 
-        df.loc[high_boost_mask, 'kids_attendance'] = (
-            df.loc[high_boost_mask, 'kids_attendance'] * 1.02
-        ).round().astype(int)
-        df.loc[standard_boost_mask, 'kids_attendance'] = (
-            df.loc[standard_boost_mask, 'kids_attendance'] * 1.01
+        df.loc[boost_mask, 'kids_attendance'] = (
+            df.loc[boost_mask, 'kids_attendance'] * 1.05
         ).round().astype(int)
 
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
