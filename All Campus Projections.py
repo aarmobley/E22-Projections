@@ -98,12 +98,21 @@ def load_projections():
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
 
         # ── Saturated outreach weekend (08/09/2026): kids attendance boost ──
+        # Adults get a straight +2%. Kids get +5%, but the extra kids (the
+        # portion above the original baseline count) comes off the adult
+        # total rather than being added net-new, so the kid boost doesn't
+        # inflate the grand total beyond the adult increase.
         boost_date = pd.Timestamp('2026-08-09')
         boost_mask = df['SundayDate'] == boost_date
 
-        df.loc[boost_mask, 'kids_attendance'] = (
-            df.loc[boost_mask, 'kids_attendance'] * 1.05
+        kids_before = df.loc[boost_mask, 'kids_attendance']
+        kids_after = (kids_before * 1.05).round().astype(int)
+        extra_kids = kids_after - kids_before
+
+        df.loc[boost_mask, 'service_attendance'] = (
+            df.loc[boost_mask, 'service_attendance'] * 1.02 - extra_kids
         ).round().astype(int)
+        df.loc[boost_mask, 'kids_attendance'] = kids_after
 
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
 
