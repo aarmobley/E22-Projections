@@ -3,6 +3,92 @@ import pandas as pd
 
 st.set_page_config(page_title="CoE22 Projections", layout="wide", initial_sidebar_state="collapsed")
 
+# ── Data sources ─────────────────────────────────────────────────────────────
+PROJ_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
+KIDS_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
+
+# Saturated event overlay. On SATURATED_DATE the campus breakdown reads directly
+# from this multi-day spreadsheet (Wed–Sun services, each with its own adults +
+# kids counts) instead of the model. Point SATURATED_URL at the .xlsx in the repo
+# — keep the same "Campus Day Breakdown" layout (title row, blank row, header on
+# the 3rd row, one row per campus, a GRAND TOTAL row). Set SATURATED_URL to None
+# to fall back to the model's own 9/20 rows; a missing/unreadable file is a safe
+# no-op that just leaves the model rows in place.
+SATURATED_URL = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Saturated_2026_Campus_Day_Breakdown.xlsx"
+SATURATED_DATE = "2026-09-20"
+
+# Dated kids-ratio bumps: add N percentage points to KidsRatio on specific
+# Sundays (families skew higher on certain weekends). 0.01 = +1 point, so a
+# service normally at 32% kids becomes 33%. Adults are unchanged — this only
+# nudges the kids/total split. Add more dates here as needed.
+KIDS_RATIO_BUMPS = {
+    "2026-08-09": 0.01,   # Back to School
+    # "2026-04-05": 0.02, # Easter (example)
+    # "2026-12-24": 0.02, # Christmas Eve (example)
+}
+
+# Important dates surfaced as an inline pill under the date picker (display only —
+# these don't affect the numbers). Key = Sunday (YYYY-MM-DD), value = label.
+IMPORTANT_DATES = {
+    "2026-08-09": "Promotion Week",
+    "2026-09-20": "Saturated",
+}
+
+
+def pad_time(series):
+    """Zero-pad H:MM:SS -> HH:MM:SS. write.csv on the R side drops the leading
+    zero (7:22:00 instead of 07:22:00), which breaks the kids join and the
+    bad_services filter (both expect padded times). This is the durable fix."""
+    return series.astype(str).str.strip().str.replace(r'^(\d):', r'0\1:', regex=True)
+
+
+def load_saturated(model_df):
+    """Parse the Saturated 'Campus Day Breakdown' spreadsheet into long rows that
+    match the app's frame (one row per campus × event service). Adults and kids
+    come straight from the sheet — no kids-ratio recompute. Capacity and CampusId
+    are looked up from the model frame so utilization and IDs stay consistent."""
+    cap_map = model_df.groupby('Campus')['AdultCapacity'].max().to_dict()
+    id_map = model_df.groupby('Campus')['CampusId'].first().to_dict()
+
+    # Header sits on the 3rd row (title + blank row above it).
+    sat = pd.read_excel(SATURATED_URL, sheet_name=0, header=2)
+    sat = sat[sat['Campus'].notna() &
+              (sat['Campus'].astype(str).str.strip().str.upper() != 'GRAND TOTAL')]
+
+    # Service columns = everything that isn't Campus/Total and isn't a "… Kids" pair.
+    svc_cols = [c for c in sat.columns
+                if c not in ('Campus', 'Total') and not str(c).strip().endswith('Kids')]
+
+    sd = pd.Timestamp(SATURATED_DATE)
+    rows = []
+    for order, sc in enumerate(svc_cols):
+        kids_col = f"{sc} Kids"
+        for _, r in sat.iterrows():
+            adults = pd.to_numeric(r.get(sc), errors='coerce')
+            if pd.isna(adults):          # campus doesn't run this event service
+                continue
+            kids = pd.to_numeric(r.get(kids_col), errors='coerce')
+            kids = 0 if pd.isna(kids) else kids   # blanks / "TBD" -> 0
+            campus = str(r['Campus']).strip()
+            rows.append({
+                'CampusId': id_map.get(campus),
+                'SundayDate': sd,
+                'Campus': campus,
+                # zero-padded order key keeps the event in Wed→Sun order if sorted
+                'ServiceDateTime': f"{order:02d}",
+                'Service': str(sc).strip(),
+                'AdultCapacity': cap_map.get(campus, 0),
+                'service_attendance': int(round(adults)),
+                'kids_attendance': int(round(kids)),
+            })
+
+    out = pd.DataFrame(rows)
+    if out.empty:
+        return out
+    out['total_attendance'] = out['service_attendance'] + out['kids_attendance']
+    return out
+
+
 st.markdown("""
 <style>
     [data-testid="stSidebar"]{display:none;}
@@ -29,28 +115,30 @@ if st.query_params.get('embedded', 'false') == 'true':
 st.markdown(
     '<div style="text-align:center;margin:0 auto 8px;">'
     '<img src="https://raw.githubusercontent.com/aarmobley/E22-Projections/main/e22_logo_rounded_card.png" '
-    'style="width:150px;max-width:60%;height:auto;display:inline-block;">'
+    'style="width:260px;max-width:75%;height:auto;display:inline-block;">'
     '</div>',
     unsafe_allow_html=True
 )
 
 
-# ── Load CSV ─────────────────────────────────────────────────────────────
-@st.cache_data(ttl=60)
+# ── Load CSV ─────────────────────────────────────────────────────────────────
+@st.cache_data(ttl=3600)
 def load_projections():
-    url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Service_Projections.csv"
-    kids_url = "https://raw.githubusercontent.com/aarmobley/E22-Projections/main/Kids%20to%20Adults%20%25.csv"
     try:
-        df = pd.read_csv(url)
+        df = pd.read_csv(PROJ_URL)
+
+        # Zero-pad ServiceDateTime immediately after read (durable time fix).
+        # Do this BEFORE the Service label, the kids join, and bad_services.
+        df['ServiceDateTime'] = pad_time(df['ServiceDateTime'])
+
         df['SundayDate'] = pd.to_datetime(df['SundayDate'])
 
-        # Normalize ServiceDateTime to a consistent zero-padded HH:MM:SS key.
-        # The source CSV mixes "9:22:00" and "09:22:00" style formats, which
-        # otherwise breaks the exact-match join against the Kids-to-Adults
-        # ratio CSV for any single-digit-hour service (7am/9am).
-        df['ServiceTimeKey'] = pd.to_datetime(
-            df['ServiceDateTime'], format='%H:%M:%S'
-        ).dt.strftime('%H:%M:%S')
+        # AdultCapacity dedupe guard — redundant now that duplicates are resolved
+        # at source (St. Johns 2200, Orange Park 750), but safe to keep. Keeps the
+        # larger capacity if a campus/date/service ever reappears twice.
+        df = (df.sort_values('AdultCapacity', ascending=False)
+                .drop_duplicates(subset=['CampusId', 'SundayDate', 'ServiceDateTime'], keep='first')
+                .reset_index(drop=True))
 
         # Clean ServiceDateTime to readable format
         cleaned = []
@@ -70,7 +158,7 @@ def load_projections():
         df['Service'] = cleaned
 
         # Load kids ratios — service-level join
-        kids_df = pd.read_csv(kids_url)
+        kids_df = pd.read_csv(KIDS_URL)
         kids_df.columns = kids_df.columns.str.strip()
 
         # Extract just the time from ServiceDateTime (strip the 1899 date prefix)
@@ -90,10 +178,11 @@ def load_projections():
         campus_fallback = kids_df.groupby('Campus')['KidsRatio'].mean().reset_index()
         campus_fallback.columns = ['Campus', 'FallbackRatio']
 
-        # Join on Campus + normalized service time
+        # Join on Campus + ServiceDateTime (both padded, so 7:22/9:22 line up)
+        kids_join = kids_df[['Campus', 'ServiceTime', 'KidsRatio']].drop_duplicates(subset=['Campus', 'ServiceTime'])
         df = df.merge(
-            kids_df[['Campus', 'ServiceTime', 'KidsRatio']],
-            left_on=['Campus', 'ServiceTimeKey'],
+            kids_join,
+            left_on=['Campus', 'ServiceDateTime'],
             right_on=['Campus', 'ServiceTime'],
             how='left'
         )
@@ -103,37 +192,12 @@ def load_projections():
         df['KidsRatio'] = df['KidsRatio'].fillna(df['FallbackRatio']).fillna(0.20)
         df.drop(columns=['ServiceTime', 'FallbackRatio'], inplace=True, errors='ignore')
 
+        # Dated kids-ratio bumps (e.g. Back to School) — applied before the
+        # multiply so kids_attendance and total_attendance recompute cleanly.
+        for bump_date, bump in KIDS_RATIO_BUMPS.items():
+            df.loc[df['SundayDate'] == pd.Timestamp(bump_date), 'KidsRatio'] += bump
+
         df['kids_attendance'] = (df['service_attendance'] * df['KidsRatio']).round().astype(int)
-
-        # ── Saturated outreach weekend (08/09/2026): attendance boost ──
-        # All campuses: adults +2%, kids recomputed off the boosted adult
-        # number using each campus/service-time's actual Kids-to-Adults %
-        # from the CSV (e.g. San Pablo 9:22 -> 20.5%).
-        # St. Augustine only: adults +10%; kids +10% then an additional
-        # +10% on top (compounds to ~+21% vs. baseline).
-        boost_date = pd.Timestamp('2026-08-09')
-        boost_mask = df['SundayDate'] == boost_date
-        sa_mask = boost_mask & (df['Campus'] == 'St. Augustine')
-        other_mask = boost_mask & (df['Campus'] != 'St. Augustine')
-
-        df.loc[other_mask, 'service_attendance'] = (
-            df.loc[other_mask, 'service_attendance'] * 1.02
-        ).round().astype(int)
-        df.loc[other_mask, 'kids_attendance'] = (
-            df.loc[other_mask, 'service_attendance'] * df.loc[other_mask, 'KidsRatio']
-        ).round().astype(int)
-
-        df.loc[sa_mask, 'service_attendance'] = (
-            df.loc[sa_mask, 'service_attendance'] * 1.10
-        ).round().astype(int)
-        df.loc[sa_mask, 'kids_attendance'] = (
-            df.loc[sa_mask, 'kids_attendance'] * 1.10
-        ).round().astype(int)
-        # Additional +10% on top of the above, kids only, St. Augustine only
-        df.loc[sa_mask, 'kids_attendance'] = (
-            df.loc[sa_mask, 'kids_attendance'] * 1.10
-        ).round().astype(int)
-
         df['total_attendance'] = df['service_attendance'] + df['kids_attendance']
 
         # Remove services that don't actually exist at certain campuses
@@ -143,9 +207,21 @@ def load_projections():
             ('Wildlight', '07:22:00'),
         ]
         for campus, svc in bad_services:
-            df = df[~((df['Campus'] == campus) & (df['ServiceTimeKey'] == svc))]
+            df = df[~((df['Campus'] == campus) & (df['ServiceDateTime'] == svc))]
 
-        df.drop(columns=['ServiceTimeKey'], inplace=True, errors='ignore')
+        # ── Saturated event overlay ──────────────────────────────────────────
+        # Replace the model's SATURATED_DATE rows with the spreadsheet breakdown
+        # (explicit adults + kids per multi-day service). Every other week is
+        # untouched. If the file is missing/unreadable, keep the model's rows.
+        if SATURATED_URL:
+            try:
+                sat_df = load_saturated(df)
+                if sat_df is not None and not sat_df.empty:
+                    sd = pd.Timestamp(SATURATED_DATE)
+                    df = df[df['SundayDate'] != sd]
+                    df = pd.concat([df, sat_df], ignore_index=True)
+            except Exception:
+                pass  # fall back to the model's own SATURATED_DATE rows
 
         return df, None
     except Exception as e:
@@ -160,23 +236,14 @@ if load_error:
 dates_sorted = sorted(df_all['SundayDate'].unique())
 
 
-# ── Session state ────────────────────────────────────────────────────────
-if 'date_idx' not in st.session_state:
-    today = pd.Timestamp.now().normalize()
-    default_idx = 0
-    for i, d in enumerate(dates_sorted):
-        if pd.Timestamp(d) >= today:
-            default_idx = i
-            break
-    st.session_state.date_idx = default_idx
-
+# ── Session state ────────────────────────────────────────────────────────────
 if 'picker_open' not in st.session_state:
     st.session_state.picker_open = False
 if 'picker_campus' not in st.session_state:
     st.session_state.picker_campus = None
 
 
-# ── Campus breakdown (rendered INSIDE the dialog) ────────────────────────
+# ── Campus breakdown (rendered INSIDE the dialog) ────────────────────────────
 def render_campus_breakdown(campus_name, df):
     df_c = df[df['Campus'] == campus_name].copy()
     total_adults = int(df_c['service_attendance'].sum())
@@ -251,7 +318,7 @@ def render_campus_breakdown(campus_name, df):
     )
 
 
-# ── Campus list (rendered INSIDE the dialog) ─────────────────────────────
+# ── Campus list (rendered INSIDE the dialog) ─────────────────────────────────
 def render_campus_list(df):
     df_totals = df.groupby('Campus').agg(
         Adults=('service_attendance', 'sum'),
@@ -262,7 +329,7 @@ def render_campus_list(df):
 
     st.markdown(
         '<div style="font-size:0.8rem;color:#888;margin-bottom:10px;">'
-        'Select a campus to see its service-level breakdown - Adults and Kids.</div>',
+        'Select a campus to see its service-level breakdown.</div>',
         unsafe_allow_html=True
     )
 
@@ -275,7 +342,7 @@ def render_campus_list(df):
                 st.rerun()
 
 
-# ── The single "wizard" dialog ───────────────────────────────────────────
+# ── The single "wizard" dialog ───────────────────────────────────────────────
 @st.dialog("Campus Projections", width="large")
 def campus_explorer(df):
     if st.session_state.picker_campus is None:
@@ -287,14 +354,14 @@ def campus_explorer(df):
         render_campus_breakdown(st.session_state.picker_campus, df)
 
 
-# ── Page ─────────────────────────────────────────────────────────────────
+# ── Page ─────────────────────────────────────────────────────────────────────
 st.markdown(
     '<div style="text-align:center;font-size:1.5rem;font-weight:600;color:#2c3e50;margin:4px 0 8px;">'
     'Weekly Service Projections</div>',
     unsafe_allow_html=True
 )
 
-# ── Date selector ─────────────────────────────────────────────────────
+# ── Date selector ────────────────────────────────────────────────────────────
 date_labels = [pd.Timestamp(d).strftime('%B %d, %Y') for d in dates_sorted]
 
 today = pd.Timestamp.now().normalize()
@@ -304,13 +371,40 @@ for i, d in enumerate(dates_sorted):
         default_idx = i
         break
 
+sat_label = pd.Timestamp(SATURATED_DATE).strftime('%B %d, %Y')
+
+# Seed the picker on first load; the Saturated button just rewrites this value.
+if 'date_pick' not in st.session_state:
+    st.session_state.date_pick = date_labels[default_idx]
+
+
+def _jump_to_saturated():
+    st.session_state.date_pick = sat_label
+
+
+# Saturated quick-jump button (front page) — snaps the picker to 09/20/2026.
+if sat_label in date_labels:
+    _s1, _sm, _s2 = st.columns([2, 3, 2])
+    with _sm:
+        st.button("🔥 Saturated — jump to Sep 20", on_click=_jump_to_saturated, use_container_width=True)
+
 col_spacer1, col_date, col_spacer2 = st.columns([2, 3, 2])
 with col_date:
-    date_pick = st.selectbox("Select Sunday Date", date_labels, index=default_idx)
-sel_date = pd.Timestamp(dates_sorted[date_labels.index(date_pick)])
+    date_pick = st.selectbox("Select Sunday Date", date_labels, key='date_pick', label_visibility="collapsed")
+sel_date = pd.Timestamp(dates_sorted[date_labels.index(st.session_state.date_pick)])
+
+# Inline badge when the selected Sunday is a key date
+_sel_key = sel_date.strftime('%Y-%m-%d')
+if _sel_key in IMPORTANT_DATES:
+    st.markdown(
+        f'<div style="text-align:center;margin:6px 0 0;">'
+        f'<span style="background:#fef2f2;color:#C0392B;font-weight:600;font-size:0.8rem;'
+        f'padding:4px 12px;border-radius:999px;">{IMPORTANT_DATES[_sel_key]}</span></div>',
+        unsafe_allow_html=True
+    )
 
 
-# ── Grand total ──────────────────────────────────────────────────────────
+# ── Grand total ──────────────────────────────────────────────────────────────
 df_date = df_all[df_all['SundayDate'] == sel_date].copy()
 df_totals = df_date.groupby('Campus').agg(
     Adults=('service_attendance', 'sum'),
@@ -335,7 +429,7 @@ st.markdown(
 st.divider()
 
 
-# ── Single "View Campuses" button → opens the wizard dialog ──────────────
+# ── Single "View Campuses" button → opens the wizard dialog ──────────────────
 col_l, col_c, col_r = st.columns([2, 3, 2])
 with col_c:
     if st.button("View Campuses", type="primary", use_container_width=True):
@@ -348,7 +442,7 @@ if st.session_state.picker_open:
 st.divider()
 
 
-# ── Export all ───────────────────────────────────────────────────────────
+# ── Export all ───────────────────────────────────────────────────────────────
 csv_all = df_date[['Campus', 'SundayDate', 'Service', 'service_attendance', 'kids_attendance', 'total_attendance', 'AdultCapacity']].copy()
 csv_all.columns = ['Campus', 'SundayDate', 'Service', 'Adults', 'Kids', 'Total', 'AdultCapacity']
 csv_all['SundayDate'] = csv_all['SundayDate'].dt.strftime('%m-%d-%Y')
