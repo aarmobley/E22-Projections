@@ -386,7 +386,7 @@ def _jump_to_saturated():
 if sat_label in date_labels:
     _s1, _sm, _s2 = st.columns([2, 3, 2])
     with _sm:
-        st.button("🔥 Saturated Projections", on_click=_jump_to_saturated, use_container_width=True)
+        st.button("🔥Jump to Saturated Projections", on_click=_jump_to_saturated, use_container_width=True)
 
 col_spacer1, col_date, col_spacer2 = st.columns([2, 3, 2])
 with col_date:
