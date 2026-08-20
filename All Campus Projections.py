@@ -214,7 +214,9 @@ def load_projections():
         # ── Saturated event overlay ──────────────────────────────────────────
         # Replace the model's SATURATED_DATE rows with the spreadsheet breakdown
         # (explicit adults + kids per multi-day service). Every other week is
-        # untouched. If the file is missing/unreadable, keep the model's rows.
+        # untouched. TEMP: errors are surfaced via st.warning below (instead of
+        # silently falling back) so we can see exactly why it's failing. Revert
+        # to the silent `except: pass` once this is confirmed working.
         if SATURATED_URL:
             try:
                 sat_df = load_saturated(df)
@@ -222,8 +224,10 @@ def load_projections():
                     sd = pd.Timestamp(SATURATED_DATE)
                     df = df[df['SundayDate'] != sd]
                     df = pd.concat([df, sat_df], ignore_index=True)
-            except Exception:
-                pass  # fall back to the model's own SATURATED_DATE rows
+                else:
+                    st.warning("Saturated overlay: load_saturated() returned no rows — falling back to model rows for 9/20.")
+            except Exception as e:
+                st.warning(f"Saturated overlay failed, falling back to model rows for 9/20: {e}")
 
         return df, None
     except Exception as e:
