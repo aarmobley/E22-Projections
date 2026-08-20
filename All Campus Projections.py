@@ -45,11 +45,10 @@ def pad_time(series):
 def load_saturated(model_df):
     """Parse the Saturated 'Campus Day Breakdown' spreadsheet into long rows that
     match the app's frame (one row per campus × event service). Each day/service
-    column in the sheet holds the FULL attendance total (adults + kids combined);
-    the paired "... Kids" column is the kids portion of that same total, not an
-    additional number on top. Adults-only = day total minus kids. Capacity and
-    CampusId are looked up from the model frame so utilization and IDs stay
-    consistent."""
+    column in the sheet is an ADULTS-ONLY count; the paired "... Kids" column is
+    an ADDITIONAL kids count on top of that (not a subset of it). Total attendance
+    for a service = adults + kids. Capacity and CampusId are looked up from the
+    model frame so utilization and IDs stay consistent."""
     cap_map = model_df.groupby('Campus')['AdultCapacity'].max().to_dict()
     id_map = model_df.groupby('Campus')['CampusId'].first().to_dict()
 
@@ -67,12 +66,11 @@ def load_saturated(model_df):
     for order, sc in enumerate(svc_cols):
         kids_col = f"{sc} Kids"
         for _, r in sat.iterrows():
-            day_total = pd.to_numeric(r.get(sc), errors='coerce')
-            if pd.isna(day_total):          # campus doesn't run this event service
+            adults = pd.to_numeric(r.get(sc), errors='coerce')
+            if pd.isna(adults):          # campus doesn't run this event service
                 continue
             kids = pd.to_numeric(r.get(kids_col), errors='coerce')
             kids = 0 if pd.isna(kids) else kids   # blanks / "TBD" -> 0
-            adults = day_total - kids             # day_total already includes kids — back adults out
             campus = str(r['Campus']).strip()
             rows.append({
                 'CampusId': id_map.get(campus),
